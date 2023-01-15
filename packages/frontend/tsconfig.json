@@ -1,0 +1,10 @@
+{
+  "extends": "../../tsconfig.base",
+  "compilerOptions":{
+    "lib": ["dom"],
+    "outDir": "lib/frontend",
+    "jsx": "preserve",
+    "jsxImportSource": "solid-js",
+  },
+  "include": ["src/**/*"]
+}

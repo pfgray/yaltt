@@ -1,0 +1,12 @@
+{
+  "name": "@yaltt/frontend",
+  "version": "0.0.0",
+  "dependencies": {
+    "fp-ts": "^2.9.0",
+    "solid-js": "^1.6.9",
+    "@yaltt/model": "0.0.0"
+  },
+  "devDependencies": {
+    "typescript": "^4.0"
+  }
+}

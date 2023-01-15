@@ -1,6 +1,6 @@
 {yarn2nix, mkYarnPackage, ...}:
   mkYarnPackage {
-    name = "ts-adt";
+    name = "yaltt";
     src = ./.;
     packageJSON = ./package.json;
     yarnLock = ./yarn.lock;

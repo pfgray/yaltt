@@ -3,11 +3,11 @@
     "module": "commonjs",
     "sourceRoot": "./src",
     "sourceMap": true,
-    "outDir": "lib",
     "target": "es5",
     "lib": ["es6"],
     "declaration": true,
     "strict": true,
-    "inlineSources": true
-  }
+    "inlineSources": true,
+  },
+  "include": ["src"]
 }
