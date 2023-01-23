@@ -6,6 +6,7 @@
   "description": "Yet-another LTI test tool",
   "license": "MIT",
   "workspaces": [
-    "packages/*"
+    "packages/backend",
+    "packages/frontend"
   ]
 }

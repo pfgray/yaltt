@@ -15,7 +15,8 @@
     in {
       devShell = pkgs.mkShell {
         packages = with pkgs; [
-          ( builtins.trace (builtins.attrNames bun-flake.outputs.packages.${system}) bun-flake.outputs.packages.${system}.v0_4_0)
+          pkgs.nodejs-16_x
+          bun-flake.outputs.packages.${system}.v0_5_1
           # (yarn2NixExtras.linkNodeModules yaltt)
         ];
       };

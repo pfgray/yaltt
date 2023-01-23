@@ -1,0 +1,19 @@
+version: "3.9"
+services:
+  backend:
+    build: ./docker/backend
+    environment:
+      - PGHOST=db
+      - PGUSER=yaltt
+      - PGPASSWORD=password
+      - PGDATABASE=yaltt
+      - PGPORT=5432
+    
+  db:
+    build: ./docker/db
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=yaltt
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=yaltt

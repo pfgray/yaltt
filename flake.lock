@@ -6,11 +6,11 @@
         "nixpkgs": "nixpkgs"
       },
       "locked": {
-        "lastModified": 1673710941,
-        "narHash": "sha256-m68YkxMUCTLjBdeoDX0XUZptDlmI0ou9iXh1O9QNIkM=",
+        "lastModified": 1674251553,
+        "narHash": "sha256-N8dwOHHq//nMIIkrtx9tcwprQ7VSMxDxQqxt/+xhfrw=",
         "owner": "pfgray",
         "repo": "bun-flake",
-        "rev": "e69884b91df988eb62a2d0bc842cce746399e08b",
+        "rev": "4acc77b71b5dd66354e053e82864808c922078c8",
         "type": "github"
       },
       "original": {
