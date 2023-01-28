@@ -16,9 +16,19 @@
       devShell = pkgs.mkShell {
         packages = with pkgs; [
           pkgs.nodejs-16_x
+          yarn
           bun-flake.outputs.packages.${system}.v0_5_1
           # (yarn2NixExtras.linkNodeModules yaltt)
         ];
+        shellHook = ''
+          export PGHOST=localhost
+          export PGUSER=yaltt
+          export PGPASSWORD=password
+          export PGDATABASE=yaltt
+          export PGPORT=5432
+
+          export API_URL=http://localhost:3000
+        '';
       };
       packages = {
         yaltt-build = yaltt;

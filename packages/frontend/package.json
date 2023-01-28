@@ -1,27 +1,35 @@
 {
   "name": "@yaltt/frontend",
   "version": "0.0.0",
+  "type": "module",
   "dependencies": {
+    "@effect/io": "^0.0.66",
     "@emotion/react": "^11.9.3",
     "@emotion/styled": "^11.9.3",
+    "@fp-ts/core": "^0.0.11",
+    "@fp-ts/data": "^0.0.40",
+    "@fp-ts/schema": "^0.0.8",
     "@mui/icons-material": "^5.8.4",
     "@mui/lab": "^5.0.0-alpha.88",
     "@mui/material": "^5.8.6",
     "@mui/system": "^5.8.6",
     "@mui/utils": "^5.8.6",
     "@types/react-dom": "^18.0.10",
+    "@vitejs/plugin-react": "^3.0.1",
     "@yaltt/backend": "0.0.0",
-    "fp-ts": "^2.9.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-router-dom": "^6.7.0",
-    "styled-components": "^5.3.6"
+    "styled-components": "^5.3.6",
+    "vite": "^4.0.4"
   },
   "devDependencies": {
     "esbuild": "^0.17.4",
     "typescript": "^4.0"
   },
   "scripts": {
-    "start": "esbuild ./src/index.tsx --sourcemap --bundle --outfile=www/js/index.js --servedir=www --define:RELEASE=false --target=es6"
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview"
   }
 }

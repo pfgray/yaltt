@@ -4,11 +4,11 @@ create table if not exists users (
 );
 
 create table if not exists password_logins (
-  user_id         serial not null references users(id) unique
+  user_id         serial not null references users(id),
   username        varchar(255) not null unique,
-  hashed_password blob not null,
-  salt            blob not null
-)
+  hashed_password bytea not null,
+  salt            bytea not null
+);
 
 create table if not exists vendor (
   id              serial primary key,

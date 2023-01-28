@@ -1,10 +1,29 @@
-import * as express from 'express';
-import * as passport from 'passport';
-import * as LocalStrategy from 'passport-local';
-import { pool, query, query1 } from '../db/db';
-import { pipe } from 'fp-ts/function';
-import * as TE from 'fp-ts/TaskEither'
-import { validate } from '../db/crypto';
+import * as express from "express";
+import * as passport from "passport";
+import * as LocalStrategy from "passport-local";
+import { pool, query, query1 } from "../db/db";
+import { hashPassword, validatePassword } from "../db/crypto";
+import { pipe } from "@fp-ts/data/Function";
+import * as Eff from "@effect/io/Effect";
+import * as Exit from "@effect/io/Exit";
+import * as S from "@fp-ts/schema/Schema";
+import * as P from "@fp-ts/schema/Parser";
+import * as C from "@fp-ts/data/Context";
+import { buffer } from "../lib/BufferSchema";
+import { addUserWithLocalPassword, getLoginByUsername } from "../model/users";
+
+import * as crypto from "crypto";
+import { effRequestHandler } from "../express/effRequestHandler";
+import { parseBody } from "../express/parseBody";
+import { ExpressRequestService } from "../express/RequestService";
+
+declare global {
+  namespace Express {
+    interface User {
+      id: number;
+    }
+  }
+}
 
 /* Configure password authentication strategy.
  *
@@ -17,27 +36,25 @@ import { validate } from '../db/crypto';
  * the hashed password stored in the database.  If the comparison succeeds, the
  * user is authenticated; otherwise, not.
  */
-passport.use(new LocalStrategy.Strategy(function verify(username, password, cb) {
-  // todo: update this to query from logins
-  pipe(
-    query1('SELECT * FROM users WHERE username = ?', [ username ]),
-    TE.chain(user => 
-      validate(password, user.salt, user.hashed_password)
-    )
-  )
-  query('SELECT * FROM users WHERE username = ?', [ username ], function(err, row) {
-    if (err) { return cb(err); }
-    if (!row) { return cb(null, false, { message: 'Incorrect username or password.' }); }
-    
-    crypto.pbkdf2(password, row.salt, 310000, 32, 'sha256', function(err, hashedPassword) {
-      if (err) { return cb(err); }
-      if (!crypto.timingSafeEqual(row.hashed_password, hashedPassword)) {
-        return cb(null, false, { message: 'Incorrect username or password.' });
+passport.use(
+  new LocalStrategy.Strategy(function verify(username, password, cb) {
+    const eff = pipe(
+      getLoginByUsername(username),
+      Eff.flatMap((user) =>
+        validatePassword(password, user.salt, user.hashed_password)
+      ),
+      Eff.provideContext(C.empty())
+    );
+
+    Eff.unsafeRun(eff, (status) => {
+      if (status._tag === "Failure") {
+        cb(status.cause);
+      } else {
+        cb(null);
       }
-      return cb(null, row);
     });
-  });
-}));
+  })
+);
 
 /* Configure session management.
  *
@@ -54,18 +71,17 @@ passport.use(new LocalStrategy.Strategy(function verify(username, password, cb) 
  * fetch todo records and render the user element in the navigation bar, that
  * information is stored in the session.
  */
-passport.serializeUser(function(user, cb) {
-  process.nextTick(function() {
-    cb(null, { id: user.id, username: user.username });
+passport.serializeUser(function (user, cb) {
+  process.nextTick(function () {
+    cb(null, { id: user.id });
   });
 });
 
-passport.deserializeUser(function(user, cb) {
-  process.nextTick(function() {
+passport.deserializeUser<Express.User>(function (user, cb) {
+  process.nextTick(function () {
     return cb(null, user);
   });
 });
-
 
 var router = express.Router();
 
@@ -77,8 +93,8 @@ var router = express.Router();
  * username and password.  When the user submits the form, a request will be
  * sent to the `POST /login/password` route.
  */
-router.get('/login', function(req, res, next) {
-  res.render('login');
+router.get("/login", function (req, res, next) {
+  res.render("login");
 });
 
 /* POST /login/password
@@ -97,20 +113,25 @@ router.get('/login', function(req, res, next) {
  * When authentication fails, the user will be re-prompted to login and shown
  * a message informing them of what went wrong.
  */
-router.post('/login/password', passport.authenticate('local', {
-  successReturnToOrRedirect: '/',
-  failureRedirect: '/login',
-  failureMessage: true
-}));
+router.post(
+  "/login/password",
+  passport.authenticate("local", {
+    successReturnToOrRedirect: "/",
+    failureRedirect: "/login",
+    failureMessage: true,
+  })
+);
 
 /* POST /logout
  *
  * This route logs the user out.
  */
-router.post('/logout', function(req, res, next) {
-  req.logout(function(err) {
-    if (err) { return next(err); }
-    res.redirect('/');
+router.post("/logout", function (req, res, next) {
+  req.logout(function (err) {
+    if (err) {
+      return next(err);
+    }
+    res.redirect("/");
   });
 });
 
@@ -122,9 +143,28 @@ router.post('/logout', function(req, res, next) {
  * desired username and password.  When the user submits the form, a request
  * will be sent to the `POST /signup` route.
  */
-router.get('/signup', function(req, res, next) {
-  res.render('signup');
+router.get("/signup", function (req, res, next) {
+  res.render("signup");
 });
+
+// type ReqFunction = (req: express.Request<{}, any, any, QueryString.ParsedQs, Record<string, any>>, resp: )
+
+interface LoginError {
+  tag: "login_error";
+  cause: unknown;
+}
+const login = (user: { id: number }) =>
+  Eff.serviceWithEffect(ExpressRequestService, ({ request }) =>
+    Eff.async<never, LoginError, {}>((resume) => {
+      request.login({ id: user.id }, function (err) {
+        if (err) {
+          resume(Eff.fail({ tag: "login_error", cause: err }));
+        } else {
+          resume(Eff.succeed({}));
+        }
+      });
+    })
+  );
 
 /* POST /signup
  *
@@ -135,26 +175,17 @@ router.get('/signup', function(req, res, next) {
  * then a new user record is inserted into the database.  If the record is
  * successfully created, the user is logged in.
  */
-router.post('/signup', function(req, res, next) {
-  var salt = crypto.randomBytes(16);
-  crypto.pbkdf2(req.body.password, salt, 310000, 32, 'sha256', function(err, hashedPassword) {
-    if (err) { return next(err); }
-    db.run('INSERT INTO users (username, hashed_password, salt) VALUES (?, ?, ?)', [
-      req.body.username,
-      hashedPassword,
-      salt
-    ], function(err) {
-      if (err) { return next(err); }
-      var user = {
-        id: this.lastID,
-        username: req.body.username
-      };
-      req.login(user, function(err) {
-        if (err) { return next(err); }
-        res.redirect('/');
-      });
-    });
-  });
-});
+router.post(
+  "/signup",
+  effRequestHandler(
+    pipe(
+      parseBody(S.struct({ username: S.string, password: S.string })),
+      Eff.flatMap(({ username, password }) =>
+        addUserWithLocalPassword(username, password)
+      ),
+      Eff.flatMap(({ user }) => login(user))
+    )
+  )
+);
 
 module.exports = router;
