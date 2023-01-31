@@ -1,4 +1,4 @@
-import { Button } from "@mui/material";
+import { Button, createTheme, ThemeProvider } from "@mui/material";
 import * as React from "react";
 import { render } from "react-dom";
 import { App } from "./App";
@@ -12,6 +12,15 @@ import { Account } from "./account/Apps";
 import { Apps } from "./apps/Apps";
 import { Login } from "./login/Login";
 import SignIn from "./login/SignIn";
+import { green, purple } from "@mui/material/colors";
+
+const theme = createTheme({
+  palette: {
+    primary: {
+      main: "#009973", // "#00bcd4",
+    },
+  },
+});
 
 const mkPath = (path: string, element: JSX.Element) => ({
   path,
@@ -45,7 +54,9 @@ const el = document.getElementById("main");
 if (el) {
   render(
     <React.StrictMode>
-      <RouterProvider router={router} />
+      <ThemeProvider theme={theme}>
+        <RouterProvider router={router} />
+      </ThemeProvider>
     </React.StrictMode>,
     el
   );

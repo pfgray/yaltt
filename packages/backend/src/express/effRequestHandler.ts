@@ -1,5 +1,6 @@
 import * as Eff from "@effect/io/Effect";
 import * as Exit from "@effect/io/Exit";
+import * as Cause from "@effect/io/Cause";
 import { pipe } from "@fp-ts/data/Function";
 import * as express from "express";
 import { ExpressRequestService } from "./RequestService";

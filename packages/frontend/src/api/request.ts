@@ -5,6 +5,9 @@ import * as PE from "@fp-ts/schema/ParseError";
 import * as P from "@fp-ts/schema/Parser";
 import * as S from "@fp-ts/schema/Schema";
 import * as Context from "@fp-ts/data/Context";
+import * as O from "@fp-ts/data/Option";
+import { Form } from "react-router-dom";
+import { match } from "../matchers/match";
 
 export interface RequestService {
   config: {
@@ -21,12 +24,32 @@ interface Response {
 
 type Method = "POST" | "GET" | "PUT" | "PATCH" | "DELETE";
 
+export type PostData = FormPostData | JsonPostData;
+
+export interface FormPostData {
+  tag: "form_post_data";
+  body: FormData;
+}
+
+export const formBody = (body: FormData): FormPostData => ({
+  tag: "form_post_data",
+  body,
+});
+
+export interface JsonPostData {
+  tag: "json_post_data";
+  body: unknown;
+}
+export const jsonBody = (body: unknown): JsonPostData => ({
+  tag: "json_post_data",
+  body,
+});
+
 const request_ = (
   method: Method,
   url: string | URL,
-  options: {
-    body?: unknown;
-    contentType?: string;
+  options?: {
+    body?: PostData;
   }
 ) =>
   pipe(
@@ -36,24 +59,48 @@ const request_ = (
         req.addEventListener("load", () => {
           resume(
             Eff.succeed({
-              body: req.response,
+              body: JSON.parse(req.response),
               status: req.status,
             })
           );
         });
-        req.open;
         req.open(method, `${config.baseUrl}${url}`);
-        if ("body" in options) {
-          const contentType =
-            "contentType" in options && typeof options.contentType === "string"
-              ? options.contentType
-              : "application/json";
+        pipe(
+          options,
+          O.fromNullable,
+          O.bindTo("options"),
+          O.bind("body", ({ options }) => O.fromNullable(options.body)),
+          O.match(
+            () => {
+              req.send();
+            },
+            ({ options, body }) => {
+              pipe(
+                body,
+                match({
+                  form_post_data: (): O.Option<string> => O.none,
+                  json_post_data: () => O.some("application/json"),
+                }),
+                O.match(
+                  () => {},
+                  (contentType) => {
+                    req.setRequestHeader("Content-Type", contentType);
+                  }
+                )
+              );
 
-          req.setRequestHeader("Content-Type", contentType);
-          req.send(JSON.stringify(options.body));
-        } else {
-          req.send();
-        }
+              const data = pipe(
+                body,
+                match({
+                  form_post_data: ({ body }) => body,
+                  json_post_data: ({ body }) => JSON.stringify(body),
+                })
+              );
+              // req.withCredentials = true;
+              req.send(data);
+            }
+          )
+        );
         return Eff.sync(() => req.abort());
       })
     )
@@ -85,7 +132,7 @@ const handleErrorStatus = Eff.flatMap<
 >((resp) => {
   if (resp.status >= 400 && resp.status < 500) {
     return Eff.fail({ tag: "req_client_error", ...resp } as const);
-  } else if (resp.status < 500) {
+  } else if (resp.status >= 500) {
     return Eff.fail({ tag: "req_server_error", ...resp } as const);
   } else {
     return Eff.succeed(resp);
@@ -115,7 +162,7 @@ export const get = (url: string | URL) =>
 
 export const getDecode = <A>(s: S.Schema<A>) => flow(get, decodeRespBody(s));
 
-export const post = (url: string | URL, body: unknown) =>
+export const post = (url: string | URL, body?: PostData) =>
   pipe(
     request_("POST", url, {
       body,

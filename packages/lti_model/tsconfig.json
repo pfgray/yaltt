@@ -15,7 +15,8 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "declaration": true,
-    "declarationMap": true
+    "declarationMap": true,
+    "exactOptionalPropertyTypes": true
   },
   "include": ["src"],
 }

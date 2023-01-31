@@ -28,9 +28,17 @@ export const renderForm = <
   const [fields, setFields] = React.useState(initialValues);
   return (
     <form
-      onSubmit={() => {
+      onSubmit={(e) => {
+        e.preventDefault();
+        const fieldObj = Array.from(HM.keys(fields)).reduce(
+          (prev, next) => ({
+            [next]: pipe(HM.get(next)(fields), O.getOrNull),
+            ...prev,
+          }),
+          {}
+        );
         // todo: validate?
-        form.onSubmit(fields as any);
+        form.onSubmit(fieldObj as any);
       }}
     >
       {pipe(
@@ -40,9 +48,11 @@ export const renderForm = <
           if (value.tag === "string") {
             return (
               <TextField
+                margin="normal"
                 label={value.label}
                 key={key as string | number}
                 name={key as string}
+                fullWidth
                 value={pipe(
                   fields,
                   HM.get(key),
@@ -58,6 +68,8 @@ export const renderForm = <
                 label={value.label}
                 key={key as string | number}
                 name={key as string}
+                fullWidth
+                margin="normal"
                 value={pipe(
                   fields,
                   HM.get(key),
@@ -80,8 +92,14 @@ export const renderForm = <
           )
       )}
 
-      <Button type="submit" variant="contained" color="primary">
-        Login
+      <Button
+        type="submit"
+        variant="contained"
+        color="primary"
+        fullWidth
+        sx={{ mt: 3, mb: 2 }}
+      >
+        Submit
       </Button>
     </form>
   );

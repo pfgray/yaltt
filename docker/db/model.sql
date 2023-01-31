@@ -10,16 +10,16 @@ create table if not exists password_logins (
   salt            bytea not null
 );
 
-create table if not exists vendor (
+create table if not exists vendors (
   id              serial primary key,
   name            varchar(255) not null,
   user_id         serial references users(id)
 );
 
-create table if not exists app (
+create table if not exists apps (
   id              serial primary key,
   name            varchar(255) not null,
   icon_url        varchar(255),
-  vendor_id       serial references vendor(id)
+  vendor_id       serial references vendors(id)
 );
 

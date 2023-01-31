@@ -7,6 +7,7 @@
   "license": "MIT",
   "workspaces": [
     "packages/backend",
-    "packages/frontend"
+    "packages/frontend",
+    "packages/model"
   ]
 }

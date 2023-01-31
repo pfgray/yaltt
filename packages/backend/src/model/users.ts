@@ -1,11 +1,10 @@
 import * as Eff from "@effect/io/Effect";
 import * as S from "@fp-ts/schema/Schema";
-import * as C from "@fp-ts/data/Context";
 import { buffer } from "../lib/BufferSchema";
-import { query, query1 } from "../db/db";
+import { query1 } from "../db/db";
 import { pipe } from "@fp-ts/data/Function";
 import { hashPassword } from "../db/crypto";
-import * as PE from "@fp-ts/schema/ParseError";
+import { passwordUser } from "@yaltt/model";
 
 const UserRow = S.struct({
   id: S.number,
@@ -47,5 +46,6 @@ export const addUserWithLocalPassword = (username: string, password: string) =>
         "insert into password_logins (user_id, username, hashed_password, salt) values ($1, $2, $3, $4) returning *",
         [user.id, username, pw.hashedPassword, pw.salt]
       )
-    )
+    ),
+    Eff.map(({ user }) => passwordUser(user.id, username))
   );
