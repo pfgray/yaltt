@@ -4,14 +4,14 @@ import { render } from "react-dom";
 import { App } from "./App";
 
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
-import { Vendors } from "./vendors/Vendors";
-import { Users } from "./users/Users";
-import { Contexts } from "./contexts/Contexts";
-import { Launches } from "./launches/Launches";
-import { Account } from "./account/Apps";
-import { Apps } from "./apps/Apps";
-import { Login } from "./login/Login";
-import SignIn from "./login/SignIn";
+import { Vendors } from "./views/lists/vendors/Vendors";
+import { Users } from "./views/lists/users/Users";
+import { Contexts } from "./views/lists/contexts/Contexts";
+import { Launches } from "./views/lists/launches/Launches";
+import { Account } from "./views/lists/account/Apps";
+import { Apps } from "./views/lists/apps/Apps";
+import { Login } from "./views/login/Login";
+import SignIn from "./views/login/SignIn";
 import { green, purple } from "@mui/material/colors";
 
 const theme = createTheme({

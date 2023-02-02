@@ -38,7 +38,7 @@ export const renderForm = <
           {}
         );
         // todo: validate?
-        form.onSubmit(fieldObj as any);
+        Eff.unsafeRun(form.onSubmit(fieldObj as any));
       }}
     >
       {pipe(

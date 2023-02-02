@@ -11,11 +11,11 @@ import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import Container from "@mui/material/Container";
 import { useTheme } from "@mui/material";
-import { formBody, post, RequestService } from "../api/request";
+import { formBody, post, RequestService } from "../../lib/api/request";
 import * as Eff from "@effect/io/Effect";
 import { pipe } from "@fp-ts/data/Function";
 import { useNavigate } from "react-router-dom";
-import { useQuery } from "../react-router/useQuery";
+import { useQuery } from "../../lib/react-router/useQuery";
 
 export default function SignIn() {
   const theme = useTheme();

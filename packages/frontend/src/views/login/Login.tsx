@@ -1,11 +1,11 @@
 import * as React from "react";
 import * as E from "@fp-ts/data/Either";
 import * as Eff from "@effect/io/Effect";
-import * as F from "../forms/form";
+import * as F from "../../lib/forms/form";
 import { pipe } from "@fp-ts/data/Function";
-import { post } from "../api/request";
-import { RequestService } from "../api/request";
-import { renderForm } from "../forms/renderForm";
+import { post } from "../../lib/api/request";
+import { RequestService } from "../../lib/api/request";
+import { renderForm } from "../../lib/forms/renderForm";
 
 declare const API_URL: string;
 

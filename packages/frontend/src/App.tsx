@@ -19,9 +19,9 @@ import ListItemText from "@mui/material/ListItemText";
 import InboxIcon from "@mui/icons-material/MoveToInbox";
 import MailIcon from "@mui/icons-material/Mail";
 import { Outlet, Link } from "react-router-dom";
-import { WithAuth } from "./auth/WithAuth";
+import { WithAuth } from "./lib/auth/WithAuth";
 import { Button } from "@mui/material";
-import { UserAvatar } from "./auth/UserAvatar";
+import { UserAvatar } from "./lib/auth/UserAvatar";
 
 const drawerWidth = 240;
 
@@ -145,11 +145,14 @@ export const App = () => {
                 { name: "Launches", path: "/launches" },
               ].map(({ name, path }, index) => (
                 <ListItem key={path} disablePadding>
-                  <ListItemButton component={Link} to={path}>
+                  <ListItemButton
+                    component={Link}
+                    to={path}
+                    onClick={handleDrawerClose}
+                  >
                     <ListItemIcon>
                       {index % 2 === 0 ? <InboxIcon /> : <MailIcon />}
                     </ListItemIcon>
-
                     <ListItemText primary={name} />
                   </ListItemButton>
                 </ListItem>

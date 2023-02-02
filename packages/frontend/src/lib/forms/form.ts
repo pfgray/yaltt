@@ -36,7 +36,7 @@ export const password = (
 
 export type Form<K extends string, R extends Record<K, FormField<any, any>>> = {
   fields: R;
-  onSubmit: (fields: ValidatedFields<K, R>) => void;
+  onSubmit: (fields: ValidatedFields<K, R>) => Eff.Effect<never, unknown, any>;
 };
 
 export type ValidatedField<T> = T extends FormField<any, infer Z> ? Z : never;
@@ -48,7 +48,9 @@ export type ValidatedFields<
 
 export const mkForm =
   <K extends string, R extends Record<K, FormField<any, any>>>(fields: R) =>
-  (onSubmit: (fields: ValidatedFields<K, R>) => void): Form<K, R> => ({
+  (
+    onSubmit: (fields: ValidatedFields<K, R>) => Eff.Effect<never, unknown, any>
+  ): Form<K, R> => ({
     fields,
     onSubmit,
   });
