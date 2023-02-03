@@ -9,7 +9,7 @@ import { passwordUser } from "@yaltt/model";
 const UserRow = S.struct({
   id: S.number,
   logins: S.unknown,
-  created: S.string, //todo: change this to date
+  created: S.date,
 });
 
 const PasswordLoginRow = S.struct({

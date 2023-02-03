@@ -60,7 +60,7 @@ export const List = <
               title={
                 <>
                   <Typography variant="h6" noWrap component="h6">
-                    Vendors
+                    {props.entityName}s
                   </Typography>
                   <Button
                     variant="contained"
