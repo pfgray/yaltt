@@ -1,13 +1,13 @@
 import * as pg from "pg";
 
 import * as Eff from "@effect/io/Effect";
-import * as S from "@fp-ts/schema/Schema";
+import * as S from "@fp-ts/schema";
 import * as P from "@fp-ts/schema/Parser";
-import * as PE from "@fp-ts/schema/ParseError";
+import * as PE from "@fp-ts/schema/ParseResult";
 
-import { flow, pipe } from "@fp-ts/data/Function";
-import * as E from "@fp-ts/data/Either";
-import * as RA from "@fp-ts/data/ReadonlyArray";
+import { flow, pipe } from "@fp-ts/core/Function";
+import * as E from "@fp-ts/core/Either";
+import * as RA from "@fp-ts/core/ReadonlyArray";
 
 export const pool: pg.Pool = new ((pg as any).default as any).Pool();
 

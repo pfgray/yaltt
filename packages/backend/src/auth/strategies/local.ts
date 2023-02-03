@@ -1,4 +1,4 @@
-import { pipe } from "@fp-ts/data/Function";
+import { pipe } from "@fp-ts/core/Function";
 import * as passport from "passport";
 import * as LocalStrategy from "passport-local";
 import { validatePassword } from "../../db/crypto";
@@ -8,7 +8,7 @@ import {
   getLoginByUsername,
   addUserWithLocalPassword,
 } from "../../model/users";
-import * as S from "@fp-ts/schema/Schema";
+import * as S from "@fp-ts/schema";
 import * as P from "@fp-ts/schema/Parser";
 import * as C from "@fp-ts/data/Context";
 
@@ -37,7 +37,7 @@ import { UnauthenticatedError } from "../authedRequestHandler";
       Eff.provideContext(C.empty())
     );
 
-    Eff.unsafeRun(eff, (status) => {
+    Eff.runCallback(eff, (status) => {
       if (status._tag === "Failure") {
         console.log("Failed to login user ", username, status.cause);
         cb(status.cause);

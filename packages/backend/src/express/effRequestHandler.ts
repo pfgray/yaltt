@@ -1,7 +1,7 @@
 import * as Eff from "@effect/io/Effect";
 import * as Exit from "@effect/io/Exit";
 import * as Cause from "@effect/io/Cause";
-import { pipe } from "@fp-ts/data/Function";
+import { pipe } from "@fp-ts/core/Function";
 import * as express from "express";
 import { ExpressRequestService } from "./RequestService";
 import { DecodeError, NoRecordFound, PgError } from "../db/db";
@@ -25,7 +25,7 @@ export type EffRequestHandler = <A>(
 
 export const effRequestHandler: EffRequestHandler =
   (eff) => (request, response) => {
-    Eff.unsafeRun(
+    Eff.runCallback(
       pipe(
         eff,
         Eff.provideService(ExpressRequestService, {

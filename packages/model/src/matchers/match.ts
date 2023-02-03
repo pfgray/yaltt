@@ -1,3 +1,3 @@
-import { MakeADT, makeMatchers } from "ts-adt/MakeADT";
+import { makeMatchers } from "ts-adt/MakeADT";
 
 export const [match, matchP, matchI, matchPI] = makeMatchers("tag");

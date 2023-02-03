@@ -4,10 +4,10 @@ import * as Eff from "@effect/io/Effect";
 
 import * as multer from "multer";
 import { parseBody, withRequestBody } from "../../express/parseBody";
-import * as S from "@fp-ts/schema/Schema";
+import * as S from "@fp-ts/schema";
 import { requireAuth } from "../../auth/auth";
 import { effRequestHandler } from "../../express/effRequestHandler";
-import { pipe } from "@fp-ts/data/Function";
+import { pipe } from "@fp-ts/core/Function";
 import { authedRequest } from "../../auth/authedRequestHandler";
 import { createAppForUser, getAppsForUser } from "../../model/entities/apps";
 

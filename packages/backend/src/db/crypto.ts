@@ -1,5 +1,5 @@
 import * as crypto from "crypto";
-import { pipe } from "@fp-ts/data/Function";
+import { pipe } from "@fp-ts/core/Function";
 import * as Eff from "@effect/io/Effect";
 
 export interface HashError {

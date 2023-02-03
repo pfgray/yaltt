@@ -16,9 +16,9 @@
     }
   },
   "dependencies": {
-    "@fp-ts/core": "^0.0.11",
-    "@fp-ts/data": "^0.0.40",
-    "@fp-ts/schema": "^0.0.8",
+    "@fp-ts/core": "^0.1",
+    "@fp-ts/data": "^0.1",
+    "@fp-ts/schema": "^0.1",
     "ts-adt": "^2.1.2"
   },
   "devDependencies": {

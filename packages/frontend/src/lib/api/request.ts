@@ -1,12 +1,11 @@
 import * as Eff from "@effect/io/Effect";
-import { flow, pipe } from "@fp-ts/data/Function";
-import { NonEmptyReadonlyArray } from "@fp-ts/data/ReadonlyArray";
-import * as PE from "@fp-ts/schema/ParseError";
+import { flow, pipe } from "@fp-ts/core/Function";
+import { NonEmptyReadonlyArray } from "@fp-ts/core/ReadonlyArray";
+import * as PE from "@fp-ts/schema/ParseResult";
 import * as P from "@fp-ts/schema/Parser";
-import * as S from "@fp-ts/schema/Schema";
+import * as S from "@fp-ts/schema";
 import * as Context from "@fp-ts/data/Context";
-import * as O from "@fp-ts/data/Option";
-import { Form } from "react-router-dom";
+import * as O from "@fp-ts/core/Option";
 import { match } from "@yaltt/model";
 
 export interface RequestService {
@@ -78,7 +77,7 @@ const request_ = (
               pipe(
                 body,
                 match({
-                  form_post_data: (): O.Option<string> => O.none,
+                  form_post_data: () => O.none<string>(),
                   json_post_data: () => O.some("application/json"),
                 }),
                 O.match(

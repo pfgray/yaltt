@@ -1,4 +1,4 @@
-import * as S from "@fp-ts/schema/Schema";
+import * as S from "@fp-ts/schema";
 
 export const PasswordLogin = S.struct({
   tag: S.literal("password_login"),

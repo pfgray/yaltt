@@ -1,4 +1,4 @@
-import * as S from "@fp-ts/schema/Schema";
+import * as S from "@fp-ts/schema";
 import { CustomParameters } from "./CustomParameters";
 import { LtiMessage } from "./LtiMessage";
 import { Url } from "./Url";

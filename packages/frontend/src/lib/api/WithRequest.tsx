@@ -1,13 +1,11 @@
-import { pipe } from "@fp-ts/data/Function";
-import * as React from "react";
 import * as Eff from "@effect/io/Effect";
 import * as Exit from "@effect/io/Exit";
-import { provideRequestService } from "./requestServiceImpl";
-import { useLocation, useNavigate } from "react-router-dom";
-import { User } from "@yaltt/model";
+import * as E from "@fp-ts/core/Either";
+import { pipe } from "@fp-ts/core/Function";
+import * as O from "@fp-ts/core/Option";
+import * as React from "react";
 import { RequestService } from "./request";
-import * as O from "@fp-ts/data/Option";
-import * as E from "@fp-ts/data/Either";
+import { provideRequestService } from "./requestServiceImpl";
 
 type WithRequestProps<A> = {
   eff: Eff.Effect<RequestService, unknown, A>;
@@ -20,7 +18,7 @@ export const WithRequest = <A,>(props: WithRequestProps<A>): JSX.Element => {
   );
 
   React.useEffect(() => {
-    Eff.unsafeRun(
+    Eff.runCallback(
       provideRequestService(props.eff),
       Exit.match(
         (err) => {

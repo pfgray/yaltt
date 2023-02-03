@@ -1,8 +1,8 @@
 import * as Eff from "@effect/io/Effect";
-import * as S from "@fp-ts/schema/Schema";
+import * as S from "@fp-ts/schema";
 import { buffer } from "../lib/BufferSchema";
 import { query1 } from "../db/db";
-import { pipe } from "@fp-ts/data/Function";
+import { pipe } from "@fp-ts/core/Function";
 import { hashPassword } from "../db/crypto";
 import { passwordUser } from "@yaltt/model";
 

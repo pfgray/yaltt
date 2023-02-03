@@ -1,4 +1,4 @@
-import { pipe } from "@fp-ts/data/Function";
+import { pipe } from "@fp-ts/core/Function";
 import * as React from "react";
 import { getCurrentUser } from "./userApi";
 import * as Eff from "@effect/io/Effect";
@@ -16,7 +16,7 @@ export const WithAuth = (props: WithAuthProps): JSX.Element => {
   const location = useLocation();
   const navigate = useNavigate();
   React.useEffect(() => {
-    Eff.unsafeRun(
+    Eff.runCallback(
       provideRequestService(getCurrentUser),
       Exit.match(
         (err) => {

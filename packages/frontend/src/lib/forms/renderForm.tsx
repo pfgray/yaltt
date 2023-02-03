@@ -1,12 +1,13 @@
-import * as S from "@fp-ts/schema/Schema";
-import * as E from "@fp-ts/data/Either";
+import * as S from "@fp-ts/schema";
+import * as E from "@fp-ts/core/Either";
 import * as Eff from "@effect/io/Effect";
 import * as React from "react";
-import { pipe } from "@fp-ts/data/Function";
+import { pipe } from "@fp-ts/core/Function";
+import * as RR from "@fp-ts/core/ReadonlyRecord";
 import * as HM from "@fp-ts/data/HashMap";
 import { Form, FormField } from "./form";
-import * as RA from "@fp-ts/data/ReadonlyArray";
-import * as O from "@fp-ts/data/Option";
+import * as RA from "@fp-ts/core/ReadonlyArray";
+import * as O from "@fp-ts/core/Option";
 import { Button, TextField } from "@mui/material";
 
 export const renderForm = <
@@ -15,14 +16,29 @@ export const renderForm = <
 >(
   form: Form<K, R>
 ) => {
+  const fieldsHm = React.useMemo(
+    () =>
+      pipe(
+        Object.keys(form.fields) as unknown as readonly K[],
+        (keys: readonly K[]) => keys,
+        RA.filterMap((k) =>
+          pipe(
+            form.fields,
+            RR.get(k),
+            O.map((value: FormField<any, any>) => [k, value] as const)
+          )
+        ),
+        HM.fromIterable
+      ),
+    [form]
+  );
   const initialValues = React.useMemo(
     () =>
       pipe(
-        form.fields,
-        HM.struct,
+        fieldsHm,
         HM.mapWithIndex((value, key) => value.initialValue)
       ),
-    [form]
+    [fieldsHm]
   );
 
   const [fields, setFields] = React.useState(initialValues);
@@ -38,12 +54,11 @@ export const renderForm = <
           {}
         );
         // todo: validate?
-        Eff.unsafeRun(form.onSubmit(fieldObj as any));
+        Eff.runCallback(form.onSubmit(fieldObj as any));
       }}
     >
       {pipe(
-        form.fields,
-        HM.struct,
+        fieldsHm,
         HM.mapWithIndex((value, key) => {
           if (value.tag === "string") {
             return (

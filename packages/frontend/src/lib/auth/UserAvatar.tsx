@@ -1,4 +1,4 @@
-import { pipe } from "@fp-ts/data/Function";
+import { pipe } from "@fp-ts/core/Function";
 import { User } from "@yaltt/model";
 import { match } from "@yaltt/model";
 

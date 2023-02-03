@@ -2,7 +2,7 @@ import * as React from "react";
 import * as F from "../../lib/forms/form";
 
 import * as Eff from "@effect/io/Effect";
-import { pipe } from "@fp-ts/data/Function";
+import { pipe } from "@fp-ts/core/Function";
 import AddIcon from "@mui/icons-material/Add";
 import { Button, Modal, Typography } from "@mui/material";
 import { Box } from "@mui/system";

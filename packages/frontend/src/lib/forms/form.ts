@@ -1,8 +1,8 @@
-import * as S from "@fp-ts/schema/Schema";
-import * as E from "@fp-ts/data/Either";
+import * as S from "@fp-ts/schema";
+import * as E from "@fp-ts/core/Either";
 import * as Eff from "@effect/io/Effect";
 import * as React from "react";
-import { pipe } from "@fp-ts/data/Function";
+import { pipe } from "@fp-ts/core/Function";
 import * as HM from "@fp-ts/data/HashMap";
 
 export interface ValidationError {}

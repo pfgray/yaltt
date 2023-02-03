@@ -1,4 +1,4 @@
-import * as S from "@fp-ts/schema/Schema";
+import * as S from "@fp-ts/schema";
 import { LtiPlatformConfiguration } from "./LtiPlatformConfiguration";
 import { Url } from "./Url";
 

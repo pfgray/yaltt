@@ -1,5 +1,5 @@
-import { pipe } from "@fp-ts/data/Function";
-import * as S from "@fp-ts/schema/Schema";
+import { pipe } from "@fp-ts/core/Function";
+import * as S from "@fp-ts/schema";
 import { App } from "@yaltt/model";
 import { getDecode, jsonBody, post } from "../../../lib/api/request";
 import { provideRequestService } from "../../../lib/api/requestServiceImpl";

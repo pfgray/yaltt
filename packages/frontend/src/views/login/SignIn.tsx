@@ -13,7 +13,7 @@ import Container from "@mui/material/Container";
 import { useTheme } from "@mui/material";
 import { formBody, post, RequestService } from "../../lib/api/request";
 import * as Eff from "@effect/io/Effect";
-import { pipe } from "@fp-ts/data/Function";
+import { pipe } from "@fp-ts/core/Function";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "../../lib/react-router/useQuery";
 
@@ -29,7 +29,7 @@ export default function SignIn() {
       username: data.get("username"),
       password: data.get("password"),
     });
-    Eff.unsafeRun(
+    Eff.runCallback(
       pipe(
         post("/api/login/password", formBody(data)),
         Eff.flatMap(() =>

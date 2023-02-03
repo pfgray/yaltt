@@ -1,7 +1,7 @@
 import { User } from "@yaltt/model";
-import * as S from "@fp-ts/schema/Schema";
+import * as S from "@fp-ts/schema";
 import { query, query1 } from "../../db/db";
-import { pipe } from "@fp-ts/data/Function";
+import { pipe } from "@fp-ts/core/Function";
 import * as Eff from "@effect/io/Effect";
 
 const AppRow = S.struct({

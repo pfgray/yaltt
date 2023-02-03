@@ -1,7 +1,7 @@
-import * as S from "@fp-ts/schema/Schema";
+import * as S from "@fp-ts/schema";
 import * as AST from "@fp-ts/schema/AST";
-import * as O from "@fp-ts/data/Option";
-import { pipe } from "@fp-ts/data/Function";
+import * as O from "@fp-ts/core/Option";
+import { pipe } from "@fp-ts/core/Function";
 
 export const buffer = pipe(
   S.unknown,

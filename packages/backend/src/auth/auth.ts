@@ -1,9 +1,9 @@
 import * as express from "express";
 import * as passportBase from "passport";
-import { pipe } from "@fp-ts/data/Function";
+import { pipe } from "@fp-ts/core/Function";
 import * as Eff from "@effect/io/Effect";
 import * as Exit from "@effect/io/Exit";
-import * as S from "@fp-ts/schema/Schema";
+import * as S from "@fp-ts/schema";
 import * as P from "@fp-ts/schema/Parser";
 import * as C from "@fp-ts/data/Context";
 import { buffer } from "../lib/BufferSchema";

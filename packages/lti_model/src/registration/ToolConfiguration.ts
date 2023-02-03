@@ -1,5 +1,5 @@
-import * as S from "@fp-ts/schema/Schema";
-import { pipe } from "@fp-ts/data/Function";
+import * as S from "@fp-ts/schema";
+import { pipe } from "@fp-ts/core/Function";
 import { LtiToolConfiguration } from "./LtiToolConfiguration";
 import { Url } from "./Url";
 import { I18nKey } from "./I18nKey";

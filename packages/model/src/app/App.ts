@@ -1,4 +1,4 @@
-import * as S from "@fp-ts/schema/Schema";
+import * as S from "@fp-ts/schema";
 
 export const App = S.struct({
   id: S.number,

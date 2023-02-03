@@ -1,7 +1,4 @@
-import * as S from "@fp-ts/schema/Schema";
-import { CustomParameters } from "./CustomParameters";
-import { LtiMessage } from "./LtiMessage";
-import { Url } from "./Url";
+import * as S from "@fp-ts/schema";
 
 const HttpsUrl = S.templateLiteral(S.literal("https://"), S.string);
 
