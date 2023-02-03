@@ -8,10 +8,8 @@ import * as S from "@fp-ts/schema/Schema";
 import * as O from "@fp-ts/data/Option";
 import { ExpressRequestService } from "../express/RequestService";
 
-export interface ParseBodyError {
-  tag: "parse_body_error";
-  body: unknown;
-  error: NonEmptyReadonlyArray<ParseError>;
+export interface UnauthenticatedError {
+  tag: "unauthenticated_error";
 }
 
 export const authedRequest = pipe(
@@ -20,11 +18,10 @@ export const authedRequest = pipe(
     pipe(
       request.user,
       O.fromNullable,
-      (a) => {
-        console.log("Do we have a user? ", a);
-        return a;
-      },
       Eff.fromOption,
+      Eff.mapError(
+        (): UnauthenticatedError => ({ tag: "unauthenticated_error" })
+      ),
       Eff.tapError((err) =>
         Eff.sync(() => {
           console.log(

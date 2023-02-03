@@ -1,6 +1,6 @@
 import { pipe } from "@fp-ts/data/Function";
 import { User } from "@yaltt/model";
-import { match } from "../matchers/match";
+import { match } from "@yaltt/model";
 
 type UserAvatarProps = {
   user: User;

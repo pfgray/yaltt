@@ -4,12 +4,11 @@ import { render } from "react-dom";
 import { App } from "./App";
 
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
-import { Vendors } from "./views/lists/vendors/Vendors";
+import { Apps } from "./views/lists/apps/Apps";
 import { Users } from "./views/lists/users/Users";
 import { Contexts } from "./views/lists/contexts/Contexts";
 import { Launches } from "./views/lists/launches/Launches";
 import { Account } from "./views/lists/account/Apps";
-import { Apps } from "./views/lists/apps/Apps";
 import { Login } from "./views/login/Login";
 import SignIn from "./views/login/SignIn";
 import { green, purple } from "@mui/material/colors";
@@ -32,9 +31,8 @@ const router = createBrowserRouter([
     path: "/",
     element: <App />,
     children: [
-      mkPath("vendors", <Vendors />),
-      mkPath("users", <Users />),
       mkPath("apps", <Apps />),
+      mkPath("users", <Users />),
       mkPath("contexts", <Contexts />),
       mkPath("launches", <Launches />),
       mkPath("account", <Account />),

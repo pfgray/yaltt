@@ -5,11 +5,8 @@ import * as cookieParser from "cookie-parser";
 import * as session from "express-session";
 import * as cors from "cors";
 import { authRouter } from "./auth/authRouter";
-import { vendorRouter } from "./routes/vendors/vendorRouter";
-import { pipe } from "@fp-ts/data/Function";
-import { authedRequest } from "./auth/authedRequestHandler";
+import { appRouter } from "./routes/apps/appRouter";
 import { effRequestHandler } from "./express/effRequestHandler";
-import { getVendorsForUser } from "./model/entities/vendors";
 import { addUserWithLocalPassword } from "./model/users";
 
 const app = express.default();
@@ -62,4 +59,4 @@ app.get(
 );
 
 app.use("/api", authRouter);
-app.use("/api", vendorRouter);
+app.use("/api", appRouter);

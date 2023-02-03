@@ -9,29 +9,18 @@ import { requireAuth } from "../../auth/auth";
 import { effRequestHandler } from "../../express/effRequestHandler";
 import { pipe } from "@fp-ts/data/Function";
 import { authedRequest } from "../../auth/authedRequestHandler";
-import {
-  createVendorForUser,
-  getVendorsForUser,
-} from "../../model/entities/vendors";
+import { createAppForUser, getAppsForUser } from "../../model/entities/apps";
 
 const upload = multer.default();
-export const vendorRouter = express.Router();
+export const appRouter = express.Router();
 
-vendorRouter.get(
-  "/vendors",
-  effRequestHandler(
-    pipe(
-      authedRequest,
-      Eff.flatMap(getVendorsForUser),
-      Eff.mapError((err) => {
-        return err;
-      })
-    )
-  )
+appRouter.get(
+  "/apps",
+  effRequestHandler(pipe(authedRequest, Eff.flatMap(getAppsForUser)))
 );
 
-vendorRouter.post(
-  "/vendors",
+appRouter.post(
+  "/apps",
   effRequestHandler(
     pipe(
       Eff.Do(),
@@ -43,7 +32,7 @@ vendorRouter.post(
           })
         )
       ),
-      Eff.flatMap(({ user, body }) => createVendorForUser(body.name, user)),
+      Eff.flatMap(({ user, body }) => createAppForUser(body.name, user)),
       Eff.mapError((err) => {
         console.log("Got err:", err);
         return err;

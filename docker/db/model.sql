@@ -1,5 +1,6 @@
 create table if not exists users (
   id              serial primary key,
+  created         date not null default now(),
   logins          jsonb not null
 );
 
@@ -10,16 +11,34 @@ create table if not exists password_logins (
   salt            bytea not null
 );
 
-create table if not exists vendors (
+create table if not exists apps (
   id              serial primary key,
+  created         date not null default now(),
+  modified        date not null default now(),
   name            varchar(255) not null,
+  icon_url        varchar(255),
   user_id         serial references users(id)
 );
 
-create table if not exists apps (
+create table if not exists contexts (
   id              serial primary key,
+  created         date not null default now(),
   name            varchar(255) not null,
   icon_url        varchar(255),
-  vendor_id       serial references vendors(id)
+  user_id         serial references users(id)
 );
 
+create table if not exists people (
+  id              serial primary key,
+  created         date not null default now(),
+  name            varchar(255) not null
+);
+
+create table if not exists launches (
+  id              serial primary key,
+  created         date not null default now(),
+  name            varchar(255) not null,
+  id_token        jsonb not null,
+  person_id       serial references people(id),
+  context         serial references contexts(id)
+);

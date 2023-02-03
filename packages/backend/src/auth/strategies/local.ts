@@ -14,6 +14,7 @@ import * as C from "@fp-ts/data/Context";
 
 import * as Eff from "@effect/io/Effect";
 import { login } from "../auth";
+import { UnauthenticatedError } from "../authedRequestHandler";
 
 /* Configure password authentication strategy.
  *
@@ -56,6 +57,7 @@ export const signupPasswordRoute = effRequestHandler(
     Eff.flatMap(({ username, password }) =>
       addUserWithLocalPassword(username, password)
     ),
-    Eff.flatMap(login)
+    Eff.flatMap(login),
+    Eff.mapError((): UnauthenticatedError => ({ tag: "unauthenticated_error" }))
   )
 );

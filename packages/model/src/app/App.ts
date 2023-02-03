@@ -1,9 +1,9 @@
 import * as S from "@fp-ts/schema/Schema";
 
-export const Vendor = S.struct({
+export const App = S.struct({
   id: S.number,
   name: S.string,
   user_id: S.number,
 });
 
-export type Vendor = S.Infer<typeof Vendor>;
+export type App = S.Infer<typeof App>;

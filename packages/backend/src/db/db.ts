@@ -7,72 +7,76 @@ import * as PE from "@fp-ts/schema/ParseError";
 
 import { flow, pipe } from "@fp-ts/data/Function";
 import * as E from "@fp-ts/data/Either";
-import { NonEmptyArray, match } from "@fp-ts/data/ReadonlyArray";
+import * as RA from "@fp-ts/data/ReadonlyArray";
+
 export const pool: pg.Pool = new ((pg as any).default as any).Pool();
 
 export interface PgError {
   tag: "pg_error";
   cause: Error;
+  query: string;
 }
 
 export interface DecodeError {
   tag: "decode_error";
-  errors: NonEmptyArray<PE.ParseError>;
+  query: string;
+  actual: unknown[];
+  errors: RA.NonEmptyReadonlyArray<PE.ParseError>;
 }
 
-const query_ = (q: string, values: unknown[]) =>
-  pipe(
-    Eff.async<never, Error, pg.QueryResult<{}>>((resume) => {
-      pool.query(q, values, (err, res) => {
-        if (err) {
-          resume(Eff.fail(err));
-        } else {
-          resume(Eff.succeed(res));
-        }
-      });
-    }),
-    Eff.mapError((cause): PgError => ({ tag: "pg_error", cause }))
-  );
+const query_ =
+  <T>(schema: S.Schema<T>) =>
+  (query: string, values: unknown[]) =>
+    pipe(
+      Eff.async<never, Error, [string, pg.QueryResult<{}>]>((resume) => {
+        pool.query(query, values, (err, res) => {
+          if (err) {
+            resume(Eff.fail(err));
+          } else {
+            resume(Eff.succeed([query, res]));
+          }
+        });
+      }),
+      Eff.mapError((cause): PgError => ({ tag: "pg_error", cause, query })),
+      Eff.flatMap(([query, { rows }]) =>
+        pipe(
+          rows,
+          P.decode(S.array(schema)),
+          E.match(
+            (errors) =>
+              Eff.fail<DecodeError>({
+                tag: "decode_error",
+                errors,
+                actual: rows,
+                query,
+              }),
+            (decoded) => Eff.succeed([query, decoded] as const)
+          )
+        )
+      )
+    );
 
 export const query = <T>(schema: S.Schema<T>) =>
   flow(
-    query_,
-    Eff.flatMap(
-      flow(
-        (r) => {
-          console.log("decoding: ", JSON.stringify(r.rows));
-          return r.rows;
-        },
-        P.decode(S.array(schema)),
-        E.match(
-          (errors) => Eff.fail({ tag: "decode_error" as const, errors }),
+    query_(schema),
+    Eff.map(([, a]) => a)
+  );
+
+export interface NoRecordFound {
+  tag: "no_record_found";
+  query: string;
+}
+
+export const query1 = <T>(schema: S.Schema<T>) =>
+  flow(
+    query_(schema),
+    Eff.flatMap(([query, rows]) =>
+      pipe(
+        rows,
+        RA.match(
+          () => Eff.fail<NoRecordFound>({ tag: "no_record_found", query }),
           Eff.succeed
         )
       )
     )
   );
-
-export interface NoRecordFound {
-  tag: "no_record_found";
-}
-
-export const query1 = <T>(schema: S.Schema<T>) =>
-  flow(
-    query(schema),
-    Eff.flatMap(
-      match(
-        () => Eff.fail<NoRecordFound>({ tag: "no_record_found" }),
-        Eff.succeed
-      )
-    )
-  );
-
-// const query1 = flow(
-//   query,
-//   TE.flatMap(
-//     flow(
-//       RA.head,
-//       TE.fromOption(() => ({ tag: "error", message: "query returned none" }))
-//     )
-//   )
-// );

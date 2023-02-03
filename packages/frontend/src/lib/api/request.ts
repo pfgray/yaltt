@@ -7,7 +7,7 @@ import * as S from "@fp-ts/schema/Schema";
 import * as Context from "@fp-ts/data/Context";
 import * as O from "@fp-ts/data/Option";
 import { Form } from "react-router-dom";
-import { match } from "../matchers/match";
+import { match } from "@yaltt/model";
 
 export interface RequestService {
   config: {
