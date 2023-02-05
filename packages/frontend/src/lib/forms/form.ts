@@ -8,7 +8,7 @@ import * as HM from "@fp-ts/data/HashMap";
 export interface ValidationError {}
 
 export interface FormField<T, A> {
-  tag: "string" | "password";
+  tag: "string" | "password" | "textarea";
   initialValue: T;
   label: string;
   validate: (t: T) => E.Either<ValidationError, A>;
@@ -29,6 +29,16 @@ export const password = (
   initialValue?: string
 ): FormField<string, string> => ({
   tag: "password",
+  label,
+  initialValue: initialValue || "",
+  validate: E.right,
+});
+
+export const textarea = (
+  label: string,
+  initialValue?: string
+): FormField<string, string> => ({
+  tag: "textarea",
   label,
   initialValue: initialValue || "",
   validate: E.right,

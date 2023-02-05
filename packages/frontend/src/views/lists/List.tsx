@@ -6,7 +6,7 @@ import { pipe } from "@fp-ts/core/Function";
 import AddIcon from "@mui/icons-material/Add";
 import { Button, Modal, Typography } from "@mui/material";
 import { Box } from "@mui/system";
-import MUIDataTable from "mui-datatables";
+import MUIDataTable, { MUIDataTableColumnDef } from "mui-datatables";
 import { RequestService } from "../../lib/api/request";
 import { WithRequest } from "../../lib/api/WithRequest";
 import { renderForm } from "../../lib/forms/renderForm";
@@ -23,7 +23,7 @@ type ListProps<
   editForm: F.Form<K2, R2>;
   fetchValues: Eff.Effect<RequestService, unknown, readonly A[]>;
   renderValues: (as: readonly A[]) => {
-    columns: string[];
+    columns: MUIDataTableColumnDef[];
     rows: (string | number)[][];
   };
 };

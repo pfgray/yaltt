@@ -42,3 +42,20 @@ create table if not exists launches (
   person_id       serial references people(id),
   context         serial references contexts(id)
 );
+
+create table if not exists launches (
+  id              serial primary key,
+  created         date not null default now(),
+  name            varchar(255) not null,
+  id_token        jsonb not null,
+  person_id       serial references people(id),
+  context         serial references contexts(id)
+);
+
+create table if not exists registrations (
+  id                      serial primary key,
+  created                 date not null default now(),
+  app_id                  serial not null references apps(id),
+  tool_configuration      jsonb not null,
+  platform_configuration  jsonb not null
+);

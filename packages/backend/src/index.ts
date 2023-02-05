@@ -8,6 +8,8 @@ import { authRouter } from "./auth/authRouter";
 import { appRouter } from "./routes/apps/appRouter";
 import { effRequestHandler } from "./express/effRequestHandler";
 import { addUserWithLocalPassword } from "./model/users";
+import * as connect_pg_simple_ from "connect-pg-simple";
+import { registrationRouter } from "./routes/registrations/registrationsRouter";
 
 const app = express.default();
 const port = 3000;
@@ -22,10 +24,14 @@ app.use(
 
 app.use(
   session.default({
+    store: new (connect_pg_simple_.default(session.default))({
+      pool,
+      createTableIfMissing: true,
+    }),
     secret: "keyboard cat",
     resave: false,
+    cookie: { maxAge: 30 * 24 * 60 * 60 * 1000 }, // 30 days
     saveUninitialized: true,
-    cookie: { maxAge: 600000 },
   })
 );
 
@@ -60,3 +66,4 @@ app.get(
 
 app.use("/api", authRouter);
 app.use("/api", appRouter);
+app.use("/api", registrationRouter);

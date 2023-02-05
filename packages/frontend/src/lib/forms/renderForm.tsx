@@ -94,6 +94,31 @@ export const renderForm = <
                 onChange={(e) => setFields(HM.set(key, e.target.value))}
               />
             );
+          } else if (value.tag === "textarea") {
+            return (
+              <TextField
+                label={value.label}
+                key={key as string | number}
+                name={key as string}
+                fullWidth
+                margin="normal"
+                value={pipe(
+                  fields,
+                  HM.get(key),
+                  O.getOrElse(() => "")
+                )}
+                inputProps={{
+                  style: {
+                    fontFamily:
+                      '"Fantasque Sans Mono","ui-monospace","Cascadia Mono","Segoe UI Mono","Liberation Mono",Menlo,Monaco,Consolas,monospace',
+                  },
+                }}
+                multiline
+                rows={4}
+                maxRows={4}
+                onChange={(e) => setFields(HM.set(key, e.target.value))}
+              />
+            );
           } else {
             return <></>;
           }

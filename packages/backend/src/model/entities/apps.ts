@@ -10,6 +10,9 @@ const AppRow = S.struct({
   user_id: S.number,
 });
 
+export const getAppForId = (appId: number) =>
+  query1(AppRow)("select id, name, user_id from apps where id = $1", [appId]);
+
 export const getAppsForUser = (u: User) =>
   query(AppRow)("select id, name, user_id from apps where user_id = $1", [
     u.id,

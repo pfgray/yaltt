@@ -3,7 +3,11 @@ import * as React from "react";
 import { render } from "react-dom";
 import { App } from "./App";
 
-import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import {
+  createBrowserRouter,
+  RouteObject,
+  RouterProvider,
+} from "react-router-dom";
 import { Apps } from "./views/lists/apps/Apps";
 import { Users } from "./views/lists/users/Users";
 import { Contexts } from "./views/lists/contexts/Contexts";
@@ -12,6 +16,7 @@ import { Account } from "./views/lists/account/Apps";
 import { Login } from "./views/login/Login";
 import SignIn from "./views/login/SignIn";
 import { green, purple } from "@mui/material/colors";
+import { Registrations } from "./views/lists/registrations/Registrations";
 
 const theme = createTheme({
   palette: {
@@ -21,9 +26,14 @@ const theme = createTheme({
   },
 });
 
-const mkPath = (path: string, element: JSX.Element) => ({
+const mkPath = (
+  path: string,
+  element: JSX.Element,
+  children?: RouteObject[]
+) => ({
   path,
   element,
+  children,
 });
 
 const router = createBrowserRouter([
@@ -32,6 +42,7 @@ const router = createBrowserRouter([
     element: <App />,
     children: [
       mkPath("apps", <Apps />),
+      mkPath("apps/:appId/registrations", <Registrations />),
       mkPath("users", <Users />),
       mkPath("contexts", <Contexts />),
       mkPath("launches", <Launches />),

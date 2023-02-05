@@ -55,6 +55,7 @@ export const requireAuth = (
 ) => {
   if (!req.user) {
     console.log(`Blocked access to ${req.url} for unauthenticated user.`);
+    resp.status(401);
     resp.json({ failure: "unauthenticated" });
   } else {
     next();

@@ -1,16 +1,25 @@
 import * as Eff from "@effect/io/Effect";
-import * as E from "@fp-ts/core/Either";
-import { flow, pipe } from "@fp-ts/core/Function";
-import { NonEmptyReadonlyArray } from "@fp-ts/core/ReadonlyArray";
-import { ParseError } from "@fp-ts/schema/ParseResult";
-import * as P from "@fp-ts/schema/Parser";
-import * as S from "@fp-ts/schema";
+import { pipe } from "@fp-ts/core/Function";
 import * as O from "@fp-ts/core/Option";
 import { ExpressRequestService } from "../express/RequestService";
 
 export interface UnauthenticatedError {
   tag: "unauthenticated_error";
 }
+
+export const unauthenticatedError = (): UnauthenticatedError => ({
+  tag: "unauthenticated_error",
+});
+
+export interface UnauthorizedError {
+  tag: "unauthorized_error";
+  message: string;
+}
+
+export const unauthorizedError = (message: string): UnauthorizedError => ({
+  tag: "unauthorized_error",
+  message,
+});
 
 export const authedRequest = pipe(
   Eff.service(ExpressRequestService),
@@ -19,18 +28,7 @@ export const authedRequest = pipe(
       request.user,
       O.fromNullable,
       Eff.fromOption,
-      Eff.mapError(
-        (): UnauthenticatedError => ({ tag: "unauthenticated_error" })
-      ),
-      Eff.tapError((err) =>
-        Eff.sync(() => {
-          console.log(
-            `Blocked access to ${request.url}, unauthenticated, ${err}.`
-          );
-          response.status(401);
-          // response.json({ failure: "unauthenticated" });
-        })
-      )
+      Eff.mapError(unauthenticatedError)
     )
   )
 );

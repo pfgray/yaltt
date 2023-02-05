@@ -2,7 +2,8 @@ import * as S from "@fp-ts/schema";
 import { LtiPlatformConfiguration } from "./LtiPlatformConfiguration";
 import { Url } from "./Url";
 
-const HttpsUrl = S.templateLiteral(S.literal("https://"), S.string);
+export const HttpsUrl = S.templateLiteral(S.literal("https://"), S.string);
+export type HttpsUrl = S.Infer<typeof HttpsUrl>;
 
 export const PlatformConfiguration = S.struct({
   issuer: HttpsUrl,
@@ -19,3 +20,5 @@ export const PlatformConfiguration = S.struct({
   "https://purl.imsglobal.org/spec/lti-platform-configuration":
     LtiPlatformConfiguration,
 });
+
+export type PlatformConfiguration = S.Infer<typeof PlatformConfiguration>;

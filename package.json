@@ -8,6 +8,7 @@
   "workspaces": [
     "packages/backend",
     "packages/frontend",
-    "packages/model"
+    "packages/model",
+    "packages/lti-model"
   ]
 }

@@ -19,6 +19,7 @@
     "@fp-ts/core": "^0.1",
     "@fp-ts/data": "^0.1",
     "@fp-ts/schema": "^0.1",
+    "lti-model": "0.0.0",
     "ts-adt": "^2.1.2"
   },
   "devDependencies": {

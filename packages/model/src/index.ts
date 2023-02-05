@@ -1,3 +1,5 @@
-export { User, PasswordLogin, passwordUser } from "./user/User";
-export { App } from "./app/App";
-export { match, matchP, matchI, matchPI } from "./matchers/match";
+export * from "./user/User";
+export * from "./app/App";
+export * from "./matchers/match";
+export * from "./registration/Registration";
+export * from "./schemas/stringToNumber";
