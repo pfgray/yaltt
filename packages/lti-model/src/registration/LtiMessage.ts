@@ -11,3 +11,5 @@ export const LtiMessage = S.struct({
   label: S.string,
   custom_parameters: CustomParameters,
 });
+
+export interface LtiMessage extends S.Infer<typeof LtiMessage> {}

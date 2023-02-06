@@ -3,7 +3,7 @@ import * as PR from "@fp-ts/schema/ParseResult";
 import * as S from "@fp-ts/schema";
 import { pipe } from "@fp-ts/core/Function";
 
-export const decode = (s: string): PR.ParseResult<number> => {
+const decode = (s: string): PR.ParseResult<number> => {
   const result = parseInt(s, 10);
   if (!isNaN(result)) {
     return PR.success(result);

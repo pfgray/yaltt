@@ -37,7 +37,11 @@ export const WithRequest = <A,>(props: WithRequestProps<A>): JSX.Element => {
     O.match(
       () => <div>loading...</div>,
       E.match(
-        (err) => <div>error! {JSON.stringify(err)}</div>,
+        (err) => (
+          <div>
+            error! <pre>{JSON.stringify(err, null, 2)}</pre>
+          </div>
+        ),
         (a) => <>{props.children(a)}</>
       )
     )

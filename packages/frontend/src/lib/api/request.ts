@@ -144,6 +144,7 @@ const handleErrorStatus = Eff.flatMap<
 export interface DecodeError {
   tag: "decode_error";
   errors: NonEmptyReadonlyArray<PE.ParseError>;
+  actual: unknown;
 }
 
 const decodeRespBody = <A>(schema: S.Schema<A>) =>
@@ -152,7 +153,13 @@ const decodeRespBody = <A>(schema: S.Schema<A>) =>
       resp.body,
       P.decode(schema),
       Eff.fromEither,
-      Eff.mapError((errors): DecodeError => ({ tag: "decode_error", errors }))
+      Eff.mapError(
+        (errors): DecodeError => ({
+          tag: "decode_error",
+          errors,
+          actual: resp.body,
+        })
+      )
     )
   );
 

@@ -34,14 +34,24 @@ export const password = (
   validate: E.right,
 });
 
-export const textarea = (
+export const textarea = <T>(
+  label: string,
+  initialValue: T
+): FormField<T, T> => ({
+  tag: "textarea",
+  label,
+  initialValue: initialValue,
+  validate: E.right,
+});
+
+export const json = (
   label: string,
   initialValue?: string
-): FormField<string, string> => ({
+): FormField<string, {}> => ({
   tag: "textarea",
   label,
   initialValue: initialValue || "",
-  validate: E.right,
+  validate: (v) => E.right(JSON.parse(v)), // todo: actually validate
 });
 
 export type Form<K extends string, R extends Record<K, FormField<any, any>>> = {

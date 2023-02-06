@@ -21,4 +21,5 @@ export const PlatformConfiguration = S.struct({
     LtiPlatformConfiguration,
 });
 
-export type PlatformConfiguration = S.Infer<typeof PlatformConfiguration>;
+export interface PlatformConfiguration
+  extends S.Infer<typeof PlatformConfiguration> {}

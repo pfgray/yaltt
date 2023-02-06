@@ -16,6 +16,6 @@
     "noEmit": true,
     "jsx": "react-jsx"
   },
-  "include": ["src", "../model/src/matchers"],
+  "include": ["src"],
   "references": [{ "path": "./tsconfig.node.json" }]
 }

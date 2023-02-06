@@ -5,7 +5,7 @@ import * as React from "react";
 import { pipe } from "@fp-ts/core/Function";
 import * as RR from "@fp-ts/core/ReadonlyRecord";
 import * as HM from "@fp-ts/data/HashMap";
-import { Form, FormField } from "./form";
+import { Form, FormField, ValidationError } from "./form";
 import * as RA from "@fp-ts/core/ReadonlyArray";
 import * as O from "@fp-ts/core/Option";
 import { Button, TextField } from "@mui/material";
@@ -46,15 +46,27 @@ export const renderForm = <
     <form
       onSubmit={(e) => {
         e.preventDefault();
-        const fieldObj = Array.from(HM.keys(fields)).reduce(
-          (prev, next) => ({
-            [next]: pipe(HM.get(next)(fields), O.getOrNull),
-            ...prev,
-          }),
-          {}
+        pipe(
+          Array.from(HM.keys(fields)),
+          RA.fromIterable,
+          RA.traverse(E.Applicative)((key) =>
+            pipe(
+              O.Do,
+              O.bind("value", () => HM.get(key)(fields)),
+              O.bind("fieldDef", () => HM.get(key)(fieldsHm)),
+              O.map(({ value, fieldDef }) => fieldDef.validate(value)),
+              E.fromOption(
+                (): ValidationError => ({ message: `cant find key: ${key}` })
+              ),
+              E.flatMap((a) => a),
+              E.map((v) => [key, v] as const)
+            )
+          ),
+          E.map(toObj),
+          E.map((values) => {
+            Eff.runCallback(form.onSubmit(values as any));
+          })
         );
-        // todo: validate?
-        Eff.runCallback(form.onSubmit(fieldObj as any));
       }}
     >
       {pipe(
@@ -114,8 +126,8 @@ export const renderForm = <
                   },
                 }}
                 multiline
-                rows={4}
-                maxRows={4}
+                rows={6}
+                maxRows={6}
                 onChange={(e) => setFields(HM.set(key, e.target.value))}
               />
             );
@@ -144,3 +156,12 @@ export const renderForm = <
     </form>
   );
 };
+
+const toObj = <K extends string, V>(as: (readonly [K, V])[]): Record<K, V> =>
+  as.reduce(
+    (prev, next) => ({
+      ...prev,
+      [next[0]]: next[1],
+    }),
+    {} as Record<K, V>
+  );

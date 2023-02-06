@@ -34,4 +34,4 @@ export const ToolConfiguration = pipe(
   S.extend(I18nKey("policy_uri"))
 );
 
-export type ToolConfiguration = S.Infer<typeof ToolConfiguration>;
+export interface ToolConfiguration extends S.Infer<typeof ToolConfiguration> {}

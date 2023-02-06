@@ -6,28 +6,39 @@ import * as F from "../../../lib/forms/form";
 import { useSchemaParams } from "../../../lib/react-router/useSchemaParams";
 import { List } from "../List";
 import * as E from "@fp-ts/core/Either";
-import { Registration, stringToInteger } from "@yaltt/model";
+import {
+  Registration,
+  stringToInteger,
+  YalttToolConfiguration,
+  CanvasPlatformConfiguration,
+  match,
+} from "@yaltt/model";
+import * as Eff from "@effect/io/Effect";
+import { useParams } from "react-router-dom";
 
 const columns = ["Id", "Tool Configuration", "Platform Configuration"];
 const newRegistrationForm = (appId: number) =>
   F.mkForm({
-    toolConfiguration: F.textarea("Tool Configuration"),
-    platformConfiguration: F.textarea("Platform Configuration"),
+    toolConfiguration: F.json(
+      "Tool Configuration",
+      JSON.stringify(YalttToolConfiguration("abcd"), null, 2)
+    ),
+    platformConfiguration: F.json(
+      "Platform Configuration",
+      JSON.stringify(CanvasPlatformConfiguration, null, 2)
+    ),
   })((fields) =>
     pipe(
       provideRequestService(
-        post(
-          `/api/apps/${appId}/registrations`,
-          jsonBody({
-            ...fields,
-            appId,
-          })
-        )
+        post(`/api/apps/${appId}/registrations`, jsonBody(fields))
       )
     )
   );
 
 const paramSchema = S.struct({ appId: stringToInteger });
+
+const fetchRegistrations = (appId: number) =>
+  pipe(getDecode(S.array(Registration))(`/api/apps/${appId}/registrations`));
 
 export const Registrations = () => {
   const params = useSchemaParams(paramSchema);
@@ -43,18 +54,17 @@ export const Registrations = () => {
       ),
       ({ appId }) => (
         <List
+          width="90vw"
           newForm={newRegistrationForm(appId)}
           editForm={newRegistrationForm(appId)}
           entityName="Registration"
-          fetchValues={getDecode(S.array(Registration))(
-            `/api/apps/${appId}/registrations`
-          )}
+          fetchValues={fetchRegistrations(appId)}
           renderValues={(registrations) => ({
             columns,
             rows: registrations.map((r) => [
               r.id,
-              r.toolConfiguration.jwks_uri,
-              r.platformConfiguration.issuer,
+              r.tool_configuration.jwks_uri,
+              r.platform_configuration.issuer,
             ]),
           })}
         ></List>

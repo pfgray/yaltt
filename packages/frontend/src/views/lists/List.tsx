@@ -5,7 +5,7 @@ import * as Eff from "@effect/io/Effect";
 import { pipe } from "@fp-ts/core/Function";
 import AddIcon from "@mui/icons-material/Add";
 import { Button, Modal, Typography } from "@mui/material";
-import { Box } from "@mui/system";
+import { Box, SxProps } from "@mui/system";
 import MUIDataTable, { MUIDataTableColumnDef } from "mui-datatables";
 import { RequestService } from "../../lib/api/request";
 import { WithRequest } from "../../lib/api/WithRequest";
@@ -26,19 +26,21 @@ type ListProps<
     columns: MUIDataTableColumnDef[];
     rows: (string | number)[][];
   };
+  width?: string | number;
 };
 
-const style = {
-  position: "absolute" as "absolute",
-  top: "50%",
-  left: "50%",
-  transform: "translate(-50%, -50%)",
-  width: 400,
-  bgcolor: "background.paper",
-  border: "2px solid #000",
-  boxShadow: 24,
-  p: 4,
-};
+const style = (width?: string | number) =>
+  ({
+    position: "absolute",
+    top: "50%",
+    left: "50%",
+    transform: "translate(-50%, -50%)",
+    width: typeof width === "undefined" ? 400 : width,
+    bgcolor: "background.paper",
+    border: "2px solid #000",
+    boxShadow: 24,
+    p: 4,
+  } as const);
 
 export const List = <
   K extends string,
@@ -58,8 +60,8 @@ export const List = <
           <>
             <MUIDataTable
               title={
-                <>
-                  <Typography variant="h6" noWrap component="h6">
+                <div style={{ display: "flex", alignItems: "center" }}>
+                  <Typography variant="h6" noWrap component="h6" mr="1rem">
                     {props.entityName}s
                   </Typography>
                   <Button
@@ -69,7 +71,7 @@ export const List = <
                   >
                     New
                   </Button>
-                </>
+                </div>
               }
               data={rows}
               columns={columns}
@@ -91,7 +93,7 @@ export const List = <
               aria-labelledby="modal-modal-title"
               aria-describedby="modal-modal-description"
             >
-              <Box sx={style}>
+              <Box sx={style(props.width)}>
                 <NewEntityForm
                   setOpen={setOpen}
                   form={props.newForm}

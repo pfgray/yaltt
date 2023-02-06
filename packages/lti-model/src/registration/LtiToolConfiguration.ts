@@ -15,3 +15,6 @@ export const LtiToolConfiguration = S.struct({
   messages: S.array(LtiMessage),
   claims: S.array(S.string),
 });
+
+export interface LtiToolConfiguration
+  extends S.Infer<typeof LtiToolConfiguration> {}
