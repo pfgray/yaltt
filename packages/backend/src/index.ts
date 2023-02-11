@@ -6,10 +6,14 @@ import * as session from "express-session";
 import * as cors from "cors";
 import { authRouter } from "./auth/authRouter";
 import { appRouter } from "./routes/apps/appRouter";
-import { effRequestHandler } from "./express/effRequestHandler";
+import {
+  effRequestHandler,
+  succcessResponse,
+} from "./express/effRequestHandler";
 import { addUserWithLocalPassword } from "./model/users";
 import * as connect_pg_simple_ from "connect-pg-simple";
 import { registrationRouter } from "./routes/registrations/registrationsRouter";
+import * as Eff from "@effect/io/Effect";
 
 const app = express.default();
 const port = 3000;
@@ -61,7 +65,9 @@ app.listen(port, () => {
 
 app.get(
   "/insert",
-  effRequestHandler(addUserWithLocalPassword("peegee", "password"))
+  effRequestHandler(
+    Eff.map(addUserWithLocalPassword("peegee", "password"), succcessResponse)
+  )
 );
 
 app.use("/api", authRouter);

@@ -13,13 +13,33 @@ import {
 import { match } from "@yaltt/model";
 import { ParseBodyError } from "./parseBody";
 import { ParseParamsError } from "./parseParams";
-import * as pg from "pg";
 import { mkTransactionalPgService } from "../db/TransactionalPgService";
 import { PgService } from "../db/PgService";
 import { KeyError, KeyService } from "../crypto/KeyService";
 import { provideRsaKeyService } from "../crypto/RsaKeyService";
 
-export type EffRequestHandler = <A>(
+type Response = {
+  status: number;
+  body?: unknown;
+  headers?: Record<string, string>;
+};
+
+export const response =
+  (status: number) => (body?: unknown, headers?: Record<string, string>) => ({
+    status,
+    body,
+    headers,
+  });
+
+export const succcessResponse = response(200);
+export const redirectResponse = (location: string) =>
+  response(300)({
+    headers: {
+      Location: location,
+    },
+  });
+
+export type EffRequestHandler = (
   eff: Eff.Effect<
     ExpressRequestService | PgService | KeyService,
     | PgError
@@ -31,7 +51,7 @@ export type EffRequestHandler = <A>(
     | ParseBodyError
     | ParseParamsError
     | KeyError,
-    A
+    Response
   >
 ) => express.RequestHandler<unknown, unknown, unknown, unknown, {}>;
 
@@ -114,7 +134,14 @@ export const effRequestHandler: EffRequestHandler =
             )
           );
         } else {
-          response.json(exit.value);
+          const resp = exit.value;
+          if ("headers" in resp && typeof resp.headers !== "undefined") {
+            response.set(resp.headers);
+          }
+          if ("body" in resp) {
+            response.json(resp.body);
+          }
+          response.status(resp.status);
         }
       }
     );

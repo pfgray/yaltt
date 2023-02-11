@@ -6,7 +6,10 @@ import * as multer from "multer";
 import { parseBody, withRequestBody } from "../../express/parseBody";
 import * as S from "@fp-ts/schema";
 import { requireAuth } from "../../auth/auth";
-import { effRequestHandler } from "../../express/effRequestHandler";
+import {
+  effRequestHandler,
+  succcessResponse,
+} from "../../express/effRequestHandler";
 import { pipe } from "@fp-ts/core/Function";
 import {
   authedRequest,
@@ -46,7 +49,8 @@ const handleLoginRequest = effRequestHandler(
     Eff.bind("params", () => loginParameters),
     Eff.bind("registration", ({ params }) =>
       getRegistrationForId(params.registrationId)
-    )
+    ),
+    Eff.map(succcessResponse) // todo change to redirect
     //Eff.bind('hmm', ({registration}) => registration.)
   )
 );

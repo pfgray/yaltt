@@ -6,7 +6,10 @@ import * as multer from "multer";
 import { parseBody, withRequestBody } from "../../express/parseBody";
 import * as S from "@fp-ts/schema";
 import { requireAuth } from "../../auth/auth";
-import { effRequestHandler } from "../../express/effRequestHandler";
+import {
+  effRequestHandler,
+  succcessResponse,
+} from "../../express/effRequestHandler";
 import { pipe } from "@fp-ts/core/Function";
 import {
   authedRequest,
@@ -54,6 +57,7 @@ registrationRouter.get(
   pipe(
     appIdIsForUser,
     Eff.flatMap(({ id }) => getRegistrationsForAppId(id)),
+    Eff.map(succcessResponse),
     effRequestHandler
   )
 );
@@ -78,6 +82,7 @@ registrationRouter.post(
         body.platformConfiguration
       )
     ),
+    Eff.map(succcessResponse),
     effRequestHandler
   )
 );
@@ -97,7 +102,8 @@ registrationRouter.get(
           e: "AQAB", // this is a guess
           use: "sig", // also a guess
         })),
-      }))
+      })),
+      Eff.map(succcessResponse)
     )
   )
 );

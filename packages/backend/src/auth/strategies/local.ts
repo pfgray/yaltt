@@ -2,7 +2,10 @@ import { pipe } from "@fp-ts/core/Function";
 import * as passport from "passport";
 import * as LocalStrategy from "passport-local";
 import { validatePassword } from "../../crypto/hash";
-import { effRequestHandler } from "../../express/effRequestHandler";
+import {
+  effRequestHandler,
+  succcessResponse,
+} from "../../express/effRequestHandler";
 import { parseBody } from "../../express/parseBody";
 import {
   getLoginByUsername,
@@ -65,6 +68,7 @@ export const signupPasswordRoute = effRequestHandler(
       addUserWithLocalPassword(username, password)
     ),
     Eff.flatMap(login),
-    Eff.mapError(unauthenticatedError)
+    Eff.mapError(unauthenticatedError),
+    Eff.map(succcessResponse)
   )
 );

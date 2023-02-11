@@ -5,7 +5,7 @@ import { NonEmptyReadonlyArray } from "@fp-ts/core/ReadonlyArray";
 import { ParseError } from "@fp-ts/schema/ParseResult";
 import * as P from "@fp-ts/schema/Parser";
 import * as S from "@fp-ts/schema";
-import { effRequestHandler } from "./effRequestHandler";
+import { effRequestHandler, succcessResponse } from "./effRequestHandler";
 import { ExpressRequestService } from "./RequestService";
 
 export interface ParseParamsError {
@@ -40,4 +40,10 @@ export const withRequestParams =
       params: A
     ) => Eff.Effect<ExpressRequestService, ParseParamsError, A>
   ) =>
-    effRequestHandler(pipe(parseParams(paramsSchema), Eff.flatMap(handler)));
+    effRequestHandler(
+      pipe(
+        parseParams(paramsSchema),
+        Eff.flatMap(handler),
+        Eff.map(succcessResponse)
+      )
+    );
