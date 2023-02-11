@@ -8,6 +8,7 @@ import * as PE from "@fp-ts/schema/ParseResult";
 import { flow, pipe } from "@fp-ts/core/Function";
 import * as E from "@fp-ts/core/Either";
 import * as RA from "@fp-ts/core/ReadonlyArray";
+import { PgService } from "./PgService";
 
 export const pool: pg.Pool = new ((pg as any).default as any).Pool();
 
@@ -26,18 +27,15 @@ export interface DecodeError {
 
 const query_ =
   <T>(schema: S.Schema<T>) =>
-  (query: string, values: unknown[]) =>
+  (queryStr: string, queryParams: unknown[]) =>
     pipe(
-      Eff.async<never, Error, [string, pg.QueryResult<{}>]>((resume) => {
-        pool.query(query, values, (err, res) => {
-          if (err) {
-            resume(Eff.fail(err));
-          } else {
-            resume(Eff.succeed([query, res]));
-          }
-        });
-      }),
-      Eff.mapError((cause): PgError => ({ tag: "pg_error", cause, query })),
+      Eff.serviceWithEffect(PgService, ({ query }) =>
+        query(queryStr, queryParams)
+      ),
+      Eff.map((result) => [queryStr, result] as const),
+      Eff.mapError(
+        (cause): PgError => ({ tag: "pg_error", cause, query: queryStr })
+      ),
       Eff.flatMap(([query, { rows }]) =>
         pipe(
           rows,

@@ -21,18 +21,10 @@ import { ExpressRequestService } from "../../express/RequestService";
 import { getAppForId } from "../../model/entities/apps";
 import { PlatformConfiguration, ToolConfiguration } from "lti-model";
 import { stringToInteger } from "@yaltt/model";
+import { appIdParam } from "../apps/appRouter";
 
 const upload = multer.default();
 export const registrationRouter = express.Router();
-
-const appIdParam = pipe(
-  parseParams(
-    S.struct({
-      appId: stringToInteger,
-    })
-  ),
-  Eff.map(({ appId }) => appId)
-);
 
 const appIdIsForUser = pipe(
   Eff.Do(),

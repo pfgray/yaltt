@@ -1,7 +1,7 @@
 import { pipe } from "@fp-ts/core/Function";
 import * as passport from "passport";
 import * as LocalStrategy from "passport-local";
-import { validatePassword } from "../../db/crypto";
+import { validatePassword } from "../../crypto/hash";
 import { effRequestHandler } from "../../express/effRequestHandler";
 import { parseBody } from "../../express/parseBody";
 import {
@@ -18,6 +18,9 @@ import {
   unauthenticatedError,
   UnauthenticatedError,
 } from "../authedRequestHandler";
+import { mkTransactionalPgService } from "../../db/TransactionalPgService";
+import { pool } from "../../db/db";
+import { PgService } from "../../db/PgService";
 
 /* Configure password authentication strategy.
  *
@@ -32,12 +35,13 @@ import {
  */
 (passport as any).default.use(
   new LocalStrategy.Strategy(function verify(username, password, cb) {
+    const pgService = mkTransactionalPgService(pool);
     const eff = pipe(
       getLoginByUsername(username),
       Eff.tap((user) =>
         validatePassword(password, user.salt, user.hashed_password)
       ),
-      Eff.provideContext(C.empty())
+      Eff.provideService(PgService, pgService.service)
     );
 
     Eff.runCallback(eff, (status) => {

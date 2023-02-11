@@ -9,6 +9,7 @@
     "packages/backend",
     "packages/frontend",
     "packages/model",
-    "packages/lti-model"
+    "packages/lti-model",
+    "packages/lti-schema"
   ]
 }

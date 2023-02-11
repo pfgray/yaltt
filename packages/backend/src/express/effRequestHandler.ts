@@ -4,8 +4,8 @@ import * as Cause from "@effect/io/Cause";
 import { pipe } from "@fp-ts/core/Function";
 import * as express from "express";
 import { ExpressRequestService } from "./RequestService";
-import { DecodeError, NoRecordFound, PgError } from "../db/db";
-import { HashError } from "../db/crypto";
+import { DecodeError, NoRecordFound, PgError, pool } from "../db/db";
+import { HashError } from "../crypto/hash";
 import {
   UnauthenticatedError,
   UnauthorizedError,
@@ -13,10 +13,15 @@ import {
 import { match } from "@yaltt/model";
 import { ParseBodyError } from "./parseBody";
 import { ParseParamsError } from "./parseParams";
+import * as pg from "pg";
+import { mkTransactionalPgService } from "../db/TransactionalPgService";
+import { PgService } from "../db/PgService";
+import { KeyError, KeyService } from "../crypto/KeyService";
+import { provideRsaKeyService } from "../crypto/RsaKeyService";
 
 export type EffRequestHandler = <A>(
   eff: Eff.Effect<
-    ExpressRequestService,
+    ExpressRequestService | PgService | KeyService,
     | PgError
     | DecodeError
     | NoRecordFound
@@ -24,20 +29,24 @@ export type EffRequestHandler = <A>(
     | UnauthenticatedError
     | UnauthorizedError
     | ParseBodyError
-    | ParseParamsError,
+    | ParseParamsError
+    | KeyError,
     A
   >
 ) => express.RequestHandler<unknown, unknown, unknown, unknown, {}>;
 
 export const effRequestHandler: EffRequestHandler =
   (eff) => (request, response) => {
+    const pgService = mkTransactionalPgService(pool);
     Eff.runCallback(
       pipe(
         eff,
         Eff.provideService(ExpressRequestService, {
           request,
           response,
-        })
+        }),
+        Eff.provideService(PgService, pgService.service),
+        provideRsaKeyService
       ),
       (exit) => {
         if (Exit.isFailure(exit)) {
@@ -91,6 +100,10 @@ export const effRequestHandler: EffRequestHandler =
                   console.error(JSON.stringify(e.error, null, 2));
                   response.status(400);
                   response.json({ failure: "failed to parse params" });
+                },
+                key_error: (e) => {
+                  response.status(500);
+                  response.json({ error: "an error ocurred" });
                 },
               }),
               () => {},

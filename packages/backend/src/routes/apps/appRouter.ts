@@ -9,14 +9,37 @@ import { requireAuth } from "../../auth/auth";
 import { effRequestHandler } from "../../express/effRequestHandler";
 import { pipe } from "@fp-ts/core/Function";
 import { authedRequest } from "../../auth/authedRequestHandler";
-import { createAppForUser, getAppsForUser } from "../../model/entities/apps";
+import {
+  createAppForUser,
+  getAppForId,
+  getAppsForUser,
+} from "../../model/entities/apps";
+import { parseParams } from "../../express/parseParams";
+import { stringToInteger } from "@yaltt/model";
+import { getKeysWithoutPrivateKeyForAppId } from "../../model/entities/keys";
 
 const upload = multer.default();
 export const appRouter = express.Router();
 
+export const appIdParam = pipe(
+  parseParams(
+    S.struct({
+      appId: stringToInteger,
+    })
+  ),
+  Eff.map(({ appId }) => appId)
+);
+
 appRouter.get(
   "/apps",
   effRequestHandler(pipe(authedRequest, Eff.flatMap(getAppsForUser)))
+);
+
+appRouter.get(
+  "/apps/:appId/jwks",
+  effRequestHandler(
+    pipe(appIdParam, Eff.flatMap(getKeysWithoutPrivateKeyForAppId))
+  )
 );
 
 appRouter.post(

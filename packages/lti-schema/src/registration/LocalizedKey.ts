@@ -1,7 +1,7 @@
 import * as S from "@fp-ts/schema";
 import { pipe } from "@fp-ts/core/Function";
 
-export const I18nKey = <K extends string>(k: K) =>
+export const LocalizedKey = <K extends string>(k: K) =>
   pipe(
     S.record(S.literal(k), S.string),
     S.extend(

@@ -59,3 +59,12 @@ create table if not exists registrations (
   tool_configuration      jsonb not null,
   platform_configuration  jsonb not null
 );
+
+create table if not exists jwks (
+  id                      serial primary key,
+  created                 date not null default now(),
+  active                  boolean not null default true,
+  app_id                  serial not null references apps(id),
+  private_key             bytea not null,
+  public_key              bytea not null
+);

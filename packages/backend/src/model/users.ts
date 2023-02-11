@@ -3,7 +3,7 @@ import * as S from "@fp-ts/schema";
 import { buffer } from "../lib/BufferSchema";
 import { query1 } from "../db/db";
 import { pipe } from "@fp-ts/core/Function";
-import { hashPassword } from "../db/crypto";
+import { hashPassword } from "../crypto/hash";
 import { passwordUser } from "@yaltt/model";
 
 const UserRow = S.struct({
