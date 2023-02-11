@@ -3,7 +3,7 @@ import * as S from "@fp-ts/schema";
 import { query, query1 } from "../../db/db";
 import { pipe } from "@fp-ts/core/Function";
 import * as Eff from "@effect/io/Effect";
-import { createKeyForAppId } from "./keys";
+import { createKeyForRegistrationId } from "./keys";
 
 const SimpleAppRow = S.struct({
   id: S.number,
@@ -33,10 +33,7 @@ export const AppRow = pipe(
 );
 
 export const createAppForUser = (name: string, u: User) =>
-  Eff.tap(
-    query1(AppRow)(
-      "insert into apps (name, user_id) values ($1, $2) returning *",
-      [name, u.id]
-    ),
-    (app) => createKeyForAppId(app.id)
+  query1(AppRow)(
+    "insert into apps (name, user_id) values ($1, $2) returning *",
+    [name, u.id]
   );

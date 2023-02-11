@@ -10,7 +10,7 @@ const KeyRowWithoutPrivateKey = S.struct({
   id: S.number,
   created: S.date,
   active: S.boolean,
-  app_id: S.number,
+  registration_id: S.number,
   public_key: buffer,
 });
 
@@ -23,31 +23,33 @@ const KeyRow = pipe(
   )
 );
 
-export const createKeyForAppId = (appId: number) =>
+export const createKeyForRegistrationId = (registrationId: number) =>
   pipe(
     generateKeyPair,
     Eff.flatMap(({ privateKey, publicKey }) =>
-      insertKeyForAppId(appId, privateKey, publicKey)
+      insertKeyForRegistrationId(registrationId, privateKey, publicKey)
     )
   );
 
-export const insertKeyForAppId = (
-  appId: number,
+export const insertKeyForRegistrationId = (
+  registrationId: number,
   privateKey: Buffer,
   publicKey: Buffer
 ) =>
   query1(KeyRow)(
     `insert into jwks 
-    (app_id, private_key, public_key)
+    (registration_id, private_key, public_key)
     values ($1, $2, $3)
     returning *`,
-    [appId, privateKey, publicKey]
+    [registrationId, privateKey, publicKey]
   );
 
-export const getKeysWithoutPrivateKeyForAppId = (appId: number) =>
+export const getKeysWithoutPrivateKeyForRegistrationId = (
+  registrationId: number
+) =>
   query(KeyRowWithoutPrivateKey)(
     `
-	  select id, created, active, app_id, public_key from jwks where app_id = $1
+	  select id, created, active, registration_id, public_key from jwks where registration_id = $1
 	`,
-    [appId]
+    [registrationId]
   );

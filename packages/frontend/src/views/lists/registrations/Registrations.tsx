@@ -15,8 +15,26 @@ import {
 } from "@yaltt/model";
 import * as Eff from "@effect/io/Effect";
 import { useParams } from "react-router-dom";
+import { Link } from "@mui/material";
 
-const columns = ["Id", "Tool Configuration", "Platform Configuration"];
+const columns = [
+  "Id",
+  {
+    name: "JWKS Url",
+    options: {
+      filter: true,
+      customBodyRender: (value: Registration) => {
+        return (
+          <Link
+            href={`/api/registrations/${value.id}/jwks`}
+          >{`/api/registrations/${value.id}/jwks`}</Link>
+        );
+      },
+    },
+  },
+  "Tool Configuration",
+  "Platform Configuration",
+];
 const newRegistrationForm = (appId: number) =>
   F.mkForm({
     toolConfiguration: F.json(
@@ -63,6 +81,7 @@ export const Registrations = () => {
             columns,
             rows: registrations.map((r) => [
               r.id,
+              r as any,
               r.tool_configuration.jwks_uri,
               r.platform_configuration.issuer,
             ]),

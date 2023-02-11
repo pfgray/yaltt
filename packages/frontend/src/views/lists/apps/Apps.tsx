@@ -23,19 +23,6 @@ const columns = [
       },
     },
   },
-  {
-    name: "JWKS Url",
-    options: {
-      filter: true,
-      customBodyRender: (value: App) => {
-        return (
-          <Link
-            href={`/api/apps/${value.id}/jwks`}
-          >{`/api/apps/${value.id}/jwks`}</Link>
-        );
-      },
-    },
-  },
 ];
 
 const newAppForm = F.mkForm({
@@ -53,7 +40,7 @@ export const Apps = () => {
       fetchValues={getDecode(S.array(App))("/api/apps")}
       renderValues={(apps) => ({
         columns,
-        rows: apps.map((v) => [v.id, v as any, v as any]),
+        rows: apps.map((v) => [v.id, v as any]),
       })}
     ></List>
   );

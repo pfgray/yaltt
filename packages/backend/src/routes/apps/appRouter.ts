@@ -16,7 +16,7 @@ import {
 } from "../../model/entities/apps";
 import { parseParams } from "../../express/parseParams";
 import { stringToInteger } from "@yaltt/model";
-import { getKeysWithoutPrivateKeyForAppId } from "../../model/entities/keys";
+import { getKeysWithoutPrivateKeyForRegistrationId } from "../../model/entities/keys";
 
 const upload = multer.default();
 export const appRouter = express.Router();
@@ -33,13 +33,6 @@ export const appIdParam = pipe(
 appRouter.get(
   "/apps",
   effRequestHandler(pipe(authedRequest, Eff.flatMap(getAppsForUser)))
-);
-
-appRouter.get(
-  "/apps/:appId/jwks",
-  effRequestHandler(
-    pipe(appIdParam, Eff.flatMap(getKeysWithoutPrivateKeyForAppId))
-  )
 );
 
 appRouter.post(

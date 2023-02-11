@@ -22,9 +22,19 @@ import { getAppForId } from "../../model/entities/apps";
 import { PlatformConfiguration, ToolConfiguration } from "lti-model";
 import { stringToInteger } from "@yaltt/model";
 import { appIdParam } from "../apps/appRouter";
+import { getKeysWithoutPrivateKeyForRegistrationId } from "../../model/entities/keys";
 
 const upload = multer.default();
 export const registrationRouter = express.Router();
+
+export const registrationIdParam = pipe(
+  parseParams(
+    S.struct({
+      registrationId: stringToInteger,
+    })
+  ),
+  Eff.map(({ registrationId }) => registrationId)
+);
 
 const appIdIsForUser = pipe(
   Eff.Do(),
@@ -69,5 +79,25 @@ registrationRouter.post(
       )
     ),
     effRequestHandler
+  )
+);
+
+registrationRouter.get(
+  "/registrations/:registrationId/jwks",
+  effRequestHandler(
+    pipe(
+      registrationIdParam,
+      Eff.flatMap(getKeysWithoutPrivateKeyForRegistrationId),
+      Eff.map((keys) => ({
+        keys: keys.map((k) => ({
+          kid: k.id.toString(),
+          n: k.public_key.toString("base64"),
+          kty: "RSA",
+          alg: "RS256", // also a guess
+          e: "AQAB", // this is a guess
+          use: "sig", // also a guess
+        })),
+      }))
+    )
   )
 );
