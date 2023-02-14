@@ -1,8 +1,7 @@
 import * as crypto from "crypto";
-import { pipe } from "@fp-ts/core/Function";
 import * as Eff from "@effect/io/Effect";
 import * as jsonwebtoken from "jsonwebtoken";
-import { KeyService } from "./KeyService";
+import { KeyError, KeyService } from "./KeyService";
 
 const generateKeyPair: KeyService["generateKeyPair"] = () =>
   Eff.async((resume) => {
@@ -15,7 +14,7 @@ const generateKeyPair: KeyService["generateKeyPair"] = () =>
           format: "der",
         },
         privateKeyEncoding: {
-          type: "pkcs8",
+          type: "pkcs1",
           format: "der",
         },
       },
@@ -35,8 +34,29 @@ const sign: KeyService["sign"] = (input: {}, privateKey: Buffer) =>
 const verify: KeyService["verify"] = (input: string, publicKey: Buffer) =>
   jsonwebtoken.verify(input, publicKey, { algorithms: ["RS256"] });
 
+const exportPublickKeyJWK = (
+  publicKey: Buffer
+): Eff.Effect<never, KeyError, Record<string, unknown>> =>
+  Eff.tryCatch(
+    () =>
+      crypto
+        .createPublicKey({
+          format: "der",
+          key: publicKey,
+          type: "spki",
+        })
+        .export({
+          format: "jwk",
+        }),
+    (error) => ({
+      tag: "key_error",
+      error,
+    })
+  );
+
 export const provideRsaKeyService = Eff.provideService(KeyService, {
   generateKeyPair,
   sign,
   verify,
+  exportPublickKeyJWK,
 });

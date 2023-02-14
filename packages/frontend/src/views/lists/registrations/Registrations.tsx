@@ -23,24 +23,33 @@ const columns = [
     name: "JWKS Url",
     options: {
       filter: true,
-      customBodyRender: (value: Registration) => {
-        return (
-          <Link
-            href={`/api/registrations/${value.id}/jwks`}
-          >{`/api/registrations/${value.id}/jwks`}</Link>
-        );
+      customBodyRender: (value: string) => {
+        return <Link href={value}>{value}</Link>;
       },
     },
   },
-  "Tool Configuration",
+  {
+    name: "Tool Configuration",
+    options: {
+      filter: true,
+      customBodyRender: (value: string) => {
+        return <Link href={value}>{value}</Link>;
+      },
+    },
+  },
+  {
+    name: "Canvas Tool Configuration",
+    options: {
+      filter: true,
+      customBodyRender: (value: string) => {
+        return <Link href={value}>{value}</Link>;
+      },
+    },
+  },
   "Platform Configuration",
 ];
 const newRegistrationForm = (appId: number) =>
   F.mkForm({
-    toolConfiguration: F.json(
-      "Tool Configuration",
-      JSON.stringify(YalttToolConfiguration("abcd"), null, 2)
-    ),
     platformConfiguration: F.json(
       "Platform Configuration",
       JSON.stringify(CanvasPlatformConfiguration, null, 2)
@@ -81,8 +90,9 @@ export const Registrations = () => {
             columns,
             rows: registrations.map((r) => [
               r.id,
-              r as any,
-              r.tool_configuration.jwks_uri,
+              `/api/registrations/${r.id}/jwks`,
+              `/api/registrations/${r.id}/configuration`,
+              `/api/registrations/${r.id}/canvas_configuration`,
               r.platform_configuration.issuer,
             ]),
           })}

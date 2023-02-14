@@ -1,7 +1,7 @@
 import * as express from "express";
 import * as passportBase from "passport";
 import * as Eff from "@effect/io/Effect";
-
+import * as crypto from "crypto";
 import * as multer from "multer";
 import { parseBody, withRequestBody } from "../../express/parseBody";
 import * as S from "@fp-ts/schema";
@@ -17,15 +17,30 @@ import {
 } from "../../auth/authedRequestHandler";
 import {
   createRegistrationForAppId,
+  getRegistrationForId,
   getRegistrationsForAppId,
 } from "../../model/entities/registrations";
 import { parseParams } from "../../express/parseParams";
 import { ExpressRequestService } from "../../express/RequestService";
 import { getAppForId } from "../../model/entities/apps";
-import { PlatformConfiguration, ToolConfiguration } from "lti-model";
+import {
+  LtiMessage,
+  LtiMessageTypes,
+  PlatformConfiguration,
+  ToolConfiguration,
+} from "lti-model";
 import { stringToInteger } from "@yaltt/model";
 import { appIdParam } from "../apps/appRouter";
 import { getKeysWithoutPrivateKeyForRegistrationId } from "../../model/entities/keys";
+import {
+  mkYalttToolConfiguration,
+  mkYalttUrl,
+} from "./mkYalttToolConfiguration";
+import { getConfig } from "../../config/ConfigService";
+import { CanvasPlacement } from "canvas-lti-model";
+import { mkYalttCanvasToolConfiguration } from "./mkYalttCanvasToolConfiguration";
+import { exportPublickKeyJWK } from "../../crypto/KeyService";
+import { fromChunk } from "@effect/io/Config/Secret";
 
 const upload = multer.default();
 export const registrationRouter = express.Router();
@@ -70,19 +85,82 @@ registrationRouter.post(
     Eff.bind("body", () =>
       parseBody(
         S.struct({
-          toolConfiguration: ToolConfiguration,
           platformConfiguration: PlatformConfiguration,
         })
       )
     ),
     Eff.flatMap(({ app, body }) =>
-      createRegistrationForAppId(
-        app.id,
-        body.toolConfiguration,
-        body.platformConfiguration
-      )
+      createRegistrationForAppId(app.id, body.platformConfiguration)
     ),
     Eff.map(succcessResponse),
+    effRequestHandler
+  )
+);
+
+const default_claims = [
+  "sub",
+  "iss",
+  "name",
+  "given_name",
+  "family_name",
+  "nickname",
+  "picture",
+  "email",
+  "locale",
+] as const;
+
+registrationRouter.get(
+  `/registrations/:registrationId/configuration`,
+  pipe(
+    Eff.Do(),
+    Eff.bind("regId", () => registrationIdParam),
+    Eff.bind("config", () => getConfig),
+    Eff.bind("reg", ({ regId }) => getRegistrationForId(regId)),
+    Eff.bind("app", ({ reg }) => getAppForId(reg.app_id)),
+    Eff.bindValue(
+      "messages",
+      ({ reg, app, config }): ReadonlyArray<LtiMessage> => [
+        {
+          type: LtiMessageTypes.LtiResourceLinkRequest,
+          custom_parameters: {},
+          label: `${app.name} (ResourceLinkRequest)`,
+          target_link_uri: mkYalttUrl(config)("/resource_link"),
+        },
+      ]
+    ),
+    Eff.map(({ reg, app, config, messages }) =>
+      mkYalttToolConfiguration(config)(app, reg, default_claims, {}, messages)
+    ),
+    Eff.map(succcessResponse),
+    effRequestHandler
+  )
+);
+
+registrationRouter.get(
+  `/registrations/:registrationId/canvas_configuration`,
+  pipe(
+    Eff.Do(),
+    Eff.bind("regId", () => registrationIdParam),
+    Eff.bind("config", () => getConfig),
+    Eff.bind("reg", ({ regId }) => getRegistrationForId(regId)),
+    Eff.bind("app", ({ reg }) => getAppForId(reg.app_id)),
+    Eff.bindValue(
+      "placements",
+      ({ reg, app, config }): ReadonlyArray<CanvasPlacement> => [
+        {
+          placement: "course_navigation",
+          message_type: "LtiResourceLinkRequest",
+          target_link_uri: mkYalttUrl(config)(
+            `/api/registrations/${reg.id}/resource_link`
+          ),
+        },
+      ]
+    ),
+    Eff.map(({ reg, app, config, placements }) => {
+      return succcessResponse(
+        mkYalttCanvasToolConfiguration(config)(app, reg, [], {}, placements)
+      );
+    }),
     effRequestHandler
   )
 );
@@ -93,15 +171,16 @@ registrationRouter.get(
     pipe(
       registrationIdParam,
       Eff.flatMap(getKeysWithoutPrivateKeyForRegistrationId),
+      Eff.flatMap((keys) =>
+        Eff.forEach(keys, (key) =>
+          Eff.map(exportPublickKeyJWK(key.public_key), (jwk) => ({
+            ...jwk,
+            kid: key.id.toString(),
+          }))
+        )
+      ),
       Eff.map((keys) => ({
-        keys: keys.map((k) => ({
-          kid: k.id.toString(),
-          n: k.public_key.toString("base64"),
-          kty: "RSA",
-          alg: "RS256", // also a guess
-          e: "AQAB", // this is a guess
-          use: "sig", // also a guess
-        })),
+        keys: keys.array,
       })),
       Eff.map(succcessResponse)
     )

@@ -13,7 +13,6 @@ import { Users } from "./views/lists/users/Users";
 import { Contexts } from "./views/lists/contexts/Contexts";
 import { Launches } from "./views/lists/launches/Launches";
 import { Account } from "./views/lists/account/Account";
-import { Login } from "./views/login/Login";
 import SignIn from "./views/login/SignIn";
 import { green, purple } from "@mui/material/colors";
 import { Registrations } from "./views/lists/registrations/Registrations";

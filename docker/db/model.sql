@@ -56,7 +56,9 @@ create table if not exists registrations (
   id                      serial primary key,
   created                 date not null default now(),
   app_id                  serial not null references apps(id),
-  tool_configuration      jsonb not null,
+  claims                  text[] not null default array[]::text[],
+  custom_parameters       jsonb not null default '{}'::jsonb,
+
   platform_configuration  jsonb not null
 );
 

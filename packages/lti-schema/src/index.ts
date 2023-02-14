@@ -1,5 +1,5 @@
 export * from "./message/CustomParameters";
-export * from "./registration/I18nKey";
+export * from "./registration/LocalizedKey";
 export * from "./message/LtiMessage";
 export * from "./registration/LtiPlatformConfiguration";
 export * from "./registration/LtiToolConfiguration";

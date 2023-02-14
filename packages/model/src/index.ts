@@ -6,3 +6,4 @@ export * from "./schemas/stringInteger";
 export * from "./schemas/isoStringDate";
 export * from "./yaltt/toolConfiguration";
 export * from "./canvas/platformConfiguration";
+export * from "./yaltt/YalttClaims";

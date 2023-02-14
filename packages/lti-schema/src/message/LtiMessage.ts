@@ -6,7 +6,7 @@ import { LocalizedKey } from "../registration/LocalizedKey";
 
 export const LtiMessageS = pipe(
   S.struct({
-    type: LtiMessageType,
+    type: S.string,
     target_link_uri: Url,
     custom_parameters: CustomParameters,
   }),

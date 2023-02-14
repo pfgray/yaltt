@@ -17,6 +17,7 @@ import { mkTransactionalPgService } from "../db/TransactionalPgService";
 import { PgService } from "../db/PgService";
 import { KeyError, KeyService } from "../crypto/KeyService";
 import { provideRsaKeyService } from "../crypto/RsaKeyService";
+import { ConfigService } from "../config/ConfigService";
 
 type Response = {
   status: number;
@@ -41,7 +42,7 @@ export const redirectResponse = (location: string) =>
 
 export type EffRequestHandler = (
   eff: Eff.Effect<
-    ExpressRequestService | PgService | KeyService,
+    ExpressRequestService | PgService | KeyService | ConfigService,
     | PgError
     | DecodeError
     | NoRecordFound
@@ -66,11 +67,18 @@ export const effRequestHandler: EffRequestHandler =
           response,
         }),
         Eff.provideService(PgService, pgService.service),
-        provideRsaKeyService
+        provideRsaKeyService,
+        Eff.provideService(ConfigService, {
+          config: {
+            primaryHostname: "localhost",
+            ssl: false,
+          },
+        })
       ),
       (exit) => {
         if (Exit.isFailure(exit)) {
           console.error(`Request to ${request.url} Failed with: `, exit.cause);
+          pgService.rollback();
           pipe(
             exit.cause,
             Cause.match(
@@ -80,18 +88,23 @@ export const effRequestHandler: EffRequestHandler =
                   console.error("Decode Error Running: ", v.query);
                   console.error("Actual value:", v.actual);
                   console.error(JSON.stringify(v.errors, null, 2));
+                  response.status(500);
                   response.json({ failure: "An error ocurred." });
                 },
                 hash_error: (h) => {
                   console.error("Hash Error", h.cause);
+                  response.status(500);
                   response.json({ failure: "An error ocurred." });
                 },
                 no_record_found: (nrf) => {
                   console.error("No Record Found Running: ", nrf.query);
+                  response.status(500);
                   response.json({ failure: "An error ocurred." });
                 },
                 pg_error: (h) => {
                   console.error("PG Error", h.cause);
+                  console.log("Executing\n", h.query);
+                  response.status(500);
                   response.json({ failure: "An error ocurred." });
                 },
                 unauthenticated_error: (e) => {
@@ -134,6 +147,7 @@ export const effRequestHandler: EffRequestHandler =
             )
           );
         } else {
+          pgService.commit();
           const resp = exit.value;
           if ("headers" in resp && typeof resp.headers !== "undefined") {
             response.set(resp.headers);

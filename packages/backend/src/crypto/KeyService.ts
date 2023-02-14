@@ -6,7 +6,7 @@ import * as Context from "@fp-ts/data/Context";
 
 export interface KeyError {
   tag: "key_error";
-  error: Error;
+  error?: unknown;
 }
 
 export interface KeyService {
@@ -23,6 +23,9 @@ export interface KeyService {
     input: string,
     publicKey: Buffer
   ) => string | jsonwebtoken.JwtPayload;
+  exportPublickKeyJWK: (
+    b: Buffer
+  ) => Eff.Effect<never, KeyError, Record<string, unknown>>;
 }
 
 export const KeyService = Context.Tag<KeyService>();
@@ -31,3 +34,8 @@ export const generateKeyPair = Eff.serviceWithEffect(
   KeyService,
   ({ generateKeyPair }) => generateKeyPair()
 );
+
+export const exportPublickKeyJWK = (b: Buffer) =>
+  Eff.serviceWithEffect(KeyService, ({ exportPublickKeyJWK }) =>
+    exportPublickKeyJWK(b)
+  );

@@ -2,7 +2,7 @@ import * as S from "@fp-ts/schema";
 import { pipe } from "@fp-ts/core/Function";
 import { LtiToolConfiguration } from "./LtiToolConfiguration";
 import { Url } from "./Url";
-import { LocalizedKey } from "./LocalizedKey";
+import { LocalizedKey, LocalizedKeyOp } from "./LocalizedKey";
 
 const Scopes = S.string;
 
@@ -29,9 +29,9 @@ export const ToolConfiguration = pipe(
     scope: Scopes,
   }),
   S.extend(LocalizedKey("client_name")),
-  S.extend(LocalizedKey("client_uri")),
-  S.extend(LocalizedKey("tos_uri")),
-  S.extend(LocalizedKey("policy_uri"))
+  S.extend(LocalizedKeyOp("client_uri")),
+  S.extend(LocalizedKeyOp("tos_uri")),
+  S.extend(LocalizedKeyOp("policy_uri"))
 );
 
 export interface ToolConfiguration extends S.Infer<typeof ToolConfiguration> {}

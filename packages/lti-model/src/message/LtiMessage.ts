@@ -4,13 +4,15 @@ import { Url } from "../registration/Url";
 import { pipe } from "@fp-ts/core/Function";
 import { LocalizedKey } from "../registration/LocalizedKey";
 
-export const LtiMessageS = pipe(
+export const LtiMessage = pipe(
   S.struct({
-    type: LtiMessageType,
-    target_link_uri: Url,
-    custom_parameters: CustomParameters,
+    type: S.string,
+    target_link_uri: S.optional(Url),
+    custom_parameters: S.optional(CustomParameters),
+    icon_uri: S.optional(S.string),
+    placements: S.optional(S.array(S.string)),
   }),
   S.extend(LocalizedKey("label"))
 );
 
-export interface LtiMessage extends S.Infer<typeof LtiMessageS> {}
+export interface LtiMessage extends S.Infer<typeof LtiMessage> {}
