@@ -50,7 +50,13 @@ const handleLoginRequest = effRequestHandler(
     Eff.bind("registration", ({ params }) =>
       getRegistrationForId(params.registrationId)
     ),
-    Eff.map(succcessResponse) // todo change to redirect
+    Eff.map(({params, registration}) => {
+      // set cookie, then redirect to authorization endpoint?
+      // redirect to authorization endpoint
+      registration.platform_configuration.authorization_endpoint
+      registration.platform_configuration.authorization_server
+      params.login_hint
+    }) // todo change to redirect
     //Eff.bind('hmm', ({registration}) => registration.)
   )
 );

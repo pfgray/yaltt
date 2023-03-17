@@ -34,7 +34,7 @@ export const response =
 
 export const succcessResponse = response(200);
 export const redirectResponse = (location: string) =>
-  response(300)({
+  response(302)({
     headers: {
       Location: location,
     },
