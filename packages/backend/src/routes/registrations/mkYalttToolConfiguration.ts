@@ -29,7 +29,9 @@ export const mkYalttToolConfiguration =
       grant_types: ["client_credentials", "implicit"],
       jwks_uri: mkRegUrl(`/jwks`),
       initiate_login_uri: mkRegUrl(`/login`),
-      redirect_uris: [mkRegUrl("/launch")],
+      redirect_uris: [
+        mkRegUrl("/resource_link")
+      ],
       response_types: ["id_token"],
       scope: "",
       token_endpoint_auth_method: "private_key_jwt",

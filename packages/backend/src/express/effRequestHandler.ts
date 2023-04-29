@@ -32,12 +32,10 @@ export const response =
     headers,
   });
 
-export const succcessResponse = response(200);
+export const successResponse = response(200);
 export const redirectResponse = (location: string) =>
-  response(302)({
-    headers: {
-      Location: location,
-    },
+  response(302)(undefined, {
+    Location: location,
   });
 
 export type EffRequestHandler = (
@@ -132,7 +130,7 @@ export const effRequestHandler: EffRequestHandler =
                   console.log("Raw params:", JSON.stringify(e.params, null, 2));
                   console.error(JSON.stringify(e.error, null, 2));
                   response.status(400);
-                  response.json({ failure: "failed to parse params" });
+                  response.json({ failure: "failed to parse params", err: e.error });
                 },
                 key_error: (e) => {
                   response.status(500);
@@ -149,13 +147,14 @@ export const effRequestHandler: EffRequestHandler =
         } else {
           pgService.commit();
           const resp = exit.value;
+          console.log(`Response is: ${resp.status}`)
+          response.status(resp.status);
           if ("headers" in resp && typeof resp.headers !== "undefined") {
             response.set(resp.headers);
           }
           if ("body" in resp) {
             response.json(resp.body);
           }
-          response.status(resp.status);
         }
       }
     );

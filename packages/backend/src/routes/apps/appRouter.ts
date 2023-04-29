@@ -8,7 +8,7 @@ import * as S from "@fp-ts/schema";
 import { requireAuth } from "../../auth/auth";
 import {
   effRequestHandler,
-  succcessResponse,
+  successResponse,
 } from "../../express/effRequestHandler";
 import { pipe } from "@fp-ts/core/Function";
 import { authedRequest } from "../../auth/authedRequestHandler";
@@ -36,7 +36,7 @@ export const appIdParam = pipe(
 appRouter.get(
   "/apps",
   effRequestHandler(
-    pipe(authedRequest, Eff.flatMap(getAppsForUser), Eff.map(succcessResponse))
+    pipe(authedRequest, Eff.flatMap(getAppsForUser), Eff.map(successResponse))
   )
 );
 
@@ -58,7 +58,7 @@ appRouter.post(
         console.log("Got err:", err);
         return err;
       }),
-      Eff.map(succcessResponse)
+      Eff.map(successResponse)
     )
   )
 );

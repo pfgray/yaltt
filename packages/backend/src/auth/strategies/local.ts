@@ -4,7 +4,7 @@ import * as LocalStrategy from "passport-local";
 import { validatePassword } from "../../crypto/hash";
 import {
   effRequestHandler,
-  succcessResponse,
+  successResponse,
 } from "../../express/effRequestHandler";
 import { parseBody } from "../../express/parseBody";
 import {
@@ -69,6 +69,6 @@ export const signupPasswordRoute = effRequestHandler(
     ),
     Eff.flatMap(login),
     Eff.mapError(unauthenticatedError),
-    Eff.map(succcessResponse)
+    Eff.map(successResponse)
   )
 );

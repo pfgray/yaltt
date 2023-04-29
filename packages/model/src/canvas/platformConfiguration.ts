@@ -1,9 +1,9 @@
 import { PlatformConfiguration } from "lti-model";
 
-const CanvasHost = "https://canvas.docker";
+const CanvasHost = "http://canvas.docker";
 
 export const CanvasPlatformConfiguration: PlatformConfiguration = {
-  authorization_endpoint: CanvasHost,
+  authorization_endpoint: `${CanvasHost}/api/lti/authorize_redirect`,
   "https://purl.imsglobal.org/spec/lti-platform-configuration": {
     messages_supported: [""], // todo
     product_family_code: "canvas",

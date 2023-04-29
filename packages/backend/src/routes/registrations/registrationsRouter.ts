@@ -8,7 +8,7 @@ import * as S from "@fp-ts/schema";
 import { requireAuth } from "../../auth/auth";
 import {
   effRequestHandler,
-  succcessResponse,
+  successResponse,
 } from "../../express/effRequestHandler";
 import { pipe } from "@fp-ts/core/Function";
 import {
@@ -72,7 +72,7 @@ registrationRouter.get(
   pipe(
     appIdIsForUser,
     Eff.flatMap(({ id }) => getRegistrationsForAppId(id)),
-    Eff.map(succcessResponse),
+    Eff.map(successResponse),
     effRequestHandler
   )
 );
@@ -92,7 +92,7 @@ registrationRouter.post(
     Eff.flatMap(({ app, body }) =>
       createRegistrationForAppId(app.id, body.platformConfiguration)
     ),
-    Eff.map(succcessResponse),
+    Eff.map(successResponse),
     effRequestHandler
   )
 );
@@ -131,7 +131,7 @@ registrationRouter.get(
     Eff.map(({ reg, app, config, messages }) =>
       mkYalttToolConfiguration(config)(app, reg, default_claims, {}, messages)
     ),
-    Eff.map(succcessResponse),
+    Eff.map(successResponse),
     effRequestHandler
   )
 );
@@ -157,7 +157,7 @@ registrationRouter.get(
       ]
     ),
     Eff.map(({ reg, app, config, placements }) => {
-      return succcessResponse(
+      return successResponse(
         mkYalttCanvasToolConfiguration(config)(app, reg, [], {}, placements)
       );
     }),
@@ -182,7 +182,7 @@ registrationRouter.get(
       Eff.map((keys) => ({
         keys: keys.array,
       })),
-      Eff.map(succcessResponse)
+      Eff.map(successResponse)
     )
   )
 );

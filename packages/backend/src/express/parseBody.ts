@@ -5,7 +5,7 @@ import { NonEmptyReadonlyArray } from "@fp-ts/core/ReadonlyArray";
 import { ParseError } from "@fp-ts/schema/ParseResult";
 import * as P from "@fp-ts/schema/Parser";
 import * as S from "@fp-ts/schema";
-import { effRequestHandler, succcessResponse } from "./effRequestHandler";
+import { effRequestHandler, successResponse } from "./effRequestHandler";
 import { ExpressRequestService } from "./RequestService";
 
 export interface ParseBodyError {
@@ -13,6 +13,12 @@ export interface ParseBodyError {
   body: unknown;
   error: NonEmptyReadonlyArray<ParseError>;
 }
+
+export const parseBodyError = (body: unknown, error: NonEmptyReadonlyArray<ParseError>): ParseBodyError => ({
+  tag: "parse_body_error",
+  body,
+  error,
+})
 
 export const parseBody = <A>(bodySchema: S.Schema<A>) =>
   pipe(
@@ -22,11 +28,10 @@ export const parseBody = <A>(bodySchema: S.Schema<A>) =>
         request.body,
         P.decode(bodySchema),
         E.mapLeft(
-          (error): ParseBodyError => ({
-            tag: "parse_body_error",
-            body: request.body,
-            error,
-          })
+          error =>
+            parseBodyError(request.body,
+              error,
+            )
         ),
         Eff.fromEither
       )
@@ -42,6 +47,6 @@ export const withRequestBody =
       pipe(
         parseBody(bodySchema),
         Eff.flatMap(handler),
-        Eff.map(succcessResponse)
+        Eff.map(successResponse)
       )
     );

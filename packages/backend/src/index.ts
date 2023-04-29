@@ -8,12 +8,13 @@ import { authRouter } from "./auth/authRouter";
 import { appRouter } from "./routes/apps/appRouter";
 import {
   effRequestHandler,
-  succcessResponse,
+  successResponse,
 } from "./express/effRequestHandler";
 import { addUserWithLocalPassword } from "./model/users";
 import * as connect_pg_simple_ from "connect-pg-simple";
 import { registrationRouter } from "./routes/registrations/registrationsRouter";
 import * as Eff from "@effect/io/Effect";
+import { launchRouter } from "./routes/registrations/launchRouter";
 
 const app = express.default();
 const port = 3000;
@@ -66,10 +67,11 @@ app.listen(port, () => {
 app.get(
   "/insert",
   effRequestHandler(
-    Eff.map(addUserWithLocalPassword("peegee", "password"), succcessResponse)
+    Eff.map(addUserWithLocalPassword("peegee", "password"), successResponse)
   )
 );
 
 app.use("/api", authRouter);
 app.use("/api", appRouter);
 app.use("/api", registrationRouter);
+app.use("/api", launchRouter);
