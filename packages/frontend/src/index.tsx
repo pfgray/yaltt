@@ -40,7 +40,7 @@ const router = createBrowserRouter([
     path: "/",
     element: <App />,
     children: [
-      mkPath("apps", <Apps />),
+      mkPath("", <Apps />),
       mkPath("apps/:appId/registrations", <Registrations />),
       mkPath("users", <Users />),
       mkPath("contexts", <Contexts />),

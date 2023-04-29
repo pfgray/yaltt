@@ -5,16 +5,19 @@
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-22.05";
     flake-utils.url = "github:numtide/flake-utils";
     bun-flake.url = "github:pfgray/bun-flake";
+    gbt-flake.url = "/home/paul/dev/gbt";
   };
 
-  outputs = { self, nixpkgs, flake-utils, bun-flake }:
+  outputs = { self, nixpkgs, flake-utils, bun-flake, gbt-flake }:
     flake-utils.lib.eachDefaultSystem (system: let
       pkgs = nixpkgs.legacyPackages.${system};
       yaltt = pkgs.callPackage ./. {};
+      gbt = gbt-flake.packages.${system}.gbt;
       yarn2NixExtras = pkgs.callPackage ./nix/yarn2NixExtras {};
     in {
       devShell = pkgs.mkShell {
         packages = with pkgs; [
+          gbt
           pkgs.nodejs-16_x
           yarn
           bun-flake.outputs.packages.${system}.v0_5_1

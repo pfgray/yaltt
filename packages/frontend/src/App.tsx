@@ -138,7 +138,7 @@ export const App = () => {
             <Divider />
             <List>
               {[
-                { name: "Apps", path: "/apps" },
+                { name: "Apps", path: "/" },
                 { name: "Users", path: "/users" },
                 { name: "Contexts", path: "/contexts" },
                 { name: "Launches", path: "/launches" },
