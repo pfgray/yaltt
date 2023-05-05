@@ -1,5 +1,5 @@
-import * as S from "@fp-ts/schema";
-import { literal } from "@fp-ts/schema";
+import * as S from "@effect/schema/Schema";
+import { literal } from "@effect/schema/Schema";
 import { CanvasPrivacyLevels } from "./CanvasPrivacyLevel";
 import { CanvasToolExtensionSettings } from "./CanvasToolExtensionSettings";
 
@@ -11,5 +11,4 @@ export const CanvasToolExtension = S.struct({
   privacy_level: S.optional(S.literal(...Object.values(CanvasPrivacyLevels))),
 });
 
-export interface CanvasToolExtension
-  extends S.Infer<typeof CanvasToolExtension> {}
+export interface CanvasToolExtension extends S.To<typeof CanvasToolExtension> {}

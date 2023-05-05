@@ -1,4 +1,3 @@
-import { pipe } from "@fp-ts/core/Function";
 import * as passport from "passport";
 import * as LocalStrategy from "passport-local";
 import { validatePassword } from "../../crypto/hash";
@@ -11,11 +10,9 @@ import {
   getLoginByUsername,
   addUserWithLocalPassword,
 } from "../../model/users";
-import * as S from "@fp-ts/schema";
-import * as P from "@fp-ts/schema/Parser";
-import * as C from "@fp-ts/data/Context";
+import * as S from "@effect/schema/Schema";
 
-import * as Eff from "@effect/io/Effect";
+import { pipe, Effect, Option, Either } from "effect";
 import { login } from "../auth";
 import {
   unauthenticatedError,
@@ -41,13 +38,13 @@ import { PgService } from "../../db/PgService";
     const pgService = mkTransactionalPgService(pool);
     const eff = pipe(
       getLoginByUsername(username),
-      Eff.tap((user) =>
+      Effect.tap((user) =>
         validatePassword(password, user.salt, user.hashed_password)
       ),
-      Eff.provideService(PgService, pgService.service)
+      Effect.provideService(PgService, pgService.service)
     );
 
-    Eff.runCallback(eff, (status) => {
+    Effect.runCallback(eff, (status) => {
       if (status._tag === "Failure") {
         console.log("Failed to login user ", username, status.cause);
         cb(status.cause);
@@ -64,11 +61,11 @@ import { PgService } from "../../db/PgService";
 export const signupPasswordRoute = effRequestHandler(
   pipe(
     parseBody(S.struct({ username: S.string, password: S.string })),
-    Eff.flatMap(({ username, password }) =>
+    Effect.flatMap(({ username, password }) =>
       addUserWithLocalPassword(username, password)
     ),
-    Eff.flatMap(login),
-    Eff.mapError(unauthenticatedError),
-    Eff.map(successResponse)
+    Effect.flatMap(login),
+    Effect.mapError(unauthenticatedError),
+    Effect.map(successResponse)
   )
 );

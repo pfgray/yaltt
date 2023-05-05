@@ -1,11 +1,10 @@
-import { pipe } from "@fp-ts/core/Function";
-import * as S from "@fp-ts/schema";
+import { pipe, Either, Option, ReadonlyArray, Effect } from "effect";
+import * as S from "@effect/schema/Schema";
 import { getDecode, jsonBody, post } from "../../../lib/api/request";
 import { provideRequestService } from "../../../lib/api/requestServiceImpl";
 import * as F from "../../../lib/forms/form";
-import { useSchemaParams } from "../../../lib/react-router/useSchemaParams";
+import { useParsedParams } from "../../../lib/react-router/useSchemaParams";
 import { List } from "../List";
-import * as E from "@fp-ts/core/Either";
 import {
   Registration,
   stringToInteger,
@@ -64,40 +63,43 @@ const newRegistrationForm = (appId: number) =>
 
 const paramSchema = S.struct({ appId: stringToInteger });
 
+const wut = Registration;
+
 const fetchRegistrations = (appId: number) =>
-  pipe(getDecode(S.array(Registration))(`/api/apps/${appId}/registrations`));
+  getDecode(S.array(Registration))(`/api/apps/${appId}/registrations`);
 
 export const Registrations = () => {
-  const params = useSchemaParams(paramSchema);
+  const params = useParsedParams(paramSchema);
 
   return pipe(
     params,
-    E.match(
-      (err) => (
+    Either.match({
+      onLeft: (err) => (
         <div>
           Error parsing app id from params{" "}
           <pre>{JSON.stringify(err, null, 2)}</pre>
         </div>
       ),
-      ({ appId }) => (
-        <List
-          width="90vw"
-          newForm={newRegistrationForm(appId)}
-          editForm={newRegistrationForm(appId)}
-          entityName="Registration"
-          fetchValues={fetchRegistrations(appId)}
-          renderValues={(registrations) => ({
-            columns,
-            rows: registrations.map((r) => [
-              r.id,
-              `/api/registrations/${r.id}/jwks`,
-              `/api/registrations/${r.id}/configuration`,
-              `/api/registrations/${r.id}/canvas_configuration`,
-              r.platform_configuration.issuer,
-            ]),
-          })}
-        ></List>
-      )
-    )
+      onRight: ({ appId }) => (
+        <></>
+        // <List
+        //   width="90vw"
+        //   newForm={newRegistrationForm(appId)}
+        //   editForm={newRegistrationForm(appId)}
+        //   entityName="Registration"
+        //   fetchValues={fetchRegistrations(appId)}
+        //   renderValues={(registrations) => ({
+        //     columns,
+        //     rows: registrations.map((r) => [
+        //       r.id,
+        //       `/api/registrations/${r.id}/jwks`,
+        //       `/api/registrations/${r.id}/configuration`,
+        //       `/api/registrations/${r.id}/canvas_configuration`,
+        //       r.platform_configuration.issuer,
+        //     ]),
+        //   })}
+        // ></List>
+      ),
+    })
   );
 };

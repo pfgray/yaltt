@@ -1,13 +1,12 @@
 import * as pg from "pg";
 
-import * as Eff from "@effect/io/Effect";
-import * as Context from "@fp-ts/data/Context";
+import { pipe, Effect, Option, Either, Context } from "effect";
 
 export interface PgService {
   query: (
     query: string,
     values: unknown[]
-  ) => Eff.Effect<never, Error, pg.QueryResult<{}>>;
+  ) => Effect.Effect<never, Error, pg.QueryResult<{}>>;
 }
 
 export const PgService = Context.Tag<PgService>();

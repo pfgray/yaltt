@@ -1,7 +1,8 @@
-import { Button, createTheme, ThemeProvider } from "@mui/material";
 import * as React from "react";
 import { render } from "react-dom";
-import { App } from "./App";
+import { createRoot } from "react-dom/client";
+import { YalttRouterLayout } from "./YalttLayout";
+import "./index.css";
 
 import {
   createBrowserRouter,
@@ -14,16 +15,10 @@ import { Contexts } from "./views/lists/contexts/Contexts";
 import { Launches } from "./views/lists/launches/Launches";
 import { Account } from "./views/lists/account/Account";
 import SignIn from "./views/login/SignIn";
-import { green, purple } from "@mui/material/colors";
 import { Registrations } from "./views/lists/registrations/Registrations";
-
-const theme = createTheme({
-  palette: {
-    primary: {
-      main: "#009973", // "#00bcd4",
-    },
-  },
-});
+import { AppDetails } from "./views/lists/apps/AppDetails";
+import { DynamicRegistration } from "./views/lists/registrations/DynamicRegistration";
+import { NewManualRegistration } from "./views/registration/NewManualRegistration";
 
 const mkPath = (
   path: string,
@@ -38,9 +33,20 @@ const mkPath = (
 const router = createBrowserRouter([
   {
     path: "/",
-    element: <App />,
+    element: <Apps />,
+  },
+  {
+    path: "/apps/:appId",
+    element: <AppDetails />,
+  },
+  {
+    path: "/apps/:appId/new-registration",
+    element: <NewManualRegistration />,
+  },
+  {
+    path: "/",
+    element: <YalttRouterLayout />,
     children: [
-      mkPath("", <Apps />),
       mkPath("apps/:appId/registrations", <Registrations />),
       mkPath("users", <Users />),
       mkPath("contexts", <Contexts />),
@@ -56,16 +62,17 @@ const router = createBrowserRouter([
     path: "/signup",
     element: <SignIn />,
   },
+  {
+    path: "/apps/:appId/dynamic-registration",
+    element: <DynamicRegistration />,
+  },
 ]);
 
 const el = document.getElementById("main");
 if (el) {
-  render(
+  createRoot(el).render(
     <React.StrictMode>
-      <ThemeProvider theme={theme}>
-        <RouterProvider router={router} />
-      </ThemeProvider>
-    </React.StrictMode>,
-    el
+      <RouterProvider router={router} />
+    </React.StrictMode>
   );
 }

@@ -1,21 +1,16 @@
 import * as express from "express";
 import * as passportBase from "passport";
-import * as Eff from "@effect/io/Effect";
+import { pipe, Effect, Option, Either, ReadonlyArray, String } from "effect";
 import * as crypto from "crypto";
 
 import * as multer from "multer";
-import * as S from "@fp-ts/schema";
-import * as O from "@fp-ts/core/Option";
-import * as R from "@fp-ts/core/ReadonlyRecord";
-import * as RA from "@fp-ts/core/ReadonlyArray";
-import * as Str from "@fp-ts/core/String";
-import { requireAuth } from "../../auth/auth";
+import * as S from "@effect/schema/Schema";
 import {
   effRequestHandler,
   redirectResponse,
   successResponse,
 } from "../../express/effRequestHandler";
-import { pipe } from "@fp-ts/core/Function";
+
 import {
   authedRequest,
   unauthorizedError,
@@ -33,17 +28,16 @@ import { stringToInteger } from "@yaltt/model";
 import { appIdParam } from "../apps/appRouter";
 import { getKeysWithoutPrivateKeyForRegistrationId } from "../../model/entities/keys";
 import { parseBody, parseBodyError } from "../../express/parseBody";
-import { pipeableWithTrace } from "@effect/io/Debug";
-import { Foldable } from "@fp-ts/core/Either";
-import { string } from "@fp-ts/schema";
 import { JsonWebToken } from "@yaltt/model";
 
 const upload = multer.default();
 export const launchRouter = express.Router();
 
-const loginUrlParams = parseParams(S.struct({
-  registrationId: stringToInteger,
-}))
+const loginUrlParams = parseParams(
+  S.struct({
+    registrationId: stringToInteger,
+  })
+);
 
 const loginParameters = parseBodyOrParams(
   S.struct({
@@ -59,100 +53,119 @@ const loginParameters = parseBodyOrParams(
 const handleLoginRequest = effRequestHandler(
   pipe(
     loginUrlParams,
-    Eff.bind("params", () => loginParameters),
-    Eff.bind("registration", ({ registrationId }) =>
+    Effect.bind("params", () => loginParameters),
+    Effect.bind("registration", ({ registrationId }) =>
       getRegistrationForId(registrationId)
     ),
-    Eff.map(({ params, registration }) => {
+    Effect.map(({ params, registration }) => {
       // set cookie, then redirect to authorization endpoint?
       // redirect to authorization endpoint
 
       const redirectParams = pipe(
         params,
-        pick('login_hint', 'lti_message_hint', 'client_id'),
+        pick("login_hint", "lti_message_hint", "client_id"),
         withValues({
           redirect_uri: params.target_link_uri,
-          scope: 'openid',
+          scope: "openid",
           nonce: crypto.randomUUID(),
-          prompt: 'none',
-          response_mode: 'form_post',
-          response_type: 'id_token'
+          prompt: "none",
+          response_mode: "form_post",
+          response_type: "id_token",
         }),
         toParams
-      )
-      const redirectUrl = `${registration.platform_configuration.authorization_endpoint}${redirectParams}`
-      return redirectResponse(redirectUrl)
+      );
+      const redirectUrl = `${registration.platform_configuration.authorization_endpoint}${redirectParams}`;
+      return redirectResponse(redirectUrl);
     }) // todo change to redirect
-    //Eff.bind('hmm', ({registration}) => registration.)
+    //Effect.bind('hmm', ({registration}) => registration.)
   )
 );
 
-const toParams = (params: Record<string, string>) => pipe(
-  params,
-  Object.entries,
-  RA.map(([key, value]) => `${key}=${encodeURIComponent(value)}`),
-  RA.join("&"),
-  s => s === '' ? '' : `?${s}`
-)
-
-const withValues = (obj: Record<string, string>) => (rest: Record<string, string>) => ({
-  ...rest,
-  ...obj
-})
-
-const pick = <K extends string>(...keys: K[]) => <R extends Partial<Record<K, unknown>>>(record: R): Partial<Record<K, string>> => {
-  return pipe(
-    record,
+const toParams = (params: Record<string, string>) =>
+  pipe(
+    params,
     Object.entries,
-    RA.filter(([key]) => RA.contains(Str.Equivalence)(key)(keys)),
-    RA.filterMap(([key, value]) => pipe(
-      value,
-      O.fromNullable,
-      O.filter(v => typeof v === 'string'),
-      O.map((v) => [key, v] as const)
-    )),
-    Object.fromEntries
-  )
-}
+    ReadonlyArray.map(([key, value]) => `${key}=${encodeURIComponent(value)}`),
+    ReadonlyArray.join("&"),
+    (s) => (s === "" ? "" : `?${s}`)
+  );
+
+const withValues =
+  (obj: Record<string, string>) => (rest: Record<string, string>) => ({
+    ...rest,
+    ...obj,
+  });
+
+const pick =
+  <K extends string>(...keys: K[]) =>
+  <R extends Partial<Record<K, unknown>>>(
+    record: R
+  ): Partial<Record<K, string>> => {
+    return pipe(
+      record,
+      Object.entries,
+      ReadonlyArray.filter(([key]) => ReadonlyArray.contains(key)(keys)),
+      ReadonlyArray.filterMap(([key, value]) =>
+        pipe(
+          value,
+          Option.fromNullable,
+          Option.filter((v) => typeof v === "string"),
+          Option.map((v) => [key, v] as const)
+        )
+      ),
+      Object.fromEntries
+    );
+  };
 
 launchRouter.get("/registrations/:registrationId/login", handleLoginRequest);
 launchRouter.post("/registrations/:registrationId/login", handleLoginRequest);
 
-const launchUrlParams = parseParams(S.struct({
-  registrationId: stringToInteger,
-  type: S.literal('resource_link')
-}));
-
+const launchUrlParams = parseParams(
+  S.struct({
+    registrationId: stringToInteger,
+    type: S.literal("resource_link"),
+  })
+);
 
 const idToken = pipe(
-  parseBodyOrParams(S.struct({
-    id_token: string,
-  })),
-  Eff.flatMap(s => pipe(
-    Eff.fromEither(S.decode(JsonWebToken(
-      S.struct({
-        aud: S.string,
-        iss: S.string,
-        'https://www.instructure.com/placement': S.optional(S.string),
-        'https://purl.imsglobal.org/spec/lti/claim/context': S.optional(S.struct({
-          id: S.string,
-          label: S.string,
-          title: S.string,
-          type: S.array(S.string)
-        }))
-      })
-    ))(s.id_token, {isUnexpectedAllowed: true})),
-    Eff.mapError(errs => parseBodyError(s, errs))
-  )),
-)
+  parseBodyOrParams(
+    S.struct({
+      id_token: S.string,
+    })
+  ),
+  Effect.flatMap((s) =>
+    pipe(
+      S.parse(
+        JsonWebToken(
+          S.struct({
+            aud: S.string,
+            iss: S.string,
+            "https://www.instructure.com/placement": S.optional(S.string),
+            "https://purl.imsglobal.org/spec/lti/claim/context": S.optional(
+              S.struct({
+                id: S.string,
+                label: S.string,
+                title: S.string,
+                type: S.array(S.string),
+              })
+            ),
+          })
+        )
+      )(s.id_token, { onExcessProperty: "ignore" }),
+      Effect.mapError((errs) => parseBodyError(s, errs))
+    )
+  )
+);
 
 const handleLaunchRequest = effRequestHandler(
   pipe(
     launchUrlParams,
-    Eff.map(params => ({ params })),
-    Eff.bind('idToken', () => idToken),
-    Eff.map(({ params, idToken }) => successResponse({ params, idToken }))
+    Effect.bindTo("params"),
+    // Effect.map((params) => ({ params })),
+    Effect.bind("idToken", () => idToken),
+    Effect.map(({ params, idToken }) => successResponse({ params, idToken })),
+    (a) => a
   )
-)
+);
 
 launchRouter.post("/registrations/:registrationId/:type", handleLaunchRequest);

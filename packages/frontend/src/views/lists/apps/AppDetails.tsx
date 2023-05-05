@@ -1,0 +1,297 @@
+import { pipe, Either, Option, ReadonlyArray, Effect } from "effect";
+import * as S from "@effect/schema/Schema";
+import { getDecode, jsonBody, post } from "../../../lib/api/request";
+import { provideRequestService } from "../../../lib/api/requestServiceImpl";
+import * as F from "../../../lib/forms/form";
+import { useParsedParams } from "../../../lib/react-router/useSchemaParams";
+import { List, NewEntityForm } from "../List";
+import {
+  App,
+  Registration,
+  stringToInteger,
+  CanvasPlatformConfiguration,
+} from "@yaltt/model";
+import { Link } from "react-router-dom";
+import { YalttLayout } from "../../../YalttLayout";
+import { WithRequest } from "../../../lib/api/WithRequest";
+import React from "react";
+import { format } from "timeago.js";
+import { TrashIcon, EllipsisVerticalIcon } from "@heroicons/react/24/outline";
+
+const paramSchema = S.struct({ appId: stringToInteger });
+
+const AppWithRegistrations = App.pipe(
+  S.extend(
+    S.struct({
+      registrations: S.array(Registration),
+    })
+  )
+);
+
+type AppWithRegistrations = S.To<typeof AppWithRegistrations>;
+
+const fetchApp = (appId: number) =>
+  getDecode(AppWithRegistrations)(`/api/apps/${appId}`);
+
+export const AppDetails = () => {
+  const params = useParsedParams(paramSchema);
+
+  const manualDialogRef = React.useRef<HTMLDialogElement>(null);
+  const dynamicRegDialogRef = React.useRef<HTMLDialogElement>(null);
+
+  return pipe(
+    params,
+    Either.match({
+      onLeft: (err) => (
+        <div>
+          Error parsing app id from params{" "}
+          <pre>{JSON.stringify(err, null, 2)}</pre>
+        </div>
+      ),
+      onRight: ({ appId }) => (
+        <>
+          <WithRequest eff={fetchApp(appId)}>
+            {(app) => (
+              <YalttLayout
+                header={
+                  <div className="text-sm breadcrumbs">
+                    <ul>
+                      <li>
+                        <Link className="link" to={`/`}>
+                          Apps
+                        </Link>
+                      </li>
+                      <li>{app.name}</li>
+                    </ul>
+                  </div>
+                }
+              >
+                <div className="flex flex-col w-full">
+                  {app.registrations.length === 0 ? (
+                    <div className="flex flex-1 items-center justify-center">
+                      <EmptyRegistrationsView
+                        app={app}
+                        manualDialogRef={manualDialogRef}
+                        dynamicRegDialogRef={dynamicRegDialogRef}
+                      />
+                    </div>
+                  ) : (
+                    <div className="flex flex-1 pt-20 justify-center">
+                      <RegistrationsList
+                        app={app}
+                        manualDialogRef={manualDialogRef}
+                        dynamicRegDialogRef={dynamicRegDialogRef}
+                      />
+                      {/* <pre>{JSON.stringify(app, null, 2)}</pre> */}
+                    </div>
+                  )}
+                </div>
+              </YalttLayout>
+            )}
+          </WithRequest>
+
+          <dialog ref={manualDialogRef} className="modal">
+            <div className="modal-box w-11/12 max-w-3xl">
+              <NewEntityForm
+                close={() => {
+                  manualDialogRef.current?.close();
+                }}
+                form={newRegistrationForm(appId)}
+                entityName={"Registration"}
+              />
+            </div>
+          </dialog>
+
+          <dialog ref={dynamicRegDialogRef} className="modal">
+            <div className="modal-box text-center w-11/12 max-w-3xl">
+              <article className="prose">
+                <h2 className="flex-none mb-2">Dynamic registration url</h2>
+                <p className="flex-none mb-2">
+                  Copy this url to paste into an LTI Platform
+                </p>
+              </article>
+              <div className="w-auto overflow-x-auto">
+                <div className="mockup-code before:content-none">
+                  <pre>
+                    <code>{url(`/api/apps/${appId}/registrations/new`)}</code>
+                  </pre>
+                </div>
+              </div>
+              <div className="modal-action">
+                <button
+                  className="btn"
+                  onClick={() => {
+                    dynamicRegDialogRef.current?.close();
+                  }}
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          </dialog>
+        </>
+      ),
+    })
+  );
+};
+
+const newRegistrationForm = (appId: number) =>
+  F.mkForm({
+    platformConfiguration: F.json(
+      "Platform Configuration",
+      JSON.stringify(CanvasPlatformConfiguration, null, 2)
+    ),
+  })((fields) =>
+    pipe(
+      provideRequestService(
+        post(`/api/apps/${appId}/registrations`, jsonBody(fields))
+      )
+    )
+  );
+
+const url = (path: string) => {
+  const host = window.location.hostname;
+  const port = window.location.port === "" ? "" : `:${window.location.port}`;
+  const scheme = window.location.protocol;
+  return `${scheme}//${host}${port}${path}`;
+};
+
+type SubViewProps = {
+  app: AppWithRegistrations;
+  dynamicRegDialogRef: React.RefObject<HTMLDialogElement>;
+  manualDialogRef: React.RefObject<HTMLDialogElement>;
+};
+
+const EmptyRegistrationsView = (props: SubViewProps) => {
+  return (
+    <div className="w-full">
+      <div className="hero bg-base-100">
+        <div className="hero-content text-center">
+          <div className="max-w-md">
+            <h1 className="text-5xl font-bold">Create Registration</h1>
+            <p className="py-6">
+              Each app can have many "registrations." A registration is a
+              connection point to an LTI Platform. You can connect one LTI
+              Platform per registration.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div className="flex-1 flex w-full h-36 justify-around place-items-center">
+        <div className="flex-1 flex justify-end">
+          <button
+            className="btn btn-primary w-64"
+            onClick={() => {
+              props.dynamicRegDialogRef.current?.showModal();
+            }}
+          >
+            Dynamic Registration
+          </button>
+        </div>
+        <div className="flex-0 divider divider-horizontal">OR</div>
+        <div className="flex-1 flex justify-start">
+          <button
+            className="btn btn-primary w-64"
+            onClick={() => {
+              props.manualDialogRef.current?.showModal();
+            }}
+          >
+            Create Manual
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const RegistrationsList = (props: SubViewProps) => {
+  return (
+    <div className="">
+      <div className="flex-1 flex w-full p-1 justify-end place-items-center">
+        <div className="flex-1 flex justify-start prose">
+          <h1>Integrations</h1>
+        </div>
+        <div className="flex justify-end">
+          <button
+            className="btn btn-primary w-64 btn-sm"
+            onClick={() => {
+              props.dynamicRegDialogRef.current?.showModal();
+            }}
+          >
+            Dynamic Registration
+          </button>
+        </div>
+        <div className="divider divider-horizontal"></div>
+        <div className="flex justify-start">
+          <button
+            className="btn btn-primary w-64 btn-sm"
+            onClick={() => {
+              props.manualDialogRef.current?.showModal();
+            }}
+          >
+            Create Manual
+          </button>
+        </div>
+      </div>
+      <div className="divider"></div>
+      <table className="table table-zebra">
+        {/* head */}
+        <thead>
+          <tr>
+            <th>Issuer</th>
+            <th>Last Launched</th>
+            <th className="text-center">Launches</th>
+            <th className="text-center">Contexts</th>
+            <th className="text-center">Users</th>
+            <th>Config</th>
+            <th>Type</th>
+            <th>Created</th>
+          </tr>
+        </thead>
+        <tbody>
+          {props.app.registrations.map((r) => (
+            <tr key={r.id}>
+              <td>
+                <a className="link" href={r.platform_configuration.issuer}>
+                  {r.platform_configuration.issuer}
+                </a>
+              </td>
+              <td>{format(r.created)}</td>
+              <td className="text-center">{0}</td>
+              <td className="text-center">{0}</td>
+              <td className="text-center">{0}</td>
+              <td>
+                <a
+                  href={`/api/registrations/${r.id}/canvas_configuration`}
+                  className="link"
+                >
+                  config.json
+                </a>
+              </td>
+              <td>{r.type}</td>
+              <td>{format(r.created)}</td>
+              <td>
+                <div className="dropdown dropdown-end">
+                  <label tabIndex={0} className="">
+                    <button>
+                      <EllipsisVerticalIcon className="w-5" />
+                    </button>
+                  </label>
+                  <ul
+                    tabIndex={0}
+                    className="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-52"
+                  >
+                    <li>
+                      <a>Delete</a>
+                    </li>
+                  </ul>
+                </div>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+};

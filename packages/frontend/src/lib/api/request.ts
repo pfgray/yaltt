@@ -1,12 +1,9 @@
-import * as Eff from "@effect/io/Effect";
-import { flow, pipe } from "@fp-ts/core/Function";
-import { NonEmptyReadonlyArray } from "@fp-ts/core/ReadonlyArray";
-import * as PE from "@fp-ts/schema/ParseResult";
-import * as P from "@fp-ts/schema/Parser";
-import * as S from "@fp-ts/schema";
-import * as Context from "@fp-ts/data/Context";
-import * as O from "@fp-ts/core/Option";
+import { pipe, Either, Option, ReadonlyArray, Effect, Context } from "effect";
+import * as PE from "@effect/schema/ParseResult";
+import * as S from "@effect/schema/Schema";
+import * as P from "@effect/schema/Parser";
 import { match } from "@yaltt/model";
+import { flow } from "effect/Function";
 
 export interface RequestService {
   config: {
@@ -52,56 +49,60 @@ const request_ = (
   }
 ) =>
   pipe(
-    Eff.serviceWithEffect(RequestService, ({ config }) =>
-      Eff.asyncInterrupt<never, never, Response>((resume) => {
-        const req = new XMLHttpRequest();
-        req.addEventListener("load", () => {
-          resume(
-            Eff.succeed({
-              body: JSON.parse(req.response),
-              status: req.status,
+    RequestService.pipe(
+      Effect.flatMap(({ config }) =>
+        Effect.async<never, never, Response>((resume) => {
+          const req = new XMLHttpRequest();
+          req.addEventListener("load", () => {
+            resume(
+              Effect.succeed({
+                body: JSON.parse(req.response),
+                status: req.status,
+              })
+            );
+          });
+          req.open(method, `${config.baseUrl}${url}`);
+          pipe(
+            options,
+            Option.fromNullable,
+            Option.bindTo("options"),
+            Option.bind("body", ({ options }) =>
+              Option.fromNullable(options.body)
+            ),
+            Option.match({
+              onNone: () => {
+                req.send();
+              },
+              onSome: ({ options, body }) => {
+                pipe(
+                  body,
+                  match({
+                    form_post_data: () => Option.none<string>(),
+                    json_post_data: () => Option.some("application/json"),
+                  }),
+                  Option.match({
+                    onNone: () => {},
+                    onSome: (contentType) => {
+                      req.setRequestHeader("Content-Type", contentType);
+                    },
+                  })
+                );
+
+                const data = pipe(
+                  body,
+                  match({
+                    form_post_data: ({ body }) => body,
+                    json_post_data: ({ body }) => JSON.stringify(body),
+                  })
+                );
+                // req.withCredentials = true;
+                req.send(data);
+              },
             })
           );
-        });
-        req.open(method, `${config.baseUrl}${url}`);
-        pipe(
-          options,
-          O.fromNullable,
-          O.bindTo("options"),
-          O.bind("body", ({ options }) => O.fromNullable(options.body)),
-          O.match(
-            () => {
-              req.send();
-            },
-            ({ options, body }) => {
-              pipe(
-                body,
-                match({
-                  form_post_data: () => O.none<string>(),
-                  json_post_data: () => O.some("application/json"),
-                }),
-                O.match(
-                  () => {},
-                  (contentType) => {
-                    req.setRequestHeader("Content-Type", contentType);
-                  }
-                )
-              );
-
-              const data = pipe(
-                body,
-                match({
-                  form_post_data: ({ body }) => body,
-                  json_post_data: ({ body }) => JSON.stringify(body),
-                })
-              );
-              // req.withCredentials = true;
-              req.send(data);
-            }
-          )
-        );
-        return Eff.sync(() => req.abort());
-      })
+          return Effect.sync(() => req.abort());
+        })
+      )
     )
   );
 
@@ -123,18 +124,18 @@ interface ServerError {
   body: unknown;
 }
 
-const handleErrorStatus = Eff.flatMap<
+const handleErrorStatus = Effect.flatMap<
   Response,
   never,
   ClientError | ServerError,
   Response
 >((resp) => {
   if (resp.status >= 400 && resp.status < 500) {
-    return Eff.fail({ tag: "req_client_error", ...resp } as const);
+    return Effect.fail({ tag: "req_client_error", ...resp } as const);
   } else if (resp.status >= 500) {
-    return Eff.fail({ tag: "req_server_error", ...resp } as const);
+    return Effect.fail({ tag: "req_server_error", ...resp } as const);
   } else {
-    return Eff.succeed(resp);
+    return Effect.succeed(resp);
   }
 });
 
@@ -143,17 +144,16 @@ const handleErrorStatus = Eff.flatMap<
  */
 export interface DecodeError {
   tag: "decode_error";
-  errors: NonEmptyReadonlyArray<PE.ParseError>;
+  errors: PE.ParseError;
   actual: unknown;
 }
 
-const decodeRespBody = <A>(schema: S.Schema<A>) =>
-  Eff.flatMap<Response, never, DecodeError, A>((resp) =>
+const decodeRespBody = <A>(schema: S.Schema<any, A>) =>
+  Effect.flatMap<Response, never, DecodeError, A>((resp) =>
     pipe(
       resp.body,
-      P.decode(schema),
-      Eff.fromEither,
-      Eff.mapError(
+      P.parse(schema),
+      Effect.mapError(
         (errors): DecodeError => ({
           tag: "decode_error",
           errors,
@@ -166,7 +166,8 @@ const decodeRespBody = <A>(schema: S.Schema<A>) =>
 export const get = (url: string | URL) =>
   pipe(request_("GET", url, {}), handleErrorStatus);
 
-export const getDecode = <A>(s: S.Schema<A>) => flow(get, decodeRespBody(s));
+export const getDecode = <A>(s: S.Schema<any, A>) =>
+  flow(get, decodeRespBody(s));
 
 export const post = (url: string | URL, body?: PostData) =>
   pipe(

@@ -1,10 +1,10 @@
 import * as crypto from "crypto";
-import * as Eff from "@effect/io/Effect";
+import { Effect } from "effect";
 import * as jsonwebtoken from "jsonwebtoken";
 import { KeyError, KeyService } from "./KeyService";
 
 const generateKeyPair: KeyService["generateKeyPair"] = () =>
-  Eff.async((resume) => {
+  Effect.async((resume) => {
     crypto.generateKeyPair(
       "rsa",
       {
@@ -20,9 +20,9 @@ const generateKeyPair: KeyService["generateKeyPair"] = () =>
       },
       (err, publicKey, privateKey) => {
         if (err) {
-          resume(Eff.fail({ tag: "key_error", error: err }));
+          resume(Effect.fail({ tag: "key_error", error: err }));
         } else {
-          resume(Eff.succeed({ publicKey, privateKey }));
+          resume(Effect.succeed({ publicKey, privateKey }));
         }
       }
     );
@@ -36,9 +36,9 @@ const verify: KeyService["verify"] = (input: string, publicKey: Buffer) =>
 
 const exportPublickKeyJWK = (
   publicKey: Buffer
-): Eff.Effect<never, KeyError, Record<string, unknown>> =>
-  Eff.tryCatch(
-    () =>
+): Effect.Effect<never, KeyError, Record<string, unknown>> =>
+  Effect.try({
+    try: () =>
       crypto
         .createPublicKey({
           format: "der",
@@ -48,13 +48,13 @@ const exportPublickKeyJWK = (
         .export({
           format: "jwk",
         }),
-    (error) => ({
+    catch: (error) => ({
       tag: "key_error",
       error,
-    })
-  );
+    }),
+  });
 
-export const provideRsaKeyService = Eff.provideService(KeyService, {
+export const provideRsaKeyService = Effect.provideService(KeyService, {
   generateKeyPair,
   sign,
   verify,

@@ -1,7 +1,5 @@
-import * as Eff from "@effect/io/Effect";
-import * as Exit from "@effect/io/Exit";
-import * as Cause from "@effect/io/Cause";
-import { pipe } from "@fp-ts/core/Function";
+import { pipe, Effect, Option, Either, Exit, Cause } from "effect";
+
 import * as express from "express";
 import { ExpressRequestService } from "./RequestService";
 import { DecodeError, NoRecordFound, PgError, pool } from "../db/db";
@@ -12,12 +10,19 @@ import {
 } from "../auth/authedRequestHandler";
 import { match } from "@yaltt/model";
 import { ParseBodyError } from "./parseBody";
-import { ParseParamsError } from "./parseParams";
+import { ParseParamsError, ParseQueryError } from "./parseParams";
 import { mkTransactionalPgService } from "../db/TransactionalPgService";
 import { PgService } from "../db/PgService";
 import { KeyError, KeyService } from "../crypto/KeyService";
 import { provideRsaKeyService } from "../crypto/RsaKeyService";
 import { ConfigService } from "../config/ConfigService";
+import {
+  FetchJsonParseError,
+  FetchError,
+  FetchService,
+} from "../fetch/FetchService";
+import { mkHttpFetchService } from "../fetch/HttpFetchService";
+import { formatErrors } from "@effect/schema/TreeFormatter";
 
 type Response = {
   status: number;
@@ -39,8 +44,12 @@ export const redirectResponse = (location: string) =>
   });
 
 export type EffRequestHandler = (
-  eff: Eff.Effect<
-    ExpressRequestService | PgService | KeyService | ConfigService,
+  eff: Effect.Effect<
+    | ExpressRequestService
+    | PgService
+    | KeyService
+    | ConfigService
+    | FetchService,
     | PgError
     | DecodeError
     | NoRecordFound
@@ -49,6 +58,9 @@ export type EffRequestHandler = (
     | UnauthorizedError
     | ParseBodyError
     | ParseParamsError
+    | ParseQueryError
+    | FetchError
+    | FetchJsonParseError
     | KeyError,
     Response
   >
@@ -57,21 +69,22 @@ export type EffRequestHandler = (
 export const effRequestHandler: EffRequestHandler =
   (eff) => (request, response) => {
     const pgService = mkTransactionalPgService(pool);
-    Eff.runCallback(
+    Effect.runCallback(
       pipe(
         eff,
-        Eff.provideService(ExpressRequestService, {
+        Effect.provideService(ExpressRequestService, {
           request,
           response,
         }),
-        Eff.provideService(PgService, pgService.service),
+        Effect.provideService(PgService, pgService.service),
         provideRsaKeyService,
-        Eff.provideService(ConfigService, {
+        Effect.provideService(ConfigService, {
           config: {
-            primaryHostname: "localhost",
-            ssl: false,
+            primaryHostname: process.env.YALTT_HOST || "localhost",
+            ssl: process.env.SSL === "true" || false,
           },
-        })
+        }),
+        Effect.provideService(FetchService, mkHttpFetchService())
       ),
       (exit) => {
         if (Exit.isFailure(exit)) {
@@ -79,13 +92,13 @@ export const effRequestHandler: EffRequestHandler =
           pgService.rollback();
           pipe(
             exit.cause,
-            Cause.match(
-              void 0,
-              match({
+            Cause.match({
+              onEmpty: void 0,
+              onFail: match({
                 decode_error: (v) => {
                   console.error("Decode Error Running: ", v.query);
                   console.error("Actual value:", v.actual);
-                  console.error(JSON.stringify(v.errors, null, 2));
+                  console.error(JSON.stringify(v.error, null, 2));
                   response.status(500);
                   response.json({ failure: "An error ocurred." });
                 },
@@ -121,33 +134,61 @@ export const effRequestHandler: EffRequestHandler =
                 parse_body_error: (e) => {
                   console.error("Parse body error");
                   console.log("Raw body:", JSON.stringify(e.body, null, 2));
-                  console.error(JSON.stringify(e.error, null, 2));
+                  console.error(formatErrors(e.error.errors));
                   response.status(400);
-                  response.json({ failure: "failed to parse body" });
+                  response.json({
+                    failure: "failed to parse body",
+                    message: formatErrors(e.error.errors),
+                  });
                 },
                 parse_params_error: (e) => {
                   console.error("Parse params error");
                   console.log("Raw params:", JSON.stringify(e.params, null, 2));
                   console.error(JSON.stringify(e.error, null, 2));
                   response.status(400);
-                  response.json({ failure: "failed to parse params", err: e.error });
+                  response.json({
+                    failure: "failed to parse params",
+                    raw: e.params,
+                    err: e.error,
+                  });
+                },
+                parse_query_error: (e) => {
+                  console.error("Parse query error");
+                  console.log("Raw query:", JSON.stringify(e.query, null, 2));
+                  console.error(JSON.stringify(e.error, null, 2));
+                  response.status(400);
+                  response.json({
+                    failure: "failed to parse query",
+                    raw: e.query,
+                    err: e.error,
+                  });
                 },
                 key_error: (e) => {
                   response.status(500);
                   response.json({ error: "an error ocurred" });
                 },
+                fetch_error: (e) => {
+                  console.error("Fetch Error", e);
+                  response.status(500);
+                  response.json({ error: "an error ocurred" });
+                },
+                fetch_json_parse_error: (e) => {
+                  console.error("Fetch Error", e);
+                  response.status(500);
+                  response.json({ error: "an error ocurred" });
+                },
               }),
-              () => {},
-              () => {},
-              () => {},
-              () => {},
-              () => {}
-            )
+              onDie: () => {},
+              onInterrupt: () => {},
+              onAnnotated: () => {},
+              onSequential: () => {},
+              onParallel: () => {},
+            })
           );
         } else {
           pgService.commit();
           const resp = exit.value;
-          console.log(`Response is: ${resp.status}`)
+          console.log(`Response is: ${resp.status}`);
           response.status(resp.status);
           if ("headers" in resp && typeof resp.headers !== "undefined") {
             response.set(resp.headers);

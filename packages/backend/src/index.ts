@@ -13,11 +13,25 @@ import {
 import { addUserWithLocalPassword } from "./model/users";
 import * as connect_pg_simple_ from "connect-pg-simple";
 import { registrationRouter } from "./routes/registrations/registrationsRouter";
-import * as Eff from "@effect/io/Effect";
+import { pipe, Effect, Option, Either } from "effect";
 import { launchRouter } from "./routes/registrations/launchRouter";
+import RedisStore from "connect-redis";
+import { createClient } from "redis";
 
 const app = express.default();
 const port = 3000;
+
+const redisClient = createClient({
+  socket: {
+    host: process.env.REDIS_HOST,
+  },
+});
+redisClient.connect().catch(console.error);
+
+const redisStore = new RedisStore({
+  client: redisClient,
+  prefix: "yaltt:",
+});
 
 app.use(
   cors.default({
@@ -29,28 +43,18 @@ app.use(
 
 app.use(
   session.default({
-    store: new (connect_pg_simple_.default(session.default))({
-      pool,
-      createTableIfMissing: true,
-    }),
+    store: redisStore,
     secret: "keyboard cat",
-    resave: false,
+    resave: true,
     cookie: { maxAge: 30 * 24 * 60 * 60 * 1000 }, // 30 days
-    saveUninitialized: true,
+    saveUninitialized: false,
   })
 );
 
+app.use(((passport as any).default as typeof passport).authenticate("session"));
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
-app.use(cookieParser.default());
-app.use(((passport as any).default as typeof passport).authenticate("session"));
-app.use(function (req: any, res, next) {
-  var msgs = req.session.messages || [];
-  res.locals.messages = msgs;
-  res.locals.hasMessages = !!msgs.length;
-  req.session.messages = [];
-  next();
-});
 
 app.get("/", (req, res) => {
   res.send("Hello World!");
@@ -67,7 +71,7 @@ app.listen(port, () => {
 app.get(
   "/insert",
   effRequestHandler(
-    Eff.map(addUserWithLocalPassword("peegee", "password"), successResponse)
+    Effect.map(addUserWithLocalPassword("peegee", "password"), successResponse)
   )
 );
 

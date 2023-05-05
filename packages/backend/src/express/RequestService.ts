@@ -1,9 +1,11 @@
 import * as express from "express";
-import * as Context from "@fp-ts/data/Context";
+import { Context } from "effect";
 
 export interface ExpressRequestService {
   readonly request: express.Request<unknown, unknown, unknown, unknown, {}>;
   readonly response: express.Response<unknown, {}>;
 }
 
-export const ExpressRequestService = Context.Tag<ExpressRequestService>();
+export const ExpressRequestService = Context.Tag<ExpressRequestService>(
+  "yaltt/ExpressRequestService"
+);

@@ -1,7 +1,7 @@
-import * as S from "@fp-ts/schema";
+import * as S from "@effect/schema/Schema";
 import { CustomParameters } from "./CustomParameters";
 import { Url } from "../registration/Url";
-import { pipe } from "@fp-ts/core/Function";
+import { pipe } from "effect";
 import { LocalizedKey } from "../registration/LocalizedKey";
 
 export const LtiMessage = pipe(
@@ -15,4 +15,4 @@ export const LtiMessage = pipe(
   S.extend(LocalizedKey("label"))
 );
 
-export interface LtiMessage extends S.Infer<typeof LtiMessage> {}
+export interface LtiMessage extends S.To<typeof LtiMessage> {}

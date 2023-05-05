@@ -1,6 +1,6 @@
-import * as S from "@fp-ts/schema";
+import * as S from "@effect/schema/Schema";
 import { CustomParameters } from "../message/CustomParameters";
-import { LtiMessage } from "../message/LtiMessage";
+import { LtiMessageS } from "../message/LtiMessage";
 import { Url } from "./Url";
 
 const Domain = S.string;
@@ -12,9 +12,9 @@ export const LtiToolConfiguration = S.struct({
   target_link_uri: Url,
   custom_parameters: CustomParameters,
   description: Url,
-  messages: S.array(LtiMessage),
+  messages: S.array(LtiMessageS),
   claims: S.array(S.string),
 });
 
 export interface LtiToolConfiguration
-  extends S.Infer<typeof LtiToolConfiguration> {}
+  extends S.To<typeof LtiToolConfiguration> {}

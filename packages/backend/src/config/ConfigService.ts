@@ -1,5 +1,4 @@
-import * as Eff from "@effect/io/Effect";
-import * as Context from "@fp-ts/data/Context";
+import { Effect, Context } from "effect";
 
 export interface ConfigError {
   tag: "config_error";
@@ -17,4 +16,4 @@ export interface ConfigService {
 
 export const ConfigService = Context.Tag<ConfigService>();
 
-export const getConfig = Eff.serviceWith(ConfigService, ({ config }) => config);
+export const getConfig = ConfigService.pipe(Effect.map(({ config }) => config));

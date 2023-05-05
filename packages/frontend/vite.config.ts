@@ -6,12 +6,15 @@ export default defineConfig({
   plugins: [react()],
   envDir: __dirname,
   server: {
+    port: 80,
+    strictPort: true,
     proxy: {
       "/api": {
-        target: "http://localhost:3000/",
+        target: "http://yaltt-backend:3000/",
         changeOrigin: true,
         // rewrite: (path) => path.replace(/^\/api/, ""),
       },
     },
+    host: true,
   },
 });

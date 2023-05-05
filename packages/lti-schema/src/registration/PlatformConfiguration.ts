@@ -1,12 +1,9 @@
-import * as S from "@fp-ts/schema";
+import * as S from "@effect/schema/Schema";
 import { LtiPlatformConfiguration } from "./LtiPlatformConfiguration";
 import { Url } from "./Url";
 
-export const HttpsUrl = S.templateLiteral(S.literal("https://"), S.string);
-export type HttpsUrl = S.Infer<typeof HttpsUrl>;
-
 export const PlatformConfiguration = S.struct({
-  issuer: HttpsUrl,
+  issuer: Url,
   authorization_endpoint: Url,
   registration_endpoint: Url,
   jwks_uri: Url,
@@ -22,4 +19,4 @@ export const PlatformConfiguration = S.struct({
 });
 
 export interface PlatformConfiguration
-  extends S.Infer<typeof PlatformConfiguration> {}
+  extends S.To<typeof PlatformConfiguration> {}

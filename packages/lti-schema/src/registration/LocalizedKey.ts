@@ -1,5 +1,5 @@
-import * as S from "@fp-ts/schema";
-import { pipe } from "@fp-ts/core/Function";
+import * as S from "@effect/schema/Schema";
+import { pipe, Either, Option, ReadonlyArray, Effect } from "effect";
 
 export const LocalizedKey = <K extends string>(k: K) =>
   pipe(

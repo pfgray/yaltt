@@ -2,14 +2,10 @@ import * as React from "react";
 import * as F from "../../lib/forms/form";
 
 import * as Eff from "@effect/io/Effect";
-import { pipe } from "@fp-ts/core/Function";
-import AddIcon from "@mui/icons-material/Add";
-import { Button, Modal, Typography } from "@mui/material";
-import { Box, SxProps } from "@mui/system";
-import MUIDataTable, { MUIDataTableColumnDef } from "mui-datatables";
+import { pipe } from "effect";
 import { RequestService } from "../../lib/api/request";
 import { WithRequest } from "../../lib/api/WithRequest";
-import { renderForm } from "../../lib/forms/renderForm";
+import { renderManagedForm } from "../../lib/forms/renderManagedForm";
 
 type ListProps<
   K extends string,
@@ -22,25 +18,11 @@ type ListProps<
   newForm: F.Form<K, R>;
   editForm: F.Form<K2, R2>;
   fetchValues: Eff.Effect<RequestService, unknown, readonly A[]>;
-  renderValues: (as: readonly A[]) => {
-    columns: MUIDataTableColumnDef[];
-    rows: (string | number)[][];
-  };
+  columns: string[];
+  renderRow: (a: A) => Array<JSX.Element | string | number>;
   width?: string | number;
+  onEmpty?: (openNewModal: () => void) => JSX.Element;
 };
-
-const style = (width?: string | number) =>
-  ({
-    position: "absolute",
-    top: "50%",
-    left: "50%",
-    transform: "translate(-50%, -50%)",
-    width: typeof width === "undefined" ? 400 : width,
-    bgcolor: "background.paper",
-    border: "2px solid #000",
-    boxShadow: 24,
-    p: 4,
-  } as const);
 
 export const List = <
   K extends string,
@@ -51,56 +33,54 @@ export const List = <
 >(
   props: ListProps<K, R, K2, R2, A>
 ) => {
-  const [open, setOpen] = React.useState(false);
+  const dialogRef = React.useRef<HTMLDialogElement>(null);
   return (
     <WithRequest eff={props.fetchValues}>
       {(values) => {
-        const { columns, rows } = props.renderValues(values);
+        // const { columns, rows } = props.renderValues(values);
         return (
           <>
-            <MUIDataTable
-              title={
-                <div style={{ display: "flex", alignItems: "center" }}>
-                  <Typography variant="h6" noWrap component="h6" mr="1rem">
-                    {props.entityName}s
-                  </Typography>
-                  <Button
-                    variant="contained"
-                    startIcon={<AddIcon />}
-                    onClick={() => setOpen(true)}
-                  >
-                    New
-                  </Button>
-                </div>
-              }
-              data={rows}
-              columns={columns}
-              options={{
-                download: false,
-                print: false,
-                filter: false,
-                search: false,
-                viewColumns: false,
-                pagination: false,
-                elevation: 0,
-              }}
-            />
-            <Modal
-              open={open}
-              onClose={() => {
-                setOpen(false);
-              }}
-              aria-labelledby="modal-modal-title"
-              aria-describedby="modal-modal-description"
-            >
-              <Box sx={style(props.width)}>
+            <div className="container mx-auto px-4">
+              <div className="overflow-x-auto h-full">
+                {props.onEmpty && values.length === 0 ? (
+                  props.onEmpty(() => {
+                    dialogRef.current?.showModal();
+                  })
+                ) : (
+                  <table className="table">
+                    <thead>
+                      <tr>
+                        {props.columns.map((c) => (
+                          <th>{c}</th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {/* row 1 */}
+                      {values.map(props.renderRow).map((row) => (
+                        <tr>
+                          {row.map((r) => (
+                            <td>{r}</td>
+                          ))}
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                )}
+              </div>
+            </div>
+
+            <dialog ref={dialogRef} className="modal">
+              <div className="modal-box">
                 <NewEntityForm
-                  setOpen={setOpen}
+                  close={() => {
+                    dialogRef.current?.close();
+                  }}
                   form={props.newForm}
                   entityName={props.entityName}
                 />
-              </Box>
-            </Modal>
+              </div>
+            </dialog>
           </>
         );
       }}
@@ -108,40 +88,40 @@ export const List = <
   );
 };
 
-type NewEntityFormProps<
-  K extends string,
-  R extends Record<K, F.FormField<any, any>>
+export type NewEntityFormProps<
+  R extends Record<string, F.FormField<any, any>>
 > = {
-  form: F.Form<K, R>;
-  setOpen: (b: boolean) => void;
+  form: F.Form<F.KeyOf<keyof R>, R>;
+  close: () => void;
   entityName: string;
+  renderExtra?: () => JSX.Element;
 };
-const NewEntityForm = <
-  K extends string,
-  R extends Record<K, F.FormField<any, any>>
->(
-  props: NewEntityFormProps<K, R>
+
+export const NewEntityForm = <R extends Record<string, F.FormField<any, any>>>(
+  props: NewEntityFormProps<R>
 ) => {
   const entityForm = React.useMemo(
     () =>
-      F.mkForm<K, R>(props.form.fields)((fields) =>
+      F.mkForm(props.form.fields)((fields) =>
         pipe(
           props.form.onSubmit(fields),
           Eff.flatMap(() =>
             Eff.sync(() => {
-              props.setOpen(false);
+              props.close();
             })
           )
         )
       ),
-    [props.setOpen]
+    [props.close]
   );
   return (
     <>
-      <Typography variant="h6" noWrap component="h6">
-        New {props.entityName}
-      </Typography>
-      {renderForm(entityForm)}
+      <h3 className="font-bold text-lg mb-4">New {props.entityName}</h3>
+      {renderManagedForm(entityForm, () => (
+        <div className="modal-action">
+          <button className="btn">Create</button>
+        </div>
+      ))}
     </>
   );
 };

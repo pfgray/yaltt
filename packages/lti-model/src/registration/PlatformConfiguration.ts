@@ -1,4 +1,4 @@
-import * as S from "@fp-ts/schema";
+import * as S from "@effect/schema/Schema";
 import { LtiPlatformConfiguration } from "./LtiPlatformConfiguration";
 import { Url } from "./Url";
 
@@ -22,4 +22,4 @@ export const PlatformConfiguration = S.struct({
 });
 
 export interface PlatformConfiguration
-  extends S.Infer<typeof PlatformConfiguration> {}
+  extends S.To<typeof PlatformConfiguration> {}

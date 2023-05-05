@@ -1,39 +1,31 @@
-import * as Eff from "@effect/io/Effect";
-import * as E from "@fp-ts/core/Either";
-import { flow, pipe } from "@fp-ts/core/Function";
-import { NonEmptyReadonlyArray } from "@fp-ts/core/ReadonlyArray";
-import { ParseError } from "@fp-ts/schema/ParseResult";
-import * as P from "@fp-ts/schema/Parser";
-import * as S from "@fp-ts/schema";
+import { pipe, Effect, Option, Either } from "effect";
+import * as S from "@effect/schema/Schema";
 import { effRequestHandler, successResponse } from "./effRequestHandler";
 import { ExpressRequestService } from "./RequestService";
+import { ParseError } from "@effect/schema/ParseResult";
 
 export interface ParseBodyError {
   tag: "parse_body_error";
   body: unknown;
-  error: NonEmptyReadonlyArray<ParseError>;
+  error: ParseError;
 }
 
-export const parseBodyError = (body: unknown, error: NonEmptyReadonlyArray<ParseError>): ParseBodyError => ({
+export const parseBodyError = (
+  body: unknown,
+  error: ParseError
+): ParseBodyError => ({
   tag: "parse_body_error",
   body,
   error,
-})
+});
 
-export const parseBody = <A>(bodySchema: S.Schema<A>) =>
-  pipe(
-    Eff.service(ExpressRequestService),
-    Eff.flatMap(({ request }) =>
+export const parseBody = <A>(bodySchema: S.Schema<any, A>) =>
+  ExpressRequestService.pipe(
+    Effect.flatMap(({ request }) =>
       pipe(
         request.body,
-        P.decode(bodySchema),
-        E.mapLeft(
-          error =>
-            parseBodyError(request.body,
-              error,
-            )
-        ),
-        Eff.fromEither
+        S.parse(bodySchema),
+        Effect.mapError((error) => parseBodyError(request.body, error))
       )
     )
   );
@@ -41,12 +33,14 @@ export const parseBody = <A>(bodySchema: S.Schema<A>) =>
 export const withRequestBody =
   <A>(bodySchema: S.Schema<A>) =>
   (
-    handler: (body: A) => Eff.Effect<ExpressRequestService, ParseBodyError, A>
+    handler: (
+      body: A
+    ) => Effect.Effect<ExpressRequestService, ParseBodyError, A>
   ) =>
     effRequestHandler(
       pipe(
         parseBody(bodySchema),
-        Eff.flatMap(handler),
-        Eff.map(successResponse)
+        Effect.flatMap(handler),
+        Effect.map(successResponse)
       )
     );

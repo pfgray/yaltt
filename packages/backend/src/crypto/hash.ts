@@ -1,6 +1,6 @@
 import * as crypto from "crypto";
-import { pipe } from "@fp-ts/core/Function";
-import * as Eff from "@effect/io/Effect";
+
+import { pipe, Effect, Option, Either } from "effect";
 
 export interface HashError {
   tag: "hash_error";
@@ -15,7 +15,7 @@ export const pbkdf2_ = (
   digest: string
 ) =>
   pipe(
-    Eff.async<never, Error, Buffer>((resume) => {
+    Effect.async<never, Error, Buffer>((resume) => {
       crypto.pbkdf2(
         password,
         salt,
@@ -24,14 +24,14 @@ export const pbkdf2_ = (
         digest,
         (err, derivedKey) => {
           if (err) {
-            resume(Eff.fail(err));
+            resume(Effect.fail(err));
           } else {
-            resume(Eff.succeed(derivedKey));
+            resume(Effect.succeed(derivedKey));
           }
         }
       );
     }),
-    Eff.mapError((cause): HashError => ({ tag: "hash_error", cause }))
+    Effect.mapError((cause): HashError => ({ tag: "hash_error", cause }))
   );
 
 export interface InvalidPassword {
@@ -51,9 +51,8 @@ export const hashPasswordWithSalt = (password: string, salt: Buffer) =>
  */
 export const hashPassword = (password: string) =>
   pipe(
-    Eff.Do(),
-    Eff.bindValue("salt", () => crypto.randomBytes(16)),
-    Eff.bind("hashedPassword", ({ salt }) =>
+    Effect.succeed({ salt: crypto.randomBytes(16) }),
+    Effect.bind("hashedPassword", ({ salt }) =>
       hashPasswordWithSalt(password, salt)
     )
   );
@@ -65,11 +64,11 @@ export const validatePassword = (
 ) =>
   pipe(
     hashPasswordWithSalt(password, salt),
-    Eff.flatMap((hashedPassword) => {
+    Effect.flatMap((hashedPassword) => {
       if (!crypto.timingSafeEqual(hashedPassword, hashed)) {
-        return Eff.fail<InvalidPassword>({ tag: "invalid_password" });
+        return Effect.fail<InvalidPassword>({ tag: "invalid_password" });
       } else {
-        return Eff.succeed({});
+        return Effect.succeed({});
       }
     })
   );
