@@ -1,6 +1,6 @@
 import { App, Registration, YalttClaim } from "@yaltt/model";
 import { LtiMessage, ToolConfiguration } from "lti-model";
-import * as Eff from "@effect/io/Effect";
+import { pipe, Effect, Option, Either } from "effect";
 import { getConfig, YalttConfig } from "../../config/ConfigService";
 import { CanvasPlacement, CanvasToolConfiguration } from "canvas-lti-model";
 import { mkYalttUrl } from "./mkYalttToolConfiguration";

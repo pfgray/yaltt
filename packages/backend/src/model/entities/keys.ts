@@ -1,14 +1,13 @@
-import { isoStringDate, User } from "@yaltt/model";
-import * as S from "@fp-ts/schema";
+import * as S from "@effect/schema/Schema";
 import { query, query1 } from "../../db/db";
-import { pipe } from "@fp-ts/core/Function";
-import * as Eff from "@effect/io/Effect";
-import { buffer } from "../../lib/BufferSchema";
+
+import { pipe, Effect, Option, Either } from "effect";
+import { buffer } from "../../util/BufferSchema";
 import { generateKeyPair } from "../../crypto/KeyService";
 
 const KeyRowWithoutPrivateKey = S.struct({
   id: S.number,
-  created: S.date,
+  created: S.ValidDateFromSelf,
   active: S.boolean,
   registration_id: S.number,
   public_key: buffer,
@@ -26,7 +25,7 @@ const KeyRow = pipe(
 export const createKeyForRegistrationId = (registrationId: number) =>
   pipe(
     generateKeyPair,
-    Eff.flatMap(({ privateKey, publicKey }) =>
+    Effect.flatMap(({ privateKey, publicKey }) =>
       insertKeyForRegistrationId(registrationId, privateKey, publicKey)
     )
   );

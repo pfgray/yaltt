@@ -1,0 +1,21 @@
+version: "3.9"
+services:
+  backend:
+    labels:
+      - traefik.enable=true
+    networks:
+      default:
+        aliases:
+          - yaltt-backend
+
+  frontend:
+    labels:
+      - traefik.enable=true
+    networks:
+      default:
+        aliases:
+          - yaltt
+networks:
+  default:
+    external: true
+    name: "inst_shared"

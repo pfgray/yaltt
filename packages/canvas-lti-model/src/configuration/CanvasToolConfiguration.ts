@@ -1,4 +1,4 @@
-import * as S from "@fp-ts/schema";
+import * as S from "@effect/schema/Schema";
 import { CanvasScopes } from "../scopes/CanvasScopes";
 import { CanvasToolExtension } from "./CanvasToolExtension";
 
@@ -15,4 +15,4 @@ export const CanvasToolConfiguration = S.struct({
 });
 
 export interface CanvasToolConfiguration
-  extends S.Infer<typeof CanvasToolConfiguration> {}
+  extends S.To<typeof CanvasToolConfiguration> {}

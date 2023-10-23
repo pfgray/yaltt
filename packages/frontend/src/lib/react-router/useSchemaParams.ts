@@ -1,9 +1,8 @@
-import React from "react";
 import { useParams } from "react-router-dom";
-import * as S from "@fp-ts/schema";
+import * as S from "@effect/schema/Schema";
 
-export function useSchemaParams<A>(schema: S.Schema<A>) {
+export function useParsedParams<A>(schema: S.Schema<any, A>) {
   const params = useParams();
 
-  return S.decode(schema)(params);
+  return S.parseEither(schema)(params);
 }

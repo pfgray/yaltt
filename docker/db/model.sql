@@ -38,15 +38,7 @@ create table if not exists launches (
   id              serial primary key,
   created         date not null default now(),
   name            varchar(255) not null,
-  id_token        jsonb not null,
-  person_id       serial references people(id),
-  context         serial references contexts(id)
-);
-
-create table if not exists launches (
-  id              serial primary key,
-  created         date not null default now(),
-  name            varchar(255) not null,
+  registration_id serial not null references registrations(id),
   id_token        jsonb not null,
   person_id       serial references people(id),
   context         serial references contexts(id)
@@ -54,11 +46,11 @@ create table if not exists launches (
 
 create table if not exists registrations (
   id                      serial primary key,
+  type                    varchar(255) not null,
   created                 date not null default now(),
   app_id                  serial not null references apps(id),
   claims                  text[] not null default array[]::text[],
   custom_parameters       jsonb not null default '{}'::jsonb,
-
   platform_configuration  jsonb not null
 );
 

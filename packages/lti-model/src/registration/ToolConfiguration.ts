@@ -1,5 +1,5 @@
-import * as S from "@fp-ts/schema";
-import { pipe } from "@fp-ts/core/Function";
+import * as S from "@effect/schema/Schema";
+import { pipe } from "effect";
 import { LtiToolConfiguration } from "./LtiToolConfiguration";
 import { Url } from "./Url";
 import { LocalizedKey, LocalizedKeyOp } from "./LocalizedKey";
@@ -34,4 +34,4 @@ export const ToolConfiguration = pipe(
   S.extend(LocalizedKeyOp("policy_uri"))
 );
 
-export interface ToolConfiguration extends S.Infer<typeof ToolConfiguration> {}
+export interface ToolConfiguration extends S.To<typeof ToolConfiguration> {}

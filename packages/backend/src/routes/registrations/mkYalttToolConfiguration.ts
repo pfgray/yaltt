@@ -1,6 +1,6 @@
 import { App, Registration, YalttClaim } from "@yaltt/model";
 import { LtiMessage, ToolConfiguration } from "lti-model";
-import * as Eff from "@effect/io/Effect";
+import { pipe, Effect, Option, Either } from "effect";
 import { getConfig, YalttConfig } from "../../config/ConfigService";
 
 // export const pathForMessageType = () =>
@@ -29,9 +29,7 @@ export const mkYalttToolConfiguration =
       grant_types: ["client_credentials", "implicit"],
       jwks_uri: mkRegUrl(`/jwks`),
       initiate_login_uri: mkRegUrl(`/login`),
-      redirect_uris: [
-        mkRegUrl("/resource_link")
-      ],
+      redirect_uris: [mkRegUrl("/resource_link")],
       response_types: ["id_token"],
       scope: "",
       token_endpoint_auth_method: "private_key_jwt",

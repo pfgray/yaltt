@@ -1,70 +1,88 @@
-import * as Eff from "@effect/io/Effect";
-import * as E from "@fp-ts/core/Either";
-import { flow, pipe } from "@fp-ts/core/Function";
-import { NonEmptyReadonlyArray } from "@fp-ts/core/ReadonlyArray";
-import { ParseError } from "@fp-ts/schema/ParseResult";
-import * as P from "@fp-ts/schema/Parser";
-import * as S from "@fp-ts/schema";
+import { pipe, Effect, Option, Either } from "effect";
+import * as S from "@effect/schema/Schema";
 import { effRequestHandler, successResponse } from "./effRequestHandler";
 import { ExpressRequestService } from "./RequestService";
+import { ParseError } from "@effect/schema/ParseResult";
+import { transplant } from "effect/Effect";
+import { tap } from "../util/tap";
 
 export interface ParseParamsError {
   tag: "parse_params_error";
   params: unknown;
-  error: NonEmptyReadonlyArray<ParseError>;
+  error: ParseError;
 }
 
-export const parseParams = <A>(paramsSchema: S.Schema<A>) =>
-  pipe(
-    Eff.service(ExpressRequestService),
-    Eff.flatMap(({ request }) =>
+export interface ParseQueryError {
+  tag: "parse_query_error";
+  query: unknown;
+  error: ParseError;
+}
+
+export const parseQuery = <A>(querySchema: S.Schema<any, A>) =>
+  ExpressRequestService.pipe(
+    Effect.flatMap(({ request }) =>
       pipe(
-        P.decode(paramsSchema)(request.params, { isUnexpectedAllowed: true }),
-        E.mapLeft(
-          (error): ParseParamsError => ({
-            tag: "parse_params_error",
-            params: request.params,
+        S.parse(querySchema)(request.query, { onExcessProperty: "ignore" }),
+        tap(() => "query is" + JSON.stringify(request.query, null, 2)),
+        Effect.mapError(
+          (error): ParseQueryError => ({
+            tag: "parse_query_error",
+            query: request.query,
             error,
           })
-        ),
-        Eff.fromEither
+        )
       )
     )
   );
 
-export const parseBodyOrParams = <A>(schema: S.Schema<A>) => pipe(
-  Eff.service(ExpressRequestService),
-  Eff.flatMap(({ request }) =>
-    pipe(
-      P.decode(schema)(request.body, { isUnexpectedAllowed: true }),
-      E.orElse(P.decode(schema)(request.params, { isUnexpectedAllowed: true })),
-      E.mapLeft(
-        (error): ParseParamsError => ({
-          tag: "parse_params_error",
-          params: request.params,
-          error,
-        })
-      ),
-      Eff.fromEither
-    )
-  )
-)
-
-export const parseBody = <A>(paramsSchema: S.Schema<A>) =>
-  pipe(
-    Eff.service(ExpressRequestService),
-    Eff.flatMap(({ request }) =>
+export const parseParams = <A>(paramsSchema: S.Schema<any, A>) =>
+  ExpressRequestService.pipe(
+    Effect.flatMap(({ request }) =>
       pipe(
-        request.body,
-        P.decode(paramsSchema),
-        E.mapLeft(
+        S.parse(paramsSchema)(request.params, { onExcessProperty: "ignore" }),
+        Effect.mapError(
           (error): ParseParamsError => ({
             tag: "parse_params_error",
             params: request.params,
             error,
           })
+        )
+      )
+    )
+  );
+
+export const parseBodyOrParams = <A>(schema: S.Schema<A>) =>
+  ExpressRequestService.pipe(
+    Effect.flatMap(({ request }) =>
+      pipe(
+        S.parse(schema)(request.body, { onExcessProperty: "ignore" }),
+        Effect.orElse(() =>
+          S.parse(schema)(request.params, { onExcessProperty: "ignore" })
         ),
-        Eff.fromEither
+        Effect.mapError(
+          (error): ParseParamsError => ({
+            tag: "parse_params_error",
+            params: request.params,
+            error,
+          })
+        )
+      )
+    )
+  );
+
+export const parseBody = <A>(paramsSchema: S.Schema<A>) =>
+  ExpressRequestService.pipe(
+    Effect.flatMap(({ request }) =>
+      pipe(
+        request.body,
+        S.parse(paramsSchema),
+        Effect.mapError(
+          (error): ParseParamsError => ({
+            tag: "parse_params_error",
+            params: request.params,
+            error,
+          })
+        )
       )
     )
   );
@@ -74,12 +92,12 @@ export const withRequestParams =
   (
     handler: (
       params: A
-    ) => Eff.Effect<ExpressRequestService, ParseParamsError, A>
+    ) => Effect.Effect<ExpressRequestService, ParseParamsError, A>
   ) =>
     effRequestHandler(
       pipe(
         parseParams(paramsSchema),
-        Eff.flatMap(handler),
-        Eff.map(successResponse)
+        Effect.flatMap(handler),
+        Effect.map(successResponse)
       )
     );

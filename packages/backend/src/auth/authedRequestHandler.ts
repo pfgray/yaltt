@@ -1,6 +1,5 @@
-import * as Eff from "@effect/io/Effect";
-import { pipe } from "@fp-ts/core/Function";
-import * as O from "@fp-ts/core/Option";
+import { pipe, Effect, Option, Either } from "effect";
+
 import { ExpressRequestService } from "../express/RequestService";
 
 export interface UnauthenticatedError {
@@ -21,14 +20,12 @@ export const unauthorizedError = (message: string): UnauthorizedError => ({
   message,
 });
 
-export const authedRequest = pipe(
-  Eff.service(ExpressRequestService),
-  Eff.flatMap(({ request, response }) =>
+export const authedRequest = ExpressRequestService.pipe(
+  Effect.flatMap(({ request, response }) =>
     pipe(
       request.user,
-      O.fromNullable,
-      Eff.fromOption,
-      Eff.mapError(unauthenticatedError)
+      Option.fromNullable,
+      Effect.mapError(unauthenticatedError)
     )
   )
 );

@@ -1,8 +1,6 @@
 import * as Eff from "@effect/io/Effect";
 import * as Exit from "@effect/io/Exit";
-import * as E from "@fp-ts/core/Either";
-import { pipe } from "@fp-ts/core/Function";
-import * as O from "@fp-ts/core/Option";
+import { pipe, Either, Option, ReadonlyArray, Effect } from "effect";
 import * as React from "react";
 import { RequestService } from "./request";
 import { provideRequestService } from "./requestServiceImpl";
@@ -13,37 +11,41 @@ type WithRequestProps<A> = {
 };
 
 export const WithRequest = <A,>(props: WithRequestProps<A>): JSX.Element => {
-  const [value, setValue] = React.useState<O.Option<E.Either<unknown, A>>>(
-    O.none
-  );
+  const [value, setValue] = React.useState<
+    Option.Option<Either.Either<unknown, A>>
+  >(Option.none);
 
   React.useEffect(() => {
     Eff.runCallback(
       provideRequestService(props.eff),
-      Exit.match(
-        (err) => {
+      Exit.match({
+        onFailure: (err) => {
           console.log("Error", err);
-          setValue(O.some(E.left(err)));
+          setValue(Option.some(Either.left(err)));
         },
-        (a) => {
-          setValue(O.some(E.right(a)));
-        }
-      )
+        onSuccess: (a) => {
+          setValue(Option.some(Either.right(a)));
+        },
+      })
     );
   }, []);
 
   return pipe(
     value,
-    O.match(
-      () => <div>loading...</div>,
-      E.match(
-        (err) => (
+    Option.match({
+      onNone: () => (
+        <div className="w-full h-full flex items-center justify-center">
+          <span className="loading loading-spinner loading-lg"></span>
+        </div>
+      ),
+      onSome: Either.match({
+        onLeft: (err) => (
           <div>
             error! <pre>{JSON.stringify(err, null, 2)}</pre>
           </div>
         ),
-        (a) => <>{props.children(a)}</>
-      )
-    )
+        onRight: (a) => <>{props.children(a)}</>,
+      }),
+    })
   );
 };

@@ -1,14 +1,51 @@
 version: "3.9"
 services:
   backend:
-    build: ./docker/backend
+    build:
+      dockerfile: ./docker/pnpm/Dockerfile
+      target: backend
     environment:
-      - PGHOST=db
+      - PGHOST=yaltt-db
       - PGUSER=yaltt
       - PGPASSWORD=password
       - PGDATABASE=yaltt
       - PGPORT=5432
-    
+      - REDIS_HOST=yaltt-redis
+      - YALTT_HOST=yaltt.inst.test
+    labels:
+      - traefik.enable=true
+    volumes:
+      - ./:/app
+    networks:
+      default:
+        aliases:
+          - yaltt-backend
+
+  frontend:
+    build:
+      dockerfile: ./docker/pnpm/Dockerfile
+      target: frontend
+    ports:
+      - "5173:80"
+    labels:
+      - traefik.enable=true
+      - "traefik.http.routers.frontend.rule=Host(`yaltt.inst.test`)"
+    volumes:
+      - ./:/app
+    networks:
+      default:
+        aliases:
+          - yaltt
+
+  redis:
+    image: redis:7.2.1
+    expose:
+      - "6379"
+    networks:
+      default:
+        aliases:
+          - yaltt-redis
+
   db:
     build: ./docker/db
     ports:
@@ -17,3 +54,12 @@ services:
       - POSTGRES_USER=yaltt
       - POSTGRES_PASSWORD=password
       - POSTGRES_DB=yaltt
+    networks:
+      default:
+        aliases:
+          - yaltt-db
+
+networks:
+  default:
+    external: true
+    name: "inst_shared"

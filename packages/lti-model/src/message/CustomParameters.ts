@@ -1,5 +1,5 @@
-import * as S from "@fp-ts/schema";
+import * as S from "@effect/schema/Schema";
 
 export const CustomParameters = S.record(S.string, S.string);
 
-export interface CustomParameters extends S.Infer<typeof CustomParameters> {}
+export interface CustomParameters extends S.To<typeof CustomParameters> {}

@@ -1,9 +1,5 @@
-import * as S from "@fp-ts/schema";
-import * as E from "@fp-ts/core/Either";
 import * as Eff from "@effect/io/Effect";
-import * as React from "react";
-import { pipe } from "@fp-ts/core/Function";
-import * as HM from "@fp-ts/data/HashMap";
+import { Either } from "effect";
 
 export interface ValidationError {}
 
@@ -11,7 +7,7 @@ export interface FormField<T, A> {
   tag: "string" | "password" | "textarea";
   initialValue: T;
   label: string;
-  validate: (t: T) => E.Either<ValidationError, A>;
+  validate: (t: T) => Either.Either<ValidationError, A>;
 }
 
 export const string = (
@@ -21,7 +17,7 @@ export const string = (
   tag: "string",
   initialValue: initialValue || "",
   label,
-  validate: E.right,
+  validate: Either.right,
 });
 
 export const password = (
@@ -31,17 +27,27 @@ export const password = (
   tag: "password",
   label,
   initialValue: initialValue || "",
-  validate: E.right,
+  validate: Either.right,
 });
 
-export const textarea = <T>(
+export const textarea = (
   label: string,
-  initialValue: T
-): FormField<T, T> => ({
+  initialValue: string
+): FormField<string, string> => ({
   tag: "textarea",
   label,
   initialValue: initialValue,
-  validate: E.right,
+  validate: Either.right,
+});
+
+export const checkbox = (
+  label: string,
+  initialValue: boolean
+): FormField<boolean, boolean> => ({
+  tag: "textarea",
+  label,
+  initialValue: initialValue,
+  validate: Either.right,
 });
 
 export const json = (
@@ -51,7 +57,7 @@ export const json = (
   tag: "textarea",
   label,
   initialValue: initialValue || "",
-  validate: (v) => E.right(JSON.parse(v)), // todo: actually validate
+  validate: (v) => Either.right(JSON.parse(v)), // todo: actually validate
 });
 
 export type Form<K extends string, R extends Record<K, FormField<any, any>>> = {
@@ -66,11 +72,15 @@ export type ValidatedFields<
   R extends Record<K, FormField<any, any>>
 > = { [L in keyof R]: ValidatedField<R[L]> };
 
+export type KeyOf<K> = K extends string ? K : never;
+
 export const mkForm =
-  <K extends string, R extends Record<K, FormField<any, any>>>(fields: R) =>
+  <R extends Record<string, FormField<any, any>>>(fields: R) =>
   (
-    onSubmit: (fields: ValidatedFields<K, R>) => Eff.Effect<never, unknown, any>
-  ): Form<K, R> => ({
+    onSubmit: (
+      fields: ValidatedFields<KeyOf<keyof R>, R>
+    ) => Eff.Effect<never, unknown, any>
+  ): Form<KeyOf<keyof R>, R> => ({
     fields,
     onSubmit,
   });

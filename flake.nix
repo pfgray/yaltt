@@ -2,39 +2,54 @@
   description = "An Algebraic Data Type generator for Typescript";
 
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-22.05";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-23.05";
     flake-utils.url = "github:numtide/flake-utils";
-    bun-flake.url = "github:pfgray/bun-flake";
-    gbt-flake.url = "/home/paul/dev/gbt";
+    js-nix.url = "github:pfgray/js-nix";
+    gbt.url = "github:pfgray/gbt";
   };
 
-  outputs = { self, nixpkgs, flake-utils, bun-flake, gbt-flake }:
-    flake-utils.lib.eachDefaultSystem (system: let
-      pkgs = nixpkgs.legacyPackages.${system};
-      yaltt = pkgs.callPackage ./. {};
-      gbt = gbt-flake.packages.${system}.gbt;
-      yarn2NixExtras = pkgs.callPackage ./nix/yarn2NixExtras {};
-    in {
-      devShell = pkgs.mkShell {
-        packages = with pkgs; [
-          gbt
-          pkgs.nodejs-16_x
-          yarn
-          bun-flake.outputs.packages.${system}.v0_5_1
-          # (yarn2NixExtras.linkNodeModules yaltt)
-        ];
-        shellHook = ''
-          export PGHOST=localhost
-          export PGUSER=yaltt
-          export PGPASSWORD=password
-          export PGDATABASE=yaltt
-          export PGPORT=5432
+  outputs = { self, nixpkgs, js-nix, gbt, flake-utils }:
+    flake-utils.lib.eachDefaultSystem (
+      system:
+        let
+          pkgs = nixpkgs.legacyPackages.${system};
+          removeDependencies = deps: pkg: pkg // {
+            dependencies = pkgs.lib.attrsets.filterAttrs (
+              name: value: !(builtins.elem name deps)
+            ) pkg.dependencies;
+          };
+          esbuildSystemMap = {
+            "x86_64-darwin" = "darwin-x64";
+          };
 
-          export API_URL=http://localhost:3000
-        '';
-      };
-      packages = {
-        yaltt-build = yaltt;
-      };
-    });
+          mkWorkspace = js-nix.lib.${system}.mkWorkspace;
+          workspaces = (mkWorkspace {
+            modules = ./js-modules.nix;
+            overrideModules = {
+              "esbuild@0.17.19" = pkg: (pkg // {
+                dependencies = pkg.dependencies // {
+                  "@esbuild/${esbuildSystemMap.${system}}" = "0.17.19";
+                };
+              });
+              "pg-pool@3.6.0" = removeDependencies ["pg"];
+              "@babel/helper-compilation-targets@7.21.5" = removeDependencies ["@babel/core"];
+            };
+            includePeerDependencies = false;
+          });
+        in {
+
+          devShell = pkgs.mkShell {
+            packages = with pkgs; [
+              nodejs.pkgs.pnpm
+              # nodePackages.pnpm
+              pkgs.nodejs-18_x
+              js-nix.packages.${system}.js-nix
+              gbt.packages.${system}.gbt
+            ];
+            shellHook = ''
+            '';
+          };
+          packages = workspaces.packages // workspaces.remotePackages;
+        }
+    );
 }

@@ -3,10 +3,12 @@
   "version": "0.0.0",
   "type": "module",
   "dependencies": {
-    "@effect/io": "^0.1",
-    "@fp-ts/core": "^0.1",
-    "@fp-ts/data": "^0.1",
-    "@fp-ts/schema": "^0.1",
+    "@effect/data": "^0.17.6",
+    "@effect/io": "^0.38.2",
+    "@effect/match": "^0.34.0",
+    "@effect/schema": "^0.33.2",
+    "@effect/stm": "^0.22.0",
+    "@effect/stream": "^0.34.0",
     "@types/connect-pg-simple": "^7.0.0",
     "@types/cookie-parser": "^1.4.3",
     "@types/cors": "^2.8.13",
@@ -20,25 +22,28 @@
     "@yaltt/model": "0.0.0",
     "canvas-lti-model": "0.0.0",
     "connect-pg-simple": "^8.0.0",
+    "connect-redis": "^7.1.0",
     "cookie-parser": "^1.4.6",
     "cors": "^2.8.5",
+    "effect": "2.0.0-next.29",
     "express": "^4.18.2",
     "express-session": "^1.17.3",
     "jsonwebtoken": "^9.0.0",
     "lti-model": "0.0.0",
     "multer": "^1.4.5-lts.1",
+    "node-fetch": "^3.3.2",
+    "nodemon": "^2.0.20",
     "passport": "^0.6.0",
     "passport-local": "^1.0.0",
     "pg": "~8.2.0",
-    "ts-adt": "^2.1.2"
-  },
-  "devDependencies": {
-    "nodemon": "^2.0.20",
+    "redis": "^4.6.8",
+    "ts-adt": "^2.1.2",
     "ts-node": "^10.9.1",
-    "typescript": "^4.0"
+    "typescript": "^5.1"
   },
   "scripts": {
     "start": "nodemon",
-    "build": "tsc --build"
+    "dev": "ts-node-esm --experimental-specifier-resolution=node ./src/index.ts",
+    "build": "tsc"
   }
 }

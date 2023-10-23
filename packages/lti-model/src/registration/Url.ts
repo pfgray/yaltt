@@ -1,6 +1,6 @@
-import * as S from "@fp-ts/schema";
+import * as S from "@effect/schema/Schema";
 
 // todo: make this an actual url?
 export const Url = S.string;
 
-export type Url = S.Infer<typeof Url>;
+export type Url = S.To<typeof Url>;

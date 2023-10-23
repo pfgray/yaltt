@@ -1,14 +1,10 @@
 import * as pg from "pg";
 
-import * as Eff from "@effect/io/Effect";
-import * as S from "@fp-ts/schema";
-import * as P from "@fp-ts/schema/Parser";
-import * as PE from "@fp-ts/schema/ParseResult";
-
-import { flow, pipe } from "@fp-ts/core/Function";
-import * as E from "@fp-ts/core/Either";
-import * as RA from "@fp-ts/core/ReadonlyArray";
+import { pipe, Effect, Option, Either, ReadonlyArray } from "effect";
+import * as S from "@effect/schema/Schema";
 import { PgService } from "./PgService";
+import { ParseError } from "@effect/schema/ParseResult";
+import { flow } from "effect/Function";
 
 export const pool: pg.Pool = new ((pg as any).default as any).Pool();
 
@@ -22,42 +18,39 @@ export interface DecodeError {
   tag: "decode_error";
   query: string;
   actual: unknown[];
-  errors: RA.NonEmptyReadonlyArray<PE.ParseError>;
+  error: ParseError;
 }
 
 const query_ =
-  <T>(schema: S.Schema<T>) =>
+  <T>(schema: S.Schema<any, T>) =>
   (queryStr: string, queryParams: unknown[]) =>
-    pipe(
-      Eff.serviceWithEffect(PgService, ({ query }) =>
-        query(queryStr, queryParams)
-      ),
-      Eff.map((result) => [queryStr, result] as const),
-      Eff.mapError(
+    PgService.pipe(
+      Effect.flatMap(({ query }) => query(queryStr, queryParams)),
+      Effect.map((result) => [queryStr, result] as const),
+      Effect.mapError(
         (cause): PgError => ({ tag: "pg_error", cause, query: queryStr })
       ),
-      Eff.flatMap(([query, { rows }]) =>
+      Effect.flatMap(([query, { rows }]) =>
         pipe(
           rows,
-          P.decode(S.array(schema)),
-          E.match(
-            (errors) =>
-              Eff.fail<DecodeError>({
-                tag: "decode_error",
-                errors,
-                actual: rows,
-                query,
-              }),
-            (decoded) => Eff.succeed([query, decoded] as const)
-          )
+          S.parse(S.array(schema)),
+          Effect.mapError(
+            (error): DecodeError => ({
+              tag: "decode_error",
+              error,
+              actual: rows,
+              query,
+            })
+          ),
+          Effect.map((decoded) => [query, decoded] as const)
         )
       )
     );
 
-export const query = <T>(schema: S.Schema<T>) =>
+export const query = <T>(schema: S.Schema<any, T>) =>
   flow(
     query_(schema),
-    Eff.map(([, a]) => a)
+    Effect.map(([, a]) => a)
   );
 
 export interface NoRecordFound {
@@ -65,16 +58,17 @@ export interface NoRecordFound {
   query: string;
 }
 
-export const query1 = <T>(schema: S.Schema<T>) =>
+export const query1 = <T>(schema: S.Schema<any, T>) =>
   flow(
     query_(schema),
-    Eff.flatMap(([query, rows]) =>
+    Effect.flatMap(([query, rows]) =>
       pipe(
         rows,
-        RA.match(
-          () => Eff.fail<NoRecordFound>({ tag: "no_record_found", query }),
-          Eff.succeed
-        )
+        ReadonlyArray.match({
+          onEmpty: () =>
+            Effect.fail<NoRecordFound>({ tag: "no_record_found", query }),
+          onNonEmpty: ([head]) => Effect.succeed(head),
+        })
       )
     )
   );

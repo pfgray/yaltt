@@ -1,14 +1,16 @@
-import { ToolConfiguration, PlatformConfiguration } from "lti-model";
-import * as S from "@fp-ts/schema";
+import * as S from "@effect/schema/Schema";
+import { PlatformConfiguration } from "lti-model";
 import { query, query1 } from "../../db/db";
-import { pipe } from "@fp-ts/core/Function";
-import * as Eff from "@effect/io/Effect";
-import { App } from "@yaltt/model";
+
+import { Effect } from "effect";
 import { createKeyForRegistrationId } from "./keys";
+
+const RegistrationType = S.union(S.literal("manual"), S.literal("dynamic"));
 
 const RegistrationRow = S.struct({
   id: S.number,
-  created: S.date,
+  type: RegistrationType,
+  created: S.ValidDateFromSelf,
   app_id: S.number,
   claims: S.array(S.string),
   custom_parameters: S.record(S.string, S.string),
@@ -17,27 +19,28 @@ const RegistrationRow = S.struct({
 
 export const getRegistrationForId = (registrationId: number) =>
   query1(RegistrationRow)(
-    "select id, app_id, created, platform_configuration, claims, custom_parameters from registrations where id = $1",
+    "select id, type, app_id, created, platform_configuration, claims, custom_parameters from registrations where id = $1",
     [registrationId]
   );
 
 export const getRegistrationsForAppId = (appId: number) =>
   query(RegistrationRow)(
-    "select id, app_id, created, platform_configuration, claims, custom_parameters from registrations where app_id = $1",
+    "select id, type, app_id, created, platform_configuration, claims, custom_parameters from registrations where app_id = $1",
     [appId]
   );
 
 export const createRegistrationForAppId = (
   appId: number,
+  type: S.To<typeof RegistrationType>,
   platformConfiguration: PlatformConfiguration
 ) =>
-  Eff.tap(
+  Effect.tap(
     query1(RegistrationRow)(
       `insert into registrations 
-      (app_id, platform_configuration)
-      values ($1, $2)
+      (app_id, type, platform_configuration)
+      values ($1, $2, $3)
       returning *`,
-      [appId, platformConfiguration]
+      [appId, type, platformConfiguration]
     ),
     (reg) => createKeyForRegistrationId(reg.id)
   );

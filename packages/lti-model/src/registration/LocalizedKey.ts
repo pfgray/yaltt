@@ -1,5 +1,5 @@
-import * as S from "@fp-ts/schema";
-import { pipe } from "@fp-ts/core/Function";
+import * as S from "@effect/schema/Schema";
+import { pipe } from "effect";
 
 export type LocalizedKey<K extends string, A> = {
   [V in K]: Record<V, A> & Record<`${V}#${string}`, A>;

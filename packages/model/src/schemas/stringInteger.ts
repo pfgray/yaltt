@@ -1,7 +1,7 @@
-import * as AST from "@fp-ts/schema/AST";
-import * as PR from "@fp-ts/schema/ParseResult";
-import * as S from "@fp-ts/schema";
-import { pipe } from "@fp-ts/core/Function";
+import * as AST from "@effect/schema/AST";
+import * as PR from "@effect/schema/ParseResult";
+import * as S from "@effect/schema/Schema";
+import { pipe } from "effect";
 
 const decode = (s: string): PR.ParseResult<number> => {
   const result = parseInt(s, 10);
@@ -12,7 +12,7 @@ const decode = (s: string): PR.ParseResult<number> => {
   }
 };
 
-export const stringToInteger: S.Schema<number> = pipe(
+export const stringToInteger: S.Schema<string, number> = pipe(
   S.string,
-  S.transformOrFail(S.number, decode, (n) => PR.success(n.toString()))
+  S.transformResult(S.number, decode, (n) => PR.success(n.toString()))
 );

@@ -5,7 +5,7 @@ const CanvasHost = "http://canvas.docker";
 export const CanvasPlatformConfiguration: PlatformConfiguration = {
   authorization_endpoint: `${CanvasHost}/api/lti/authorize_redirect`,
   "https://purl.imsglobal.org/spec/lti-platform-configuration": {
-    messages_supported: [""], // todo
+    messages_supported: [], // todo
     product_family_code: "canvas",
     version: "1.0.0",
     variables: [""], // todo: available substitution variables

@@ -1,8 +1,5 @@
-import * as crypto from "crypto";
-import { pipe } from "@fp-ts/core/Function";
-import * as Eff from "@effect/io/Effect";
+import { Effect, Context } from "effect";
 import * as jsonwebtoken from "jsonwebtoken";
-import * as Context from "@fp-ts/data/Context";
 
 export interface KeyError {
   tag: "key_error";
@@ -10,7 +7,7 @@ export interface KeyError {
 }
 
 export interface KeyService {
-  generateKeyPair: () => Eff.Effect<
+  generateKeyPair: () => Effect.Effect<
     never,
     KeyError,
     {
@@ -25,17 +22,16 @@ export interface KeyService {
   ) => string | jsonwebtoken.JwtPayload;
   exportPublickKeyJWK: (
     b: Buffer
-  ) => Eff.Effect<never, KeyError, Record<string, unknown>>;
+  ) => Effect.Effect<never, KeyError, Record<string, unknown>>;
 }
 
 export const KeyService = Context.Tag<KeyService>();
 
-export const generateKeyPair = Eff.serviceWithEffect(
-  KeyService,
-  ({ generateKeyPair }) => generateKeyPair()
+export const generateKeyPair = KeyService.pipe(
+  Effect.flatMap(({ generateKeyPair }) => generateKeyPair())
 );
 
 export const exportPublickKeyJWK = (b: Buffer) =>
-  Eff.serviceWithEffect(KeyService, ({ exportPublickKeyJWK }) =>
-    exportPublickKeyJWK(b)
+  KeyService.pipe(
+    Effect.flatMap(({ exportPublickKeyJWK }) => exportPublickKeyJWK(b))
   );

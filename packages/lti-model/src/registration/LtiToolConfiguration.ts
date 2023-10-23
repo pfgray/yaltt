@@ -1,5 +1,5 @@
-import { pipe } from "@fp-ts/core/Function";
-import * as S from "@fp-ts/schema";
+import { pipe } from "effect";
+import * as S from "@effect/schema/Schema";
 import { CustomParameters } from "../message/CustomParameters";
 import { LtiMessage } from "../message/LtiMessage";
 import { LocalizedKeyOp } from "./LocalizedKey";
@@ -21,4 +21,4 @@ export const LtiToolConfiguration = pipe(
 );
 
 export interface LtiToolConfiguration
-  extends S.Infer<typeof LtiToolConfiguration> {}
+  extends S.To<typeof LtiToolConfiguration> {}

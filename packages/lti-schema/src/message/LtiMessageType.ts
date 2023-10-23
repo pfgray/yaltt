@@ -1,3 +1,3 @@
-import * as S from "@fp-ts/schema";
+import * as S from "@effect/schema/Schema";
 
 export const LtiMessageTypeS = S.string;

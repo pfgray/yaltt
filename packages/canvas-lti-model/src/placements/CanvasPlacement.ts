@@ -1,4 +1,4 @@
-import * as S from "@fp-ts/schema";
+import * as S from "@effect/schema/Schema";
 import { CanvasLtiMessageTypes } from "../message/CanvasLtiMessageTypes";
 import { CanvasPlacementTypes } from "./CanvasPlacementTypes";
 
@@ -13,4 +13,4 @@ export const CanvasPlacement = S.struct({
   selection_height: S.optional(S.string),
 });
 
-export interface CanvasPlacement extends S.Infer<typeof CanvasPlacement> {}
+export interface CanvasPlacement extends S.To<typeof CanvasPlacement> {}

@@ -1,9 +1,15 @@
-import * as Eff from "@effect/io/Effect";
+import { pipe, Effect, Option, Either, Exit } from "effect";
 import * as express from "express";
 import * as passportBase from "passport";
 
 import { User as ModelUser, User } from "@yaltt/model";
 import { ExpressRequestService } from "../express/RequestService";
+import { tap } from "../util/tap";
+import { getAppsForUser } from "../model/entities/apps";
+import { getUserById } from "../model/users";
+import { PgService } from "../db/PgService";
+import { DecodeError, NoRecordFound, PgError, pool } from "../db/db";
+import { mkTransactionalPgService } from "../db/TransactionalPgService";
 const passport = (passportBase as any).default as typeof passportBase;
 
 declare global {
@@ -29,13 +35,32 @@ declare global {
  */
 passport.serializeUser(function (user, cb) {
   process.nextTick(function () {
-    cb(null, user);
+    console.log("serializing user: ", user);
+    cb(null, user.id);
   });
 });
 
-passport.deserializeUser<Express.User>(function (user, cb) {
+passport.deserializeUser<number>(function (id, cb) {
+  console.log("deserializing user (before)...", id);
   process.nextTick(function () {
-    return cb(null, user);
+    const pgService = mkTransactionalPgService(pool);
+    console.log("deserializing user: ", id);
+    Effect.runCallback(
+      pipe(
+        getUserById(id),
+        Effect.provideService(PgService, pgService.service)
+      ),
+      Exit.match({
+        onFailure: (cause) => {
+          console.error("Couldn't deserialize user: ", cause);
+          cb(cause);
+        },
+        onSuccess: (user) => {
+          console.log("deserialized user: ", user.login);
+          cb(null, user);
+        },
+      })
+    );
   });
 });
 
@@ -44,6 +69,7 @@ export const requireAuth = (
   resp: express.Response,
   next: express.NextFunction
 ) => {
+  console.log("request user: ", req.user);
   if (!req.user) {
     console.log(`Blocked access to ${req.url} for unauthenticated user.`);
     resp.status(401);
@@ -58,14 +84,17 @@ interface LoginError {
   cause: unknown;
 }
 export const login = (user: User) =>
-  Eff.serviceWithEffect(ExpressRequestService, ({ request }) =>
-    Eff.async<never, LoginError, {}>((resume) => {
-      request.login(user, function (err) {
-        if (err) {
-          resume(Eff.fail({ tag: "login_error", cause: err }));
-        } else {
-          resume(Eff.succeed({}));
-        }
-      });
-    })
+  ExpressRequestService.pipe(
+    tap(() => "logging in"),
+    Effect.flatMap(({ request }) =>
+      Effect.async<never, LoginError, {}>((resume) => {
+        request.login(user, function (err) {
+          if (err) {
+            resume(Effect.fail({ tag: "login_error", cause: err }));
+          } else {
+            resume(Effect.succeed({}));
+          }
+        });
+      })
+    )
   );
