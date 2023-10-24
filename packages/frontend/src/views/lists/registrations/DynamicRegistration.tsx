@@ -10,6 +10,7 @@ import { LtiMessage, PlatformConfiguration } from "lti-schema";
 import { formatErrors } from "@effect/schema/TreeFormatter";
 import { CheckCircleIcon } from "@heroicons/react/24/outline";
 import { provideRequestService } from "../../../lib/api/requestServiceImpl";
+import { fetchApp } from "../apps/AppDetails";
 
 const fetchOpenIdConfig = (params: {
   openid_configuration: string;
@@ -22,8 +23,19 @@ const fetchOpenIdConfig = (params: {
         : "")
   );
 
+const fetchDynRegData = (params: {
+  appId: number;
+  openid_configuration: string;
+  registration_token?: string;
+}) =>
+  pipe(
+    fetchOpenIdConfig(params),
+    Effect.bindTo("openidConfig"),
+    Effect.bind("app", () => fetchApp(params.appId))
+  );
+
 const installTool = (
-  appId: string,
+  appId: number,
   config: {
     platformConfiguration: PlatformConfiguration;
     registrationToken?: string;
@@ -35,7 +47,7 @@ const installTool = (
 export const DynamicRegistration = () => {
   const params = useParsedParams(
     S.struct({
-      appId: S.string,
+      appId: S.numberFromString(S.string),
     })
   );
   const query = useParsedQuery(
@@ -58,10 +70,12 @@ export const DynamicRegistration = () => {
           ),
           Either.match({
             onRight: ({ params, query }) => (
-              <WithRequest eff={fetchOpenIdConfig(query)}>
-                {(config) =>
+              <WithRequest
+                eff={fetchDynRegData({ ...query, appId: params.appId })}
+              >
+                {({ openidConfig, app }) =>
                   pipe(
-                    S.parseEither(PlatformConfiguration)(config, {
+                    S.parseEither(PlatformConfiguration)(openidConfig, {
                       onExcessProperty: "ignore",
                     }),
                     Either.match({
@@ -70,7 +84,7 @@ export const DynamicRegistration = () => {
                           <article className="prose">
                             <pre>{formatErrors(errors.errors)}</pre>
                             <h3>raw</h3>
-                            <pre>{JSON.stringify(config, null, 2)}</pre>
+                            <pre>{JSON.stringify(openidConfig, null, 2)}</pre>
                           </article>
                         </div>
                       ),
@@ -79,9 +93,9 @@ export const DynamicRegistration = () => {
                           <article className="prose mt-5">
                             {/* <pre>{JSON.stringify({ params, query }, null, 2)}</pre> */}
                             <h1 className="text-center">
-                              Installing Yaltt into "
+                              Installing {app.name} into "
                               {
-                                (config as any)[
+                                (openidConfig as any)[
                                   "https://purl.imsglobal.org/spec/lti-platform-configuration"
                                 ][
                                   "https://canvas.instructure.com/lti/account_name"
@@ -131,7 +145,7 @@ export const DynamicRegistration = () => {
 
                             <h3>Raw Platform Configuration</h3>
 
-                            <pre>{JSON.stringify(config, null, 2)}</pre>
+                            <pre>{JSON.stringify(openidConfig, null, 2)}</pre>
                           </article>
                         </div>
                       ),
@@ -233,7 +247,10 @@ const MessageTypes = (props: {
       ].messages_supported
         .filter((message) => (message.placements?.length || 0) > 0)
         .map((message) => (
-          <div className="collapse collapse-arrow bg-base-200 mb-5">
+          <div
+            className="collapse collapse-arrow bg-base-200 mb-5"
+            key={message.type}
+          >
             <input type="checkbox" />
             <div className="collapse-title text-xl font-medium">
               {message.type}
@@ -241,7 +258,7 @@ const MessageTypes = (props: {
             <div className="collapse-content">
               <ul className="list-none pl-0">
                 {(message.placements || []).map((p) => (
-                  <li className="">
+                  <li className="" key={p}>
                     <label className=" flex flex-row items-center cursor-pointer">
                       <input type="checkbox" className="checkbox" />
                       <span className="ml-2">{p}</span>

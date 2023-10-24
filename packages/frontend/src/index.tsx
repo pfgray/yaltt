@@ -76,7 +76,7 @@ const router = createBrowserRouter([
 const el = document.getElementById("main");
 if (el) {
   createRoot(el).render(
-    <React.StrictMode>
+    <>
       <dialog id="confirmation_modal" className="modal">
         <div className="modal-box">
           <h3 id="confirmation_modal_title" className="font-bold text-lg"></h3>
@@ -92,6 +92,6 @@ if (el) {
         </div>
       </dialog>
       <RouterProvider router={router} />
-    </React.StrictMode>
+    </>
   );
 }

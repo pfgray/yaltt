@@ -15,6 +15,7 @@ export const WithAuth = (props: WithAuthProps): JSX.Element => {
   const [user, setUser] = React.useState<User | null>(null);
   const location = useLocation();
   const navigate = useNavigate();
+
   React.useEffect(() => {
     Eff.runCallback(
       provideRequestService(getCurrentUser),
