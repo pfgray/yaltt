@@ -72,6 +72,20 @@ const el = document.getElementById("main");
 if (el) {
   createRoot(el).render(
     <React.StrictMode>
+      <dialog id="confirmation_modal" className="modal">
+        <div className="modal-box">
+          <h3 id="confirmation_modal_title" className="font-bold text-lg"></h3>
+          <p id="confirmation_modal_description" className="py-4"></p>
+          <div className="modal-action">
+            <button id="confirmation_modal_cancel" className="btn">
+              Cancel
+            </button>
+            <button id="confirmation_modal_confirm" className="btn">
+              Confirm
+            </button>
+          </div>
+        </div>
+      </dialog>
       <RouterProvider router={router} />
     </React.StrictMode>
   );

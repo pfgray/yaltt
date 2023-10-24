@@ -3,7 +3,7 @@ import * as F from "../../lib/forms/form";
 
 import * as Eff from "@effect/io/Effect";
 import { pipe } from "effect";
-import { RequestService } from "../../lib/api/request";
+import { RequestError, RequestService } from "../../lib/api/request";
 import { WithRequest } from "../../lib/api/WithRequest";
 import { renderManagedForm } from "../../lib/forms/renderManagedForm";
 
@@ -17,7 +17,7 @@ type ListProps<
   entityName: string;
   newForm: F.Form<K, R>;
   editForm: F.Form<K2, R2>;
-  fetchValues: Eff.Effect<RequestService, unknown, readonly A[]>;
+  fetchValues: Eff.Effect<RequestService, RequestError, readonly A[]>;
   columns: string[];
   renderRow: (a: A) => Array<JSX.Element | string | number>;
   width?: string | number;
@@ -37,7 +37,6 @@ export const List = <
   return (
     <WithRequest eff={props.fetchValues}>
       {(values) => {
-        // const { columns, rows } = props.renderValues(values);
         return (
           <>
             <div className="container mx-auto px-4">
@@ -95,6 +94,7 @@ export type NewEntityFormProps<
   close: () => void;
   entityName: string;
   renderExtra?: () => JSX.Element;
+  afterSubmit?: Eff.Effect<never, unknown, void>;
 };
 
 export const NewEntityForm = <R extends Record<string, F.FormField<any, any>>>(
@@ -105,6 +105,7 @@ export const NewEntityForm = <R extends Record<string, F.FormField<any, any>>>(
       F.mkForm(props.form.fields)((fields) =>
         pipe(
           props.form.onSubmit(fields),
+          Eff.flatMap(() => (props.afterSubmit ? props.afterSubmit : Eff.unit)),
           Eff.flatMap(() =>
             Eff.sync(() => {
               props.close();

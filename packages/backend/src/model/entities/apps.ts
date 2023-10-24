@@ -28,3 +28,6 @@ export const createAppForUser = (name: string, u: User) =>
     "insert into apps (name, user_id) values ($1, $2) returning *",
     [name, u.id]
   );
+
+export const deleteAppForId = (appId: number) =>
+  query(S.unknown)("delete from apps where id = $1", [appId]);

@@ -1,6 +1,12 @@
 import { pipe, Either, Option, ReadonlyArray, Effect } from "effect";
 import * as S from "@effect/schema/Schema";
-import { getDecode, jsonBody, post } from "../../../lib/api/request";
+import {
+  RequestError,
+  delete_,
+  getDecode,
+  jsonBody,
+  post,
+} from "../../../lib/api/request";
 import { provideRequestService } from "../../../lib/api/requestServiceImpl";
 import * as F from "../../../lib/forms/form";
 import { useParsedParams } from "../../../lib/react-router/useSchemaParams";
@@ -17,6 +23,7 @@ import { WithRequest } from "../../../lib/api/WithRequest";
 import React from "react";
 import { format } from "timeago.js";
 import { TrashIcon, EllipsisVerticalIcon } from "@heroicons/react/24/outline";
+import { confirmWithLoading } from "../../../lib/confirmation/Confirm";
 
 const paramSchema = S.struct({ appId: stringToInteger });
 
@@ -27,6 +34,12 @@ const AppWithRegistrations = App.pipe(
     })
   )
 );
+
+const deleteRegistration = (options: {
+  appId: number;
+  registrationId: number;
+}) =>
+  delete_(`/api/apps/${options.appId}/registrations/${options.registrationId}`);
 
 type AppWithRegistrations = S.To<typeof AppWithRegistrations>;
 
@@ -51,7 +64,7 @@ export const AppDetails = () => {
       onRight: ({ appId }) => (
         <>
           <WithRequest eff={fetchApp(appId)}>
-            {(app) => (
+            {(app, reloadApps) => (
               <YalttLayout
                 header={
                   <div className="text-sm breadcrumbs">
@@ -73,6 +86,7 @@ export const AppDetails = () => {
                         app={app}
                         manualDialogRef={manualDialogRef}
                         dynamicRegDialogRef={dynamicRegDialogRef}
+                        reloadApps={reloadApps}
                       />
                     </div>
                   ) : (
@@ -81,6 +95,7 @@ export const AppDetails = () => {
                         app={app}
                         manualDialogRef={manualDialogRef}
                         dynamicRegDialogRef={dynamicRegDialogRef}
+                        reloadApps={reloadApps}
                       />
                       {/* <pre>{JSON.stringify(app, null, 2)}</pre> */}
                     </div>
@@ -160,6 +175,7 @@ type SubViewProps = {
   app: AppWithRegistrations;
   dynamicRegDialogRef: React.RefObject<HTMLDialogElement>;
   manualDialogRef: React.RefObject<HTMLDialogElement>;
+  reloadApps: Effect.Effect<never, RequestError, AppWithRegistrations>;
 };
 
 const EmptyRegistrationsView = (props: SubViewProps) => {
@@ -280,10 +296,33 @@ const RegistrationsList = (props: SubViewProps) => {
                   </label>
                   <ul
                     tabIndex={0}
-                    className="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-52"
+                    className="dropdown-content z-[1] menu p-2 shadow bg-base-300 rounded-box w-52"
                   >
                     <li>
-                      <a>Delete</a>
+                      <a
+                        onClick={() => {
+                          pipe(
+                            confirmWithLoading({
+                              title: "Delete Registration?",
+                              description:
+                                "Are you sure you want to delete this registration?",
+                              onSubmit: () =>
+                                pipe(
+                                  deleteRegistration({
+                                    appId: props.app.id,
+                                    registrationId: r.id,
+                                  }),
+                                  Effect.flatMap(() => props.reloadApps),
+                                  provideRequestService
+                                ),
+                            }),
+                            provideRequestService,
+                            Effect.runCallback
+                          );
+                        }}
+                      >
+                        Delete
+                      </a>
                     </li>
                   </ul>
                 </div>

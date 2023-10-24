@@ -6,7 +6,7 @@ import { WithAuth } from "../../../lib/auth/WithAuth";
 import { WithRequest } from "../../../lib/api/WithRequest";
 import { getDecode, jsonBody, post } from "../../../lib/api/request";
 import { Effect, Either, pipe } from "effect";
-import { PlatformConfiguration } from "lti-schema";
+import { LtiMessage, PlatformConfiguration } from "lti-schema";
 import { formatErrors } from "@effect/schema/TreeFormatter";
 import { CheckCircleIcon } from "@heroicons/react/24/outline";
 import { provideRequestService } from "../../../lib/api/requestServiceImpl";
@@ -28,10 +28,7 @@ const installTool = (
     platformConfiguration: PlatformConfiguration;
     registrationToken?: string;
     registrationEndpoint: string;
-    messages: Array<{
-      type: string;
-      placements: Array<string>;
-    }>;
+    messages: Array<LtiMessage>;
   }
 ) => post(`/api/apps/${appId}/install`, jsonBody(config));
 

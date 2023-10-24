@@ -109,7 +109,7 @@ const request_ = (
 /**
  * Represents 4xx errors
  */
-interface ClientError {
+export interface ClientError {
   tag: "req_client_error";
   status: number;
   body: unknown;
@@ -118,11 +118,13 @@ interface ClientError {
 /**
  * Represents 5xx errors
  */
-interface ServerError {
+export interface ServerError {
   tag: "req_server_error";
   status: number;
   body: unknown;
 }
+
+export type RequestError = ClientError | ServerError | DecodeError;
 
 const handleErrorStatus = Effect.flatMap<
   Response,
@@ -178,3 +180,11 @@ export const post = (url: string | URL, body?: PostData) =>
   );
 
 export const postDecode = <A>(s: S.Schema<A>) => flow(post, decodeRespBody(s));
+
+export const delete_ = (url: string | URL, body?: PostData) =>
+  pipe(
+    request_("DELETE", url, {
+      body,
+    }),
+    handleErrorStatus
+  );

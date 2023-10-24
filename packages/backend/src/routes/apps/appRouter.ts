@@ -17,6 +17,7 @@ import {
 } from "../../auth/authedRequestHandler";
 import {
   createAppForUser,
+  deleteAppForId,
   getAppForId,
   getAppsForUser,
 } from "../../model/entities/apps";
@@ -26,6 +27,18 @@ import { getRegistrationsForAppId } from "../../model/entities/registrations";
 
 const upload = multer.default();
 export const appRouter = express.Router();
+
+export const appIdIsForUser = pipe(
+  Effect.succeed({}),
+  Effect.bind("user", () => authedRequest),
+  Effect.bind("appId", () => appIdParam),
+  Effect.bind("app", ({ appId }) => getAppForId(appId)),
+  Effect.filterOrFail(
+    ({ user, app }) => app.user_id === user.id,
+    () => unauthorizedError(`This app doesn't belong to you.`)
+  ),
+  Effect.map(({ app }) => app)
+);
 
 export const appIdParam = pipe(
   parseParams(
@@ -51,14 +64,8 @@ appRouter.get(
   "/apps/:appId",
   effRequestHandler(
     pipe(
-      authedRequest,
-      Effect.bindTo("user"),
-      Effect.bind("appId", () => appIdParam),
-      Effect.bind("app", ({ appId }) => getAppForId(appId)),
-      Effect.filterOrFail(
-        ({ app, user }) => app.user_id === user.id,
-        () => unauthorizedError("This app doesn't belong to you")
-      ),
+      appIdIsForUser,
+      Effect.bindTo("app"),
       Effect.bind("registrations", ({ app }) =>
         getRegistrationsForAppId(app.id)
       ),
@@ -66,6 +73,17 @@ appRouter.get(
         ...app,
         registrations,
       })),
+      Effect.map(successResponse)
+    )
+  )
+);
+
+appRouter.delete(
+  "/apps/:appId",
+  effRequestHandler(
+    pipe(
+      appIdIsForUser,
+      Effect.flatMap((app) => deleteAppForId(app.id)),
       Effect.map(successResponse)
     )
   )

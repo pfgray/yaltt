@@ -48,8 +48,9 @@ create table if not exists registrations (
   id                      serial primary key,
   type                    varchar(255) not null,
   created                 date not null default now(),
-  app_id                  serial not null references apps(id),
+  app_id                  serial not null references apps(id) on delete cascade,
   claims                  text[] not null default array[]::text[],
+  scopes                  text[] not null default array[]::text[],
   custom_parameters       jsonb not null default '{}'::jsonb,
   platform_configuration  jsonb not null
 );
@@ -58,7 +59,7 @@ create table if not exists jwks (
   id                      serial primary key,
   created                 date not null default now(),
   active                  boolean not null default true,
-  registration_id         serial not null references registrations(id),
+  registration_id         serial not null references registrations(id) on delete cascade,
   private_key             bytea not null,
   public_key              bytea not null
 );

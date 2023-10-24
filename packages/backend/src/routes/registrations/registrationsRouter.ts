@@ -18,6 +18,7 @@ import {
 } from "../../auth/authedRequestHandler";
 import {
   createRegistrationForAppId,
+  deleteRegistrationForId,
   getRegistrationForId,
   getRegistrationsForAppId,
 } from "../../model/entities/registrations";
@@ -35,7 +36,7 @@ import {
   ToolConfiguration,
 } from "lti-model";
 import { stringToInteger } from "@yaltt/model";
-import { appIdParam } from "../apps/appRouter";
+import { appIdIsForUser, appIdParam } from "../apps/appRouter";
 import { getKeysWithoutPrivateKeyForRegistrationId } from "../../model/entities/keys";
 import {
   mkYalttToolConfiguration,
@@ -58,18 +59,6 @@ export const registrationIdParam = pipe(
     })
   ),
   Effect.map(({ registrationId }) => registrationId)
-);
-
-const appIdIsForUser = pipe(
-  Effect.succeed({}),
-  Effect.bind("user", () => authedRequest),
-  Effect.bind("appId", () => appIdParam),
-  Effect.bind("app", ({ appId }) => getAppForId(appId)),
-  Effect.filterOrFail(
-    ({ user, app }) => app.user_id === user.id,
-    () => unauthorizedError(`Current user does not own app.`)
-  ),
-  Effect.map(({ app }) => app)
 );
 
 registrationRouter.get(
@@ -95,7 +84,13 @@ registrationRouter.post(
       )
     ),
     Effect.flatMap(({ app, body }) =>
-      createRegistrationForAppId(app.id, "manual", body.platformConfiguration)
+      createRegistrationForAppId(
+        app.id,
+        "manual",
+        body.platformConfiguration,
+        [],
+        []
+      )
     ),
     Effect.map(successResponse),
     effRequestHandler
@@ -134,7 +129,14 @@ registrationRouter.get(
       ]
     ),
     Effect.map(({ reg, app, config, messages }) =>
-      mkYalttToolConfiguration(config)(app, reg, default_claims, {}, messages)
+      mkYalttToolConfiguration(config)({
+        app,
+        registration: reg,
+        claims: default_claims,
+        customParameters: {},
+        messages,
+        scopes: [],
+      })
     ),
     Effect.map(successResponse),
     effRequestHandler
@@ -233,12 +235,9 @@ registrationRouter.post(
             registrationEndpoint: S.string,
             registrationToken: S.optional(S.string),
             platformConfiguration: PlatformConfiguration,
-            messages: S.array(
-              S.struct({
-                type: S.string,
-                placements: S.array(S.string),
-              })
-            ),
+            messages: S.array(LtiMessage),
+            claims: S.array(S.string),
+            scopes: S.array(S.string),
           })
         )
       ),
@@ -255,7 +254,9 @@ registrationRouter.post(
         createRegistrationForAppId(
           app.id,
           "dynamic",
-          body.platformConfiguration
+          body.platformConfiguration,
+          body.claims,
+          body.scopes
         )
       ),
       Effect.flatMap(({ body, app, config, registration }) => {
@@ -264,13 +265,14 @@ registrationRouter.post(
           url.searchParams.append("registration_token", body.registrationToken);
         }
         // TODO: have the frontend send LtiMessages, use the schema
-        const toolConfiguration = mkYalttToolConfiguration(config)(
+        const toolConfiguration = mkYalttToolConfiguration(config)({
           app,
           registration,
-          [],
-          {},
-          []
-        );
+          customParameters: {},
+          messages: body.messages,
+          scopes: registration.scopes,
+          claims: registration.claims,
+        });
         return Fetch.post(url.toString(), toolConfiguration);
       }),
       Effect.map(successResponse)
@@ -304,5 +306,22 @@ registrationRouter.get(
       }),
       Effect.map(successResponse)
     )
+  )
+);
+
+registrationRouter.delete(
+  "/apps/:appId/registrations/:registrationId",
+  pipe(
+    Effect.succeed({}),
+    Effect.bind("app", () => appIdIsForUser),
+    Effect.bind("regId", () => registrationIdParam),
+    Effect.bind("reg", ({ regId }) => getRegistrationForId(regId)),
+    Effect.filterOrFail(
+      ({ app, reg }) => reg.app_id === app.id,
+      () => unauthorizedError(`Registration is not for app.`)
+    ),
+    Effect.flatMap(({ reg }) => deleteRegistrationForId(reg.id)),
+    Effect.map(() => successResponse({})),
+    effRequestHandler
   )
 );

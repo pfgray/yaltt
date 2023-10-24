@@ -11,6 +11,7 @@ export const LtiMessage = pipe(
     custom_parameters: S.optional(CustomParameters),
     icon_uri: S.optional(S.string),
     placements: S.optional(S.array(S.string)),
+    roles: S.optional(S.array(S.string)),
   }),
   S.extend(LocalizedKey("label"))
 );

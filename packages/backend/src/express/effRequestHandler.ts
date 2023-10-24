@@ -98,7 +98,7 @@ export const effRequestHandler: EffRequestHandler =
                 decode_error: (v) => {
                   console.error("Decode Error Running: ", v.query);
                   console.error("Actual value:", v.actual);
-                  console.error(JSON.stringify(v.error, null, 2));
+                  console.error(formatErrors(v.error.errors));
                   response.status(500);
                   response.json({ failure: "An error ocurred." });
                 },

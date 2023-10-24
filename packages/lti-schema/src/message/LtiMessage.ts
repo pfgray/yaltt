@@ -7,8 +7,11 @@ import { LocalizedKey } from "../registration/LocalizedKey";
 export const LtiMessageS = pipe(
   S.struct({
     type: S.string,
-    target_link_uri: Url,
-    custom_parameters: CustomParameters,
+    target_link_uri: S.optional(Url),
+    custom_parameters: S.optional(CustomParameters),
+    icon_uri: S.optional(S.string),
+    placements: S.optional(S.array(S.string)),
+    roles: S.optional(S.array(S.string)),
   }),
   S.extend(LocalizedKey("label"))
 );

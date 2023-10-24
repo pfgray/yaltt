@@ -1,34 +1,19 @@
-import * as express from "express";
-import * as passportBase from "passport";
-import { pipe, Effect, Option, Either, ReadonlyArray, String } from "effect";
 import * as crypto from "crypto";
+import { Effect, Option, ReadonlyArray, pipe } from "effect";
+import * as express from "express";
 
-import * as multer from "multer";
 import * as S from "@effect/schema/Schema";
+import * as multer from "multer";
 import {
   effRequestHandler,
   redirectResponse,
   successResponse,
 } from "../../express/effRequestHandler";
 
-import {
-  authedRequest,
-  unauthorizedError,
-} from "../../auth/authedRequestHandler";
-import {
-  createRegistrationForAppId,
-  getRegistrationForId,
-  getRegistrationsForAppId,
-} from "../../model/entities/registrations";
+import { JsonWebToken, stringToInteger } from "@yaltt/model";
+import { parseBodyError } from "../../express/parseBody";
 import { parseBodyOrParams, parseParams } from "../../express/parseParams";
-import { ExpressRequestService } from "../../express/RequestService";
-import { getAppForId } from "../../model/entities/apps";
-import { PlatformConfiguration, ToolConfiguration } from "lti-model";
-import { stringToInteger } from "@yaltt/model";
-import { appIdParam } from "../apps/appRouter";
-import { getKeysWithoutPrivateKeyForRegistrationId } from "../../model/entities/keys";
-import { parseBody, parseBodyError } from "../../express/parseBody";
-import { JsonWebToken } from "@yaltt/model";
+import { getRegistrationForId } from "../../model/entities/registrations";
 
 const upload = multer.default();
 export const launchRouter = express.Router();
