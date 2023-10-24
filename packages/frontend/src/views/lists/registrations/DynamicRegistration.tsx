@@ -112,10 +112,10 @@ export const DynamicRegistration = () => {
                                       messages: [
                                         {
                                           type: "LtiResourceLinkRequest",
-                                          placements: [
-                                            "editor_button",
-                                            "resource_selection",
-                                          ],
+                                          // placements: [
+                                          //   "editor_button",
+                                          //   "resource_selection",
+                                          // ],
                                         },
                                       ],
                                     }),

@@ -22,13 +22,13 @@ import { YalttLayout } from "../../../YalttLayout";
 import { TrashIcon } from "@heroicons/react/24/outline";
 import { confirmWithLoading } from "../../../lib/confirmation/Confirm";
 
-const newAppForm = F.mkForm({
+export const newAppForm = F.mkForm({
   name: F.string("Name"),
 })((fields) =>
   pipe(provideRequestService(post("/api/apps", jsonBody(fields))))
 );
 
-const fetchApps = getDecode(S.array(App))("/api/apps");
+export const fetchApps = getDecode(S.array(App))("/api/apps");
 
 type SubViewProps = {
   app: App;

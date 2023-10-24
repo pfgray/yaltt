@@ -19,6 +19,7 @@ import { Registrations } from "./views/lists/registrations/Registrations";
 import { AppDetails } from "./views/lists/apps/AppDetails";
 import { DynamicRegistration } from "./views/lists/registrations/DynamicRegistration";
 import { NewManualRegistration } from "./views/registration/NewManualRegistration";
+import { DynamicRegistrationAppPicker } from "./views/lists/registrations/DynamicRegistrationAppPicker";
 
 const mkPath = (
   path: string,
@@ -61,6 +62,10 @@ const router = createBrowserRouter([
   {
     path: "/signup",
     element: <SignIn />,
+  },
+  {
+    path: "/dynamic-registration",
+    element: <DynamicRegistrationAppPicker />,
   },
   {
     path: "/apps/:appId/dynamic-registration",
