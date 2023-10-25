@@ -63,6 +63,7 @@ const installTool = (
     registrationToken?: string;
     registrationEndpoint: string;
     messages: Array<LtiMessage>;
+    scopes: ReadonlyArray<string>;
   }
 ) => post(`/api/apps/${appId}/install`, jsonBody(config));
 
@@ -78,6 +79,9 @@ export const DynamicRegistration = () => {
       registration_token: S.optional(S.string),
     })
   );
+
+  const scopes = useScopeStore((state) => state.scopes);
+  const placements = usePlacementsStore((state) => state.placements);
 
   return (
     <WithAuth>
@@ -146,15 +150,30 @@ export const DynamicRegistration = () => {
                                         query.registration_token,
                                       registrationEndpoint:
                                         platformConfiguration.registration_endpoint,
-                                      messages: [
-                                        // {
-                                        //   type: "LtiResourceLinkRequest",
-                                        //   // placements: [
-                                        //   //   "editor_button",
-                                        //   //   "resource_selection",
-                                        //   // ],
-                                        // },
-                                      ],
+                                      scopes,
+                                      messages: Object.entries(placements).map(
+                                        ([key, p]): LtiMessage => ({
+                                          type: p.message_type,
+                                          custom_parameters: p.custom_parameters
+                                            .split("\n")
+                                            .map((s) => s.split("="))
+                                            .reduce(
+                                              (acc, [key, value]) => ({
+                                                ...acc,
+                                                [key]: value,
+                                              }),
+                                              {}
+                                            ),
+                                          label: p.label,
+                                          icon_uri: p.icon_uri,
+                                          roles: p.roles
+                                            .split(",")
+                                            .map((s) => s.trim())
+                                            .filter((s) => s !== ""),
+                                          // todo: make this host dynamic
+                                          target_link_uri: `http://yaltt.inst.test/apps/${params.appId}/launch?placement=${key}`,
+                                        })
+                                      ),
                                     }),
                                     provideRequestService,
                                     Effect.runCallback

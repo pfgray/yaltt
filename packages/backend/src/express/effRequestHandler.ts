@@ -133,7 +133,7 @@ export const effRequestHandler: EffRequestHandler =
                 },
                 parse_body_error: (e) => {
                   console.error("Parse body error");
-                  console.log("Raw body:", JSON.stringify(e.body, null, 2));
+                  console.error("Raw body:", JSON.stringify(e.body, null, 2));
                   console.error(formatErrors(e.error.errors));
                   response.status(400);
                   response.json({

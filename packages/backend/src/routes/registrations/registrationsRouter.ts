@@ -236,7 +236,7 @@ registrationRouter.post(
             registrationToken: S.optional(S.string),
             platformConfiguration: PlatformConfiguration,
             messages: S.array(LtiMessage),
-            claims: S.array(S.string),
+            // claims: S.array(S.string),
             scopes: S.array(S.string),
           })
         )
@@ -255,7 +255,7 @@ registrationRouter.post(
           app.id,
           "dynamic",
           body.platformConfiguration,
-          body.claims,
+          default_claims, // body.claims,
           body.scopes
         )
       ),
