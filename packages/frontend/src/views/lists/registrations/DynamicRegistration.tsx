@@ -151,29 +151,32 @@ export const DynamicRegistration = () => {
                                       registrationEndpoint:
                                         platformConfiguration.registration_endpoint,
                                       scopes,
-                                      messages: Object.entries(placements).map(
-                                        ([key, p]): LtiMessage => ({
-                                          type: p.message_type,
-                                          custom_parameters: p.custom_parameters
-                                            .split("\n")
-                                            .map((s) => s.split("="))
-                                            .reduce(
-                                              (acc, [key, value]) => ({
-                                                ...acc,
-                                                [key]: value,
-                                              }),
-                                              {}
-                                            ),
-                                          label: p.label,
-                                          icon_uri: p.icon_uri,
-                                          roles: p.roles
-                                            .split(",")
-                                            .map((s) => s.trim())
-                                            .filter((s) => s !== ""),
-                                          // todo: make this host dynamic
-                                          target_link_uri: `http://yaltt.inst.test/apps/${params.appId}/launch?placement=${key}`,
-                                        })
-                                      ),
+                                      messages: Object.entries(placements)
+                                        .filter(([, p]) => p.enabled)
+                                        .map(
+                                          ([key, p]): LtiMessage => ({
+                                            type: p.message_type,
+                                            custom_parameters:
+                                              p.custom_parameters
+                                                .split("\n")
+                                                .map((s) => s.split("="))
+                                                .reduce(
+                                                  (acc, [key, value]) => ({
+                                                    ...acc,
+                                                    [key]: value,
+                                                  }),
+                                                  {}
+                                                ),
+                                            label: p.label,
+                                            icon_uri: p.icon_uri,
+                                            roles: p.roles
+                                              .split(",")
+                                              .map((s) => s.trim())
+                                              .filter((s) => s !== ""),
+                                            // todo: make this host dynamic
+                                            target_link_uri: `http://yaltt.inst.test/apps/${params.appId}/launch?placement=${key}`,
+                                          })
+                                        ),
                                     }),
                                     provideRequestService,
                                     Effect.runCallback
