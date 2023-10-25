@@ -41,7 +41,7 @@ const deleteRegistration = (options: {
 }) =>
   delete_(`/api/apps/${options.appId}/registrations/${options.registrationId}`);
 
-type AppWithRegistrations = S.To<typeof AppWithRegistrations>;
+export type AppWithRegistrations = S.To<typeof AppWithRegistrations>;
 
 export const fetchApp = (appId: number) =>
   getDecode(AppWithRegistrations)(`/api/apps/${appId}`);
