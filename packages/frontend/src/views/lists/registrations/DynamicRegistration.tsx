@@ -4,8 +4,14 @@ import { useParsedParams } from "../../../lib/react-router/useSchemaParams";
 import * as S from "@effect/schema/Schema";
 import { WithAuth } from "../../../lib/auth/WithAuth";
 import { WithRequest } from "../../../lib/api/WithRequest";
-import { getDecode, jsonBody, post } from "../../../lib/api/request";
-import { Effect, Either, ReadonlyArray, pipe } from "effect";
+import {
+  ClientError,
+  ServerError,
+  getDecode,
+  jsonBody,
+  post,
+} from "../../../lib/api/request";
+import { Effect, Either, ReadonlyArray, pipe, Option } from "effect";
 import { LtiMessage, PlatformConfiguration } from "lti-schema";
 import { formatErrors } from "@effect/schema/TreeFormatter";
 import {
@@ -16,6 +22,8 @@ import {
 import { provideRequestService } from "../../../lib/api/requestServiceImpl";
 import { AppWithRegistrations, fetchApp } from "../apps/AppDetails";
 import { create } from "zustand";
+import { ADT } from "ts-adt";
+import { TagADT, match } from "@yaltt/model";
 
 type SelectedScopeState = {
   scopes: ReadonlyArray<string>;
@@ -31,6 +39,58 @@ const useScopeStore = create<SelectedScopeState>()((set) => ({
       state.scopes.includes(scope)
         ? { scopes: state.scopes.filter((s) => s !== scope) }
         : { scopes: [...state.scopes, scope] }
+    ),
+}));
+
+type Request<E, A> = TagADT<{
+  initial: {};
+  loading: {};
+  loaded: { data: A };
+  failed: { error: E };
+}>;
+
+type InstallingState = {
+  install: Request<ClientError | ServerError, unknown>;
+  installTool: <R, A>(
+    eff: Effect.Effect<R, ClientError | ServerError, A>
+  ) => Effect.Effect<R, ClientError | ServerError, A>;
+  setInstalling: () => Effect.Effect<never, never, void>;
+  setInstallFailed: (
+    err: ClientError | ServerError
+  ) => Effect.Effect<never, never, void>;
+  setInstallSucceeded: () => Effect.Effect<never, never, void>;
+};
+
+const useInstallingState = create<InstallingState>()((set) => ({
+  install: { tag: "initial" },
+  installTool: (eff) =>
+    pipe(
+      Effect.sync(() => set((state) => ({ install: { tag: "loading" } }))),
+      Effect.flatMap(() => eff),
+      Effect.tap(() =>
+        Effect.sync(() =>
+          set((state) => ({ install: { tag: "loaded", data: {} } }))
+        )
+      ),
+      Effect.tapError((err) =>
+        Effect.sync(() =>
+          set((state) => ({
+            install: { tag: "failed", error: err },
+          }))
+        )
+      )
+    ),
+  setInstalling: () =>
+    Effect.sync(() => set((state) => ({ install: { tag: "loading" } }))),
+  setInstallFailed: (err: ClientError | ServerError) =>
+    Effect.sync(() =>
+      set((state) => ({
+        install: { tag: "failed", error: err },
+      }))
+    ),
+  setInstallSucceeded: () =>
+    Effect.sync(() =>
+      set((state) => ({ install: { tag: "loaded", data: {} } }))
     ),
 }));
 
@@ -56,7 +116,7 @@ const fetchDynRegData = (params: {
     Effect.bind("app", () => fetchApp(params.appId))
   );
 
-const installTool = (
+const installToolReq = (
   appId: number,
   config: {
     platformConfiguration: PlatformConfiguration;
@@ -82,6 +142,8 @@ export const DynamicRegistration = () => {
 
   const scopes = useScopeStore((state) => state.scopes);
   const placements = usePlacementsStore((state) => state.placements);
+
+  const { install, installTool } = useInstallingState((state) => state);
 
   return (
     <WithAuth>
@@ -143,7 +205,7 @@ export const DynamicRegistration = () => {
                                 className="btn btn-primary"
                                 onClick={() => {
                                   pipe(
-                                    installTool(params.appId, {
+                                    installToolReq(params.appId, {
                                       platformConfiguration:
                                         platformConfiguration,
                                       registrationToken:
@@ -173,17 +235,35 @@ export const DynamicRegistration = () => {
                                               .split(",")
                                               .map((s) => s.trim())
                                               .filter((s) => s !== ""),
-                                            // todo: make this host dynamic
-                                            target_link_uri: `http://yaltt.inst.test/apps/${params.appId}/launch?placement=${key}`,
+                                            placements: [key],
+                                            target_link_uri: `${window.location.origin}/api/apps/${params.appId}/launch?placement=${key}`,
                                           })
                                         ),
                                     }),
+                                    installTool,
                                     provideRequestService,
                                     Effect.runCallback
                                   );
                                 }}
+                                disabled={pipe(
+                                  install,
+                                  match({
+                                    initial: () => false,
+                                    loading: () => true,
+                                    loaded: () => true,
+                                    failed: () => false,
+                                  })
+                                )}
                               >
-                                Install
+                                {pipe(
+                                  install,
+                                  match({
+                                    initial: () => "Install",
+                                    loading: () => "Installing...",
+                                    loaded: () => "Installed",
+                                    failed: () => "Failed (Try Again)",
+                                  })
+                                )}
                               </button>
                             </div>
                             <div className="divider"></div>
