@@ -19,7 +19,6 @@ export const mkYalttCanvasToolConfiguration =
     const mkUrl = mkYalttUrl(config);
     const mkRegUrl = (rest: string) =>
       mkUrl(`/api/registrations/${registration.id}${rest}`);
-    console.log("Rednering placements: ", placements);
     return {
       description: "Yet another LTI test tool",
       oidc_initiation_url: mkRegUrl("/login"),

@@ -19,10 +19,12 @@ export const mkYalttToolConfiguration =
     customParameters: Record<string, string>;
     messages: ReadonlyArray<LtiMessage>;
     scopes: ReadonlyArray<string>;
-  }) => {
+  }): ToolConfiguration => {
     const mkUrl = mkYalttUrl(config);
     const mkRegUrl = (rest: string) =>
       mkUrl(`/api/registrations/${options.registration.id}${rest}`);
+    const mkAppUrl = (rest: string) =>
+      mkUrl(`/api/apps/${options.app.id}${rest}`);
     return {
       application_type: "web",
       client_name: options.app.name,
@@ -30,10 +32,11 @@ export const mkYalttToolConfiguration =
       grant_types: ["client_credentials", "implicit"],
       jwks_uri: mkRegUrl(`/jwks`),
       initiate_login_uri: mkRegUrl(`/login`),
-      redirect_uris: [mkRegUrl("/resource_link")],
+      redirect_uris: [mkRegUrl("/launch")],
       response_types: ["id_token"],
       scope: options.scopes.join(","),
       token_endpoint_auth_method: "private_key_jwt",
+      logo_uri: mkAppUrl("/icon.svg"),
       "https://purl.imsglobal.org/spec/lti-tool-configuration": {
         claims: options.claims,
         custom_parameters: options.customParameters,

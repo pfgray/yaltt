@@ -24,6 +24,7 @@ import { AppWithRegistrations, fetchApp } from "../apps/AppDetails";
 import { create } from "zustand";
 import { ADT } from "ts-adt";
 import { TagADT, match } from "@yaltt/model";
+import { useParsedParamsQuery } from "../../../lib/react-router/useParsedParamsQuery";
 
 type SelectedScopeState = {
   scopes: ReadonlyArray<string>;
@@ -128,12 +129,10 @@ const installToolReq = (
 ) => post(`/api/apps/${appId}/install`, jsonBody(config));
 
 export const DynamicRegistration = () => {
-  const params = useParsedParams(
+  const parsedParamsQuery = useParsedParamsQuery(
     S.struct({
       appId: S.numberFromString(S.string),
-    })
-  );
-  const query = useParsedQuery(
+    }),
     S.struct({
       openid_configuration: S.string,
       registration_token: S.optional(S.string),
@@ -149,13 +148,7 @@ export const DynamicRegistration = () => {
     <WithAuth>
       {(user) =>
         pipe(
-          params,
-          Either.flatMap((params) =>
-            pipe(
-              query,
-              Either.mapRight((query) => ({ params, query }))
-            )
-          ),
+          parsedParamsQuery,
           Either.match({
             onRight: ({ params, query }) => (
               <WithRequest
@@ -236,7 +229,7 @@ export const DynamicRegistration = () => {
                                               .map((s) => s.trim())
                                               .filter((s) => s !== ""),
                                             placements: [key],
-                                            target_link_uri: `${window.location.origin}/api/apps/${params.appId}/launch?placement=${key}`,
+                                            // target_link_uri: `${window.location.origin}/api/apps/${params.appId}/launch?placement=${key}`,
                                           })
                                         ),
                                     }),
@@ -497,14 +490,14 @@ const MessageTypes = (props: {
         return {
           ...acc,
           [placement.type]: {
-            enabled: false,
+            enabled: true,
             message_type:
               // Prefer LtiDeepLinkingRequest if it's available
               placement.message_types.includes("LtiDeepLinkingRequest")
                 ? "LtiDeepLinkingRequest"
                 : placement.message_types[0],
-            custom_parameters: "",
-            icon_uri: "",
+            custom_parameters: "foo=bar\ncontext_id=$Context.id",
+            icon_uri: `${window.location.origin}/api/apps/${props.app.id}/icon.svg`,
             roles: "",
             label: `${props.app.name} (${placement.description})`,
           },

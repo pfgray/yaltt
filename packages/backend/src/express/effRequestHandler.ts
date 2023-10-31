@@ -23,19 +23,35 @@ import {
 } from "../fetch/FetchService";
 import { mkHttpFetchService } from "../fetch/HttpFetchService";
 import { formatErrors } from "@effect/schema/TreeFormatter";
+import * as S from "@effect/schema/Schema";
 
 type Response = {
   status: number;
   body?: unknown;
+  raw: boolean;
   headers?: Record<string, string>;
+  schema?: S.Schema<any, unknown>;
 };
 
 export const response =
-  (status: number) => (body?: unknown, headers?: Record<string, string>) => ({
+  (status: number) =>
+  (
+    body?: unknown,
+    headers?: Record<string, string>,
+    raw: boolean = false,
+    schema?: S.Schema<any, any>
+  ) => ({
     status,
     body,
+    raw,
     headers,
+    schema,
   });
+
+export const schemaResponse =
+  <A>(status: number, schema: S.Schema<any, A>) =>
+  (body: A, headers?: Record<string, string>, raw: boolean = false) =>
+    response(status)(body, headers, raw, schema);
 
 export const successResponse = response(200);
 export const redirectResponse = (location: string) =>
@@ -188,13 +204,38 @@ export const effRequestHandler: EffRequestHandler =
         } else {
           pgService.commit();
           const resp = exit.value;
-          console.log(`Response is: ${resp.status}`);
-          response.status(resp.status);
           if ("headers" in resp && typeof resp.headers !== "undefined") {
+            console.log("setting headers! ", resp.headers);
             response.set(resp.headers);
           }
           if ("body" in resp) {
-            response.json(resp.body);
+            if (resp.raw) {
+              response.status(resp.status);
+              response.send(resp.body);
+            } else if (typeof resp.schema !== "undefined") {
+              pipe(
+                S.encodeEither(resp.schema)(resp.body),
+                Either.match({
+                  onLeft: (e) => {
+                    response.status(500);
+                    console.log(
+                      "Error parsing response: ",
+                      formatErrors(e.errors)
+                    );
+                    response.json({ failure: "An error ocurred.", error: e });
+                  },
+                  onRight: (b) => {
+                    response.status(resp.status);
+                    response.json(b);
+                  },
+                })
+              );
+            } else {
+              response.status(resp.status);
+              response.json(resp.body);
+            }
+          } else {
+            response.status(resp.status);
           }
         }
       }

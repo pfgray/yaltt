@@ -18,19 +18,30 @@ export interface ParseQueryError {
   error: ParseError;
 }
 
+export const parseQueryError = (
+  query: unknown,
+  error: ParseError
+): ParseQueryError => ({
+  tag: "parse_query_error",
+  query,
+  error,
+});
+
+export const parseParamsError = (
+  params: unknown,
+  error: ParseError
+): ParseParamsError => ({
+  tag: "parse_params_error",
+  params,
+  error,
+});
+
 export const parseQuery = <A>(querySchema: S.Schema<any, A>) =>
   ExpressRequestService.pipe(
     Effect.flatMap(({ request }) =>
       pipe(
         S.parse(querySchema)(request.query, { onExcessProperty: "ignore" }),
-        tap(() => "query is" + JSON.stringify(request.query, null, 2)),
-        Effect.mapError(
-          (error): ParseQueryError => ({
-            tag: "parse_query_error",
-            query: request.query,
-            error,
-          })
-        )
+        Effect.mapError((error) => parseQueryError(request.query, error))
       )
     )
   );
@@ -40,13 +51,7 @@ export const parseParams = <A>(paramsSchema: S.Schema<any, A>) =>
     Effect.flatMap(({ request }) =>
       pipe(
         S.parse(paramsSchema)(request.params, { onExcessProperty: "ignore" }),
-        Effect.mapError(
-          (error): ParseParamsError => ({
-            tag: "parse_params_error",
-            params: request.params,
-            error,
-          })
-        )
+        Effect.mapError((error) => parseParamsError(request.params, error))
       )
     )
   );
@@ -59,13 +64,7 @@ export const parseBodyOrParams = <A>(schema: S.Schema<A>) =>
         Effect.orElse(() =>
           S.parse(schema)(request.params, { onExcessProperty: "ignore" })
         ),
-        Effect.mapError(
-          (error): ParseParamsError => ({
-            tag: "parse_params_error",
-            params: request.params,
-            error,
-          })
-        )
+        Effect.mapError((error) => parseParamsError(request.params, error))
       )
     )
   );
@@ -76,13 +75,7 @@ export const parseBody = <A>(paramsSchema: S.Schema<A>) =>
       pipe(
         request.body,
         S.parse(paramsSchema),
-        Effect.mapError(
-          (error): ParseParamsError => ({
-            tag: "parse_params_error",
-            params: request.params,
-            error,
-          })
-        )
+        Effect.mapError((error) => parseParamsError(request.params, error))
       )
     )
   );

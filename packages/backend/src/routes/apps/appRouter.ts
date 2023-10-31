@@ -24,6 +24,7 @@ import {
 import { parseParams } from "../../express/parseParams";
 import { stringToInteger } from "@yaltt/model";
 import { getRegistrationsForAppId } from "../../model/entities/registrations";
+import { getIconForApp } from "./appIcon";
 
 const upload = multer.default();
 export const appRouter = express.Router();
@@ -74,6 +75,20 @@ appRouter.get(
         registrations,
       })),
       Effect.map(successResponse)
+    )
+  )
+);
+
+appRouter.get(
+  "/apps/:appId/icon.svg",
+  effRequestHandler(
+    pipe(
+      appIdParam,
+      Effect.flatMap(getAppForId),
+      Effect.map(getIconForApp),
+      Effect.map((icon) =>
+        successResponse(icon, { "Content-Type": "image/svg+xml" }, true)
+      )
     )
   )
 );

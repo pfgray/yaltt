@@ -6,3 +6,4 @@ export * from "./configuration/CanvasPrivacyLevel";
 export * from "./configuration/CanvasToolConfiguration";
 export * from "./configuration/CanvasToolExtensionSettings";
 export * from "./configuration/CanvasToolExtension";
+export * from "./claims/Placement";

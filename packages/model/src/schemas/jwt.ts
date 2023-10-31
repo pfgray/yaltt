@@ -63,7 +63,7 @@ export const parseJwt = (s: string) => {
 };
 
 const decodeJwt =
-  <A>(bodySchema: S.Schema<A>) =>
+  <A>(bodySchema: S.Schema<any, A>) =>
   (s: string, parseOptions?: AST.ParseOptions): PR.ParseResult<Jwt<A>> =>
     pipe(
       parseJwt(s),
@@ -91,21 +91,18 @@ const decodeJwt =
       }
     );
 
-const encodeJwt = <A>(s: Jwt<A>): PR.ParseResult<string> =>
+const encodeJwt = (s: Jwt<any>): PR.ParseResult<string> =>
   PR.success(`${s.header}.${s.payload?.toString()}.${s.signature}`);
 
-export const JsonWebToken = <A>(
-  payloadSchema: S.Schema<A>
-): S.Schema<string, Jwt<A>> =>
-  pipe(
-    S.string,
-    S.transformResult(
-      S.struct({
-        header: S.object,
-        payload: payloadSchema,
-        signature: S.string,
-      }),
-      decodeJwt(payloadSchema),
-      encodeJwt
-    )
+const pair = <A>(schema: S.Schema<A>): S.Schema<readonly [A, A]> => {
+  const element = AST.createElement(
+    schema.ast, // <= the element type
+    false // <= is optional?
   );
+  const tuple = AST.createTuple(
+    [element, element], // <= elements definitions
+    Option.none(), // <= rest element
+    true // <= is readonly?
+  );
+  return S.make(AST.stringKeyword); // <= wrap the AST value in a Schema
+};

@@ -23,25 +23,40 @@ create table if not exists apps (
 create table if not exists contexts (
   id              serial primary key,
   created         date not null default now(),
-  name            varchar(255) not null,
-  icon_url        varchar(255),
-  user_id         serial references users(id)
+  title           varchar(255),
+  type            text[] not null default array[]::text[],
+  label           varchar(255),
+  registration_id serial not null references registrations(id)
 );
 
 create table if not exists people (
   id              serial primary key,
   created         date not null default now(),
-  name            varchar(255) not null
+  sub             varchar(255) not null,
+  name            varchar(255),
+  given_name      varchar(255),
+  family_name     varchar(255),
+  middle_name     varchar(255),
+  email           varchar(255),
+  locale          varchar(255),
+  registration_id serial not null references registrations(id)
 );
 
 create table if not exists launches (
   id              serial primary key,
   created         date not null default now(),
-  name            varchar(255) not null,
-  registration_id serial not null references registrations(id),
   id_token        jsonb not null,
+  registration_id serial not null references registrations(id),
   person_id       serial references people(id),
-  context         serial references contexts(id)
+  context_id      serial references contexts(id)
+);
+
+create table if not exists enrollments (
+  id              serial primary key,
+  created         date not null default now(),
+  person_id       serial not null references people(id) on delete cascade,
+  context_id      serial not null references contexts(id) on delete cascade,
+  roles           text[] not null default array[]::text[]
 );
 
 create table if not exists registrations (

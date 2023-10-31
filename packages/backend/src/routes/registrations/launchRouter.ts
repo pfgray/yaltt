@@ -1,19 +1,48 @@
 import * as crypto from "crypto";
 import { Effect, Option, ReadonlyArray, pipe } from "effect";
 import * as express from "express";
-
+import * as AST from "@effect/schema/AST";
+import * as PR from "@effect/schema/ParseResult";
 import * as S from "@effect/schema/Schema";
 import * as multer from "multer";
 import {
   effRequestHandler,
   redirectResponse,
+  schemaResponse,
   successResponse,
 } from "../../express/effRequestHandler";
 
-import { JsonWebToken, stringToInteger } from "@yaltt/model";
-import { parseBodyError } from "../../express/parseBody";
-import { parseBodyOrParams, parseParams } from "../../express/parseParams";
+import { parseJwt, stringToInteger } from "@yaltt/model";
+import {
+  parseBodyOrParams,
+  parseParams,
+  parseParamsError,
+  parseQuery,
+} from "../../express/parseParams";
 import { getRegistrationForId } from "../../model/entities/registrations";
+import {
+  ContextClaim,
+  CustomClaim,
+  UserIdentityClaim,
+  DeploymentIdClaim,
+  LaunchPresentationClaim,
+  LisClaim,
+  LtiVersionClaim,
+  MessageTypeClaim,
+  PlatformInstanceClaim,
+  ResourceLinkClaim,
+  RolesClaim,
+  RoleScopeMentorClaim,
+  TargetLinkUriClaim,
+} from "lti-model";
+import { createPersonForRegistrationId } from "../../model/entities/people";
+import { createContextForRegistrationId } from "../../model/entities/contexts";
+import { createEnrollment } from "../../model/entities/enrollments";
+import {
+  LaunchRow,
+  createLaunchForRegistrationId,
+  getLaunchForId,
+} from "../../model/entities/launches";
 
 const upload = multer.default();
 export const launchRouter = express.Router();
@@ -108,49 +137,182 @@ launchRouter.post("/registrations/:registrationId/login", handleLoginRequest);
 const launchUrlParams = parseParams(
   S.struct({
     registrationId: stringToInteger,
-    type: S.literal("resource_link"),
   })
 );
 
-const idToken = pipe(
+const LaunchIdToken = UserIdentityClaim.pipe(
+  S.extend(ContextClaim),
+  S.extend(CustomClaim),
+  S.extend(DeploymentIdClaim),
+  S.extend(LaunchPresentationClaim),
+  S.extend(LisClaim),
+  S.extend(LtiVersionClaim),
+  S.extend(MessageTypeClaim),
+  S.extend(PlatformInstanceClaim),
+  S.extend(ResourceLinkClaim),
+  S.extend(RolesClaim),
+  S.extend(RoleScopeMentorClaim),
+  S.extend(TargetLinkUriClaim)
+);
+
+const parseIdToken = pipe(
   parseBodyOrParams(
     S.struct({
       id_token: S.string,
     })
   ),
+  // todo: validate the id_token signature?
   Effect.flatMap((s) =>
     pipe(
-      S.parse(
-        JsonWebToken(
-          S.struct({
-            aud: S.string,
-            iss: S.string,
-            "https://www.instructure.com/placement": S.optional(S.string),
-            "https://purl.imsglobal.org/spec/lti/claim/context": S.optional(
-              S.struct({
-                id: S.string,
-                label: S.string,
-                title: S.string,
-                type: S.array(S.string),
-              })
-            ),
-          })
+      parseJwt(s.id_token),
+      Effect.mapError(() =>
+        parseParamsError(
+          { id_token: s },
+          PR.parseError(ReadonlyArray.make(PR.type(AST.stringKeyword, s)))
         )
-      )(s.id_token, { onExcessProperty: "ignore" }),
-      Effect.mapError((errs) => parseBodyError(s, errs))
+      )
+    )
+  ),
+  Effect.flatMap((idToken) =>
+    pipe(
+      S.parse(LaunchIdToken)(idToken.payload, { onExcessProperty: "ignore" }),
+      Effect.mapError((error) => parseParamsError(idToken.payload, error))
     )
   )
 );
+
+const savePerson = (
+  registrationId: number,
+  idToken: S.To<typeof LaunchIdToken>
+) => {
+  if (typeof idToken.sub !== "undefined") {
+    idToken;
+    return pipe(
+      createPersonForRegistrationId(
+        registrationId,
+        idToken.sub,
+        idToken.name,
+        idToken.given_name,
+        idToken.family_name,
+        idToken.middle_name,
+        idToken.email,
+        idToken.locale
+      ),
+      Effect.map((p) => Option.some(p.id))
+    );
+  } else {
+    return Effect.succeed(Option.none());
+  }
+};
+
+const saveContext = (
+  registrationId: number,
+  idToken: S.To<typeof LaunchIdToken>
+) => {
+  const context = idToken["https://purl.imsglobal.org/spec/lti/claim/context"];
+  if (typeof context !== "undefined") {
+    return pipe(
+      createContextForRegistrationId(
+        registrationId,
+        context.type,
+        context.label,
+        context.title
+      ),
+      Effect.map((c) => Option.some(c.id))
+    );
+  } else {
+    return Effect.succeed(Option.none());
+  }
+};
+
+const saveEnrollment = (
+  person: Option.Option<number>,
+  context: Option.Option<number>,
+  idToken: S.To<typeof LaunchIdToken>
+) =>
+  pipe(
+    idToken["https://purl.imsglobal.org/spec/lti/claim/roles"],
+    Option.fromNullable,
+    Option.bindTo("roles"),
+    Option.bind("person", () => person),
+    Option.bind("context", () => context),
+    Option.match({
+      onSome: ({ roles, person, context }) =>
+        pipe(createEnrollment(context, person, roles), Effect.map(Option.some)),
+      onNone: () => Effect.succeed(Option.none()),
+    })
+  );
+
+const saveLaunch = (
+  registrationId: number,
+  idToken: S.To<typeof LaunchIdToken>
+) =>
+  pipe(
+    savePerson(registrationId, idToken),
+    Effect.bindTo("person"),
+    Effect.bind("context", () => saveContext(registrationId, idToken)),
+    Effect.bind("enrollment", ({ person, context }) =>
+      saveEnrollment(person, context, idToken)
+    ),
+    Effect.bind("launch", ({ enrollment, person, context }) =>
+      createLaunchForRegistrationId(
+        registrationId,
+        idToken,
+        Option.getOrUndefined(person),
+        Option.getOrUndefined(context)
+      )
+    )
+  );
 
 const handleLaunchRequest = effRequestHandler(
   pipe(
     launchUrlParams,
     Effect.bindTo("params"),
-    // Effect.map((params) => ({ params })),
-    Effect.bind("idToken", () => idToken),
-    Effect.map(({ params, idToken }) => successResponse({ params, idToken })),
-    (a) => a
+    Effect.bind("query", () =>
+      parseQuery(
+        S.struct({
+          placement: S.string,
+        })
+      )
+    ),
+    Effect.tap(() => {
+      return Effect.sync(() => {
+        console.log("before the idToken");
+      });
+    }),
+    Effect.bind("idToken", () => parseIdToken),
+    Effect.tap(() => {
+      return Effect.sync(() => {
+        console.log("after the idToken");
+      });
+    }),
+    Effect.bind("launch", ({ params, idToken, query }) =>
+      saveLaunch(params.registrationId, idToken)
+    ),
+    Effect.map(
+      ({ params, launch, query }) =>
+        `/launch/${launch.launch.id}?placement=${query.placement}`
+    ),
+    Effect.map(redirectResponse)
   )
 );
 
-launchRouter.post("/registrations/:registrationId/:type", handleLaunchRequest);
+launchRouter.post("/registrations/:registrationId/launch", handleLaunchRequest);
+
+const launchIdParam = parseParams(
+  S.struct({
+    launchId: stringToInteger,
+  })
+);
+
+launchRouter.get(
+  "/launch/:launchId",
+  effRequestHandler(
+    pipe(
+      launchIdParam,
+      Effect.map((l) => l.launchId),
+      Effect.flatMap(getLaunchForId),
+      Effect.map(schemaResponse(200, LaunchRow))
+    )
+  )
+);

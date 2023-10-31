@@ -1,6 +1,6 @@
 import * as pg from "pg";
 
-import { pipe, Effect, Option, Either, ReadonlyArray } from "effect";
+import { pipe, Effect, ReadonlyArray } from "effect";
 import * as S from "@effect/schema/Schema";
 import { PgService } from "./PgService";
 import { ParseError } from "@effect/schema/ParseResult";
