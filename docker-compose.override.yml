@@ -7,6 +7,9 @@ services:
       default:
         aliases:
           - yaltt-backend
+    environment:
+      - ADMIN_USER=admin
+      - ADMIN_PASSWORD=password
 
   frontend:
     labels:

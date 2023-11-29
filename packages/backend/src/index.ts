@@ -1,7 +1,6 @@
 import * as express from "express";
 import { pool } from "./db/db";
 import * as passport from "passport";
-import * as cookieParser from "cookie-parser";
 import * as session from "express-session";
 import * as cors from "cors";
 import { authRouter } from "./auth/authRouter";
@@ -11,12 +10,13 @@ import {
   successResponse,
 } from "./express/effRequestHandler";
 import { addUserWithLocalPassword } from "./model/users";
-import * as connect_pg_simple_ from "connect-pg-simple";
 import { registrationRouter } from "./routes/registrations/registrationsRouter";
 import { pipe, Effect, Option, Either } from "effect";
 import { launchRouter } from "./routes/registrations/launchRouter";
 import RedisStore from "connect-redis";
 import { createClient } from "redis";
+import { PgService } from "./db/PgService";
+import { mkTransactionalPgService } from "./db/TransactionalPgService";
 
 const app = express.default();
 const port = 3000;
@@ -65,17 +65,23 @@ app.get("/login", function (req, res, next) {
 });
 
 app.listen(port, () => {
-  console.log(`Example app listening on port ${port}`);
+  console.log(`Example app listening on port ${port}`); 
 });
-
-app.get(
-  "/insert",
-  effRequestHandler(
-    Effect.map(addUserWithLocalPassword("peegee", "password"), successResponse)
-  )
-);
 
 app.use("/api", authRouter);
 app.use("/api", appRouter);
 app.use("/api", registrationRouter);
 app.use("/api", launchRouter);
+
+if(process.env.ADMIN_USER && process.env.ADMIN_PASSWORD) {
+  console.log("Creating admin user");
+  const username = process.env.ADMIN_USER.trim();
+  if(username.length > 0) {
+    const pgService = mkTransactionalPgService(pool);
+    pipe(
+      addUserWithLocalPassword(username, process.env.ADMIN_PASSWORD),
+      Effect.provideService(PgService, pgService.service),
+      Effect.runPromise
+    )
+  }
+}
