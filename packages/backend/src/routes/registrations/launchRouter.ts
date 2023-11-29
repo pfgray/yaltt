@@ -271,7 +271,7 @@ const handleLaunchRequest = effRequestHandler(
     Effect.bind("query", () =>
       parseQuery(
         S.struct({
-          placement: S.string,
+          placement: S.optional(S.string),
         })
       )
     ),

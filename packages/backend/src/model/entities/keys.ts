@@ -52,3 +52,11 @@ export const getKeysWithoutPrivateKeyForRegistrationId = (
 	`,
     [registrationId]
   );
+
+export const getKeyForRegistrationId = (registrationId: number) =>
+  query1(KeyRow)(
+    `select 
+      id, created, active, registration_id, public_key, private_key from jwks 
+    where registration_id = $1`,
+    [registrationId]
+  );

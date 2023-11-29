@@ -7,8 +7,9 @@ import { createKeyForRegistrationId } from "./keys";
 
 const RegistrationType = S.union(S.literal("manual"), S.literal("dynamic"));
 
-const RegistrationRow = S.struct({
+export const RegistrationRow = S.struct({
   id: S.number,
+  client_id: S.nullable(S.string),
   type: RegistrationType,
   created: S.ValidDateFromSelf,
   app_id: S.number,
@@ -18,9 +19,11 @@ const RegistrationRow = S.struct({
   platform_configuration: PlatformConfiguration,
 });
 
+export interface RegistrationRow extends S.To<typeof RegistrationRow> {}
+
 export const getRegistrationForId = (registrationId: number) =>
   query1(RegistrationRow)(
-    "select id, type, app_id, created, platform_configuration, claims, scopes, custom_parameters from registrations where id = $1",
+    "select id, client_id, type, app_id, created, platform_configuration, claims, scopes, custom_parameters from registrations where id = $1",
     [registrationId]
   );
 
@@ -29,7 +32,7 @@ export const deleteRegistrationForId = (registrationId: number) =>
 
 export const getRegistrationsForAppId = (appId: number) =>
   query(RegistrationRow)(
-    "select id, type, app_id, created, platform_configuration, claims, scopes, custom_parameters from registrations where app_id = $1",
+    "select id, client_id, type, app_id, created, platform_configuration, claims, scopes, custom_parameters from registrations where app_id = $1",
     [appId]
   );
 
@@ -38,15 +41,27 @@ export const createRegistrationForAppId = (
   type: S.To<typeof RegistrationType>,
   platformConfiguration: PlatformConfiguration,
   claims: ReadonlyArray<string> = [],
-  scopes: ReadonlyArray<string> = []
+  scopes: ReadonlyArray<string> = [],
+  client_id?: string
 ) =>
   Effect.tap(
     query1(RegistrationRow)(
       `insert into registrations 
-      (app_id, type, platform_configuration, claims, scopes)
-      values ($1, $2, $3, $4, $5)
+      (app_id, type, client_id, platform_configuration, claims, scopes)
+      values ($1, $2, $3, $4, $5, $6)
       returning *`,
-      [appId, type, platformConfiguration, claims, scopes]
+      [appId, type, client_id, platformConfiguration, claims, scopes]
     ),
     (reg) => createKeyForRegistrationId(reg.id)
+  );
+
+export const setRegistrationClientId = (
+  registrationId: number,
+  client_id: string
+) =>
+  query(S.unknown)(
+    `update registrations
+        set client_id = $2
+      where id = $1`,
+    [registrationId, client_id]
   );

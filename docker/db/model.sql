@@ -62,6 +62,7 @@ create table if not exists enrollments (
 create table if not exists registrations (
   id                      serial primary key,
   type                    varchar(255) not null,
+  client_id               varchar(255),
   created                 date not null default now(),
   app_id                  serial not null references apps(id) on delete cascade,
   claims                  text[] not null default array[]::text[],

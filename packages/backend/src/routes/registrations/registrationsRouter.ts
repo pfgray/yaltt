@@ -21,6 +21,7 @@ import {
   deleteRegistrationForId,
   getRegistrationForId,
   getRegistrationsForAppId,
+  setRegistrationClientId,
 } from "../../model/entities/registrations";
 import {
   parseBodyOrParams,
@@ -48,6 +49,8 @@ import { mkYalttCanvasToolConfiguration } from "./mkYalttCanvasToolConfiguration
 import { exportPublickKeyJWK } from "../../crypto/KeyService";
 import { Fetch } from "../../fetch/FetchService";
 import { tap } from "../../util/tap";
+import { schemaParse } from "../../schemaParse";
+import { fetchToken } from "../../tokens/tokens";
 
 const upload = multer.default();
 export const registrationRouter = express.Router();
@@ -236,6 +239,10 @@ registrationRouter.get(
   )
 );
 
+const CreatedToolConfiguration = ToolConfiguration.pipe(
+  S.extend(S.struct({ client_id: S.string }))
+);
+
 registrationRouter.post(
   "/apps/:appId/install",
   effRequestHandler(
@@ -273,12 +280,11 @@ registrationRouter.post(
           body.scopes
         )
       ),
-      Effect.flatMap(({ body, app, config, registration }) => {
+      Effect.bind("installRequest", ({ body, app, config, registration }) => {
         const url = new URL(body.registrationEndpoint);
         if (body.registrationToken) {
           url.searchParams.append("registration_token", body.registrationToken);
         }
-        // TODO: have the frontend send LtiMessages, use the schema
         const toolConfiguration = mkYalttToolConfiguration(config)({
           app,
           registration,
@@ -296,6 +302,12 @@ registrationRouter.post(
         });
         return Fetch.post(url.toString(), toolConfiguration);
       }),
+      Effect.bind("install", ({ installRequest }) =>
+        schemaParse(CreatedToolConfiguration)(installRequest)
+      ),
+      Effect.flatMap(({ registration, install }) =>
+        setRegistrationClientId(registration.id, install.client_id)
+      ),
       Effect.map(successResponse)
     )
   )
@@ -330,19 +342,40 @@ registrationRouter.get(
   )
 );
 
+/**
+ * Retrieves apps and registrations in a path parameter,
+ * Ensuring that the app is for the current authed user,
+ * and the registration is for the app.
+ */
+const registrationAndAppParams = pipe(
+  Effect.succeed({}),
+  Effect.bind("app", () => appIdIsForUser),
+  Effect.bind("regId", () => registrationIdParam),
+  Effect.bind("registration", ({ regId }) => getRegistrationForId(regId)),
+  Effect.filterOrFail(
+    ({ app, registration }) => registration.app_id === app.id,
+    () => unauthorizedError(`Registration is not for app.`)
+  )
+);
+
 registrationRouter.delete(
   "/apps/:appId/registrations/:registrationId",
   pipe(
-    Effect.succeed({}),
-    Effect.bind("app", () => appIdIsForUser),
-    Effect.bind("regId", () => registrationIdParam),
-    Effect.bind("reg", ({ regId }) => getRegistrationForId(regId)),
-    Effect.filterOrFail(
-      ({ app, reg }) => reg.app_id === app.id,
-      () => unauthorizedError(`Registration is not for app.`)
+    registrationAndAppParams,
+    Effect.flatMap(({ registration }) =>
+      deleteRegistrationForId(registration.id)
     ),
-    Effect.flatMap(({ reg }) => deleteRegistrationForId(reg.id)),
     Effect.map(() => successResponse({})),
+    effRequestHandler
+  )
+);
+
+registrationRouter.get(
+  "/apps/:appId/registrations/:registrationId/token",
+  pipe(
+    registrationAndAppParams,
+    Effect.flatMap(({ registration }) => fetchToken(registration)),
+    Effect.map(successResponse),
     effRequestHandler
   )
 );

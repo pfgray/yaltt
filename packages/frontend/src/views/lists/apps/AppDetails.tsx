@@ -261,6 +261,8 @@ const RegistrationsList = (props: SubViewProps) => {
             <th className="text-center">Contexts</th>
             <th className="text-center">Users</th>
             <th>Config</th>
+            <th>Token</th>
+            <th>Client Id</th>
             <th>Type</th>
             <th>Created</th>
           </tr>
@@ -285,6 +287,15 @@ const RegistrationsList = (props: SubViewProps) => {
                   config.json
                 </a>
               </td>
+              <td>
+                <a
+                  href={`/api/apps/${props.app.id}/registrations/${r.id}/token`}
+                  className="link"
+                >
+                  token
+                </a>
+              </td>
+              <td>{Option.getOrNull(r.client_id)}</td>
               <td>{r.type}</td>
               <td>{format(r.created)}</td>
               <td>

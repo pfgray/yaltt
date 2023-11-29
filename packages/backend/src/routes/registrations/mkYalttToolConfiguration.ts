@@ -34,7 +34,7 @@ export const mkYalttToolConfiguration =
       initiate_login_uri: mkRegUrl(`/login`),
       redirect_uris: [mkRegUrl("/launch")],
       response_types: ["id_token"],
-      scope: options.scopes.join(","),
+      scope: options.scopes.join(" "),
       token_endpoint_auth_method: "private_key_jwt",
       logo_uri: mkAppUrl("/icon.svg"),
       "https://purl.imsglobal.org/spec/lti-tool-configuration": {

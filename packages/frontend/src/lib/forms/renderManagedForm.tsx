@@ -93,7 +93,7 @@ export const renderManagedForm = <
                   type="text"
                   name={key}
                   className="input input-bordered w-full"
-                  placeholder={capitalizeWords(key)}
+                  placeholder={capitalizeWords(value.label)}
                   value={pipe(
                     fields,
                     HashMap.get(key),

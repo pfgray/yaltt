@@ -62,6 +62,7 @@ const request_ = (
             );
           });
           req.open(method, `${config.baseUrl}${url}`);
+          req.setRequestHeader("Accept", "application/json");
           pipe(
             options,
             Option.fromNullable,

@@ -30,7 +30,6 @@ export const CanvasPlacementTypes = {
   post_grades: "post_grades",
   quiz_index_menu: "quiz_index_menu",
   quiz_menu: "quiz_menu",
-  resource_selection: "resource_selection",
   submission_type_selection: "submission_type_selection",
   student_context_card: "student_context_card",
   tool_configuration: "tool_configuration",
@@ -40,4 +39,4 @@ export const CanvasPlacementTypes = {
 } as const;
 
 export type CanvasPlacementType =
-  typeof CanvasPlacementTypes[keyof typeof CanvasPlacementTypes];
+  (typeof CanvasPlacementTypes)[keyof typeof CanvasPlacementTypes];

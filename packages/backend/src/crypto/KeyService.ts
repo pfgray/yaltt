@@ -15,7 +15,11 @@ export interface KeyService {
       privateKey: Buffer;
     }
   >;
-  sign: (input: {}, privateKey: Buffer) => string;
+  sign: (
+    input: {},
+    privateKey: Buffer,
+    options?: jsonwebtoken.SignOptions
+  ) => string;
   verify: (
     input: string,
     publicKey: Buffer
@@ -35,3 +39,10 @@ export const exportPublickKeyJWK = (b: Buffer) =>
   KeyService.pipe(
     Effect.flatMap(({ exportPublickKeyJWK }) => exportPublickKeyJWK(b))
   );
+
+export const signJwt = (
+  input: {},
+  privateKey: Buffer,
+  options?: jsonwebtoken.SignOptions
+) =>
+  KeyService.pipe(Effect.map(({ sign }) => sign(input, privateKey, options)));

@@ -95,6 +95,15 @@ const useInstallingState = create<InstallingState>()((set) => ({
     ),
 }));
 
+const sendCloseMessage = Effect.sync(() => {
+  (window.opener || window.parent).postMessage(
+    {
+      subject: "org.imsglobal.lti.close",
+    },
+    "*"
+  );
+});
+
 const fetchOpenIdConfig = (params: {
   openid_configuration: string;
   registration_token?: string;
@@ -234,6 +243,7 @@ export const DynamicRegistration = () => {
                                         ),
                                     }),
                                     installTool,
+                                    Effect.flatMap(() => sendCloseMessage),
                                     provideRequestService,
                                     Effect.runCallback
                                   );
@@ -458,6 +468,7 @@ const MessageTypes = (props: {
 
   const allPlacements = ltiPlatformConfig.messages_supported
     .flatMap((m) => m.placements || [])
+    .filter((p) => p !== "resource_selection")
     .filter((item, i, ar) => ar.indexOf(item) === i)
     .map((p) => ({
       type: p,
@@ -490,7 +501,7 @@ const MessageTypes = (props: {
         return {
           ...acc,
           [placement.type]: {
-            enabled: true,
+            enabled: false,
             message_type:
               // Prefer LtiDeepLinkingRequest if it's available
               placement.message_types.includes("LtiDeepLinkingRequest")
@@ -620,7 +631,6 @@ const KnownPlacements = [
   { type: "account_navigation", description: "Account Navigation" },
   { type: "editor_button", description: "Editor Button" },
   { type: "assignment_edit", description: "Assignment Edit" },
-  { type: "resource_selection", description: "Resource Selection" },
   { type: "assignment_group_menu", description: "Assignment Group Menu" },
   { type: "assignment_index_menu", description: "Assignment Index Menu" },
   { type: "assignment_menu", description: "Assignment Menu" },

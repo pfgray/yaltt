@@ -5,6 +5,7 @@ import { RegistrationType } from "./RegistrationType";
 export const Registration = S.struct({
   id: S.number,
   type: RegistrationType,
+  client_id: S.optionFromNullable(S.string),
   app_id: S.number,
   created: S.Date,
   claims: S.array(S.string),

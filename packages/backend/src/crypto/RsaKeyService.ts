@@ -2,6 +2,7 @@ import * as crypto from "crypto";
 import { Effect } from "effect";
 import * as jsonwebtoken from "jsonwebtoken";
 import { KeyError, KeyService } from "./KeyService";
+import { option } from "effect/Config";
 
 const generateKeyPair: KeyService["generateKeyPair"] = () =>
   Effect.async((resume) => {
@@ -28,11 +29,29 @@ const generateKeyPair: KeyService["generateKeyPair"] = () =>
     );
   });
 
-const sign: KeyService["sign"] = (input: {}, privateKey: Buffer) =>
-  jsonwebtoken.sign(input, privateKey, { algorithm: "RS256" });
+const sign: KeyService["sign"] = (
+  input: {},
+  privateKey: Buffer,
+  options?: jsonwebtoken.SignOptions
+) => {
+  return (jsonwebtoken as any).default.sign(
+    input,
+    crypto.createPrivateKey({
+      key: privateKey,
+      format: "der",
+      type: "pkcs1",
+    }),
+    {
+      algorithm: "RS256",
+      ...options,
+    }
+  );
+};
 
 const verify: KeyService["verify"] = (input: string, publicKey: Buffer) =>
-  jsonwebtoken.verify(input, publicKey, { algorithms: ["RS256"] });
+  (jsonwebtoken as any).default.verify(input, publicKey, {
+    algorithms: ["RS256"],
+  });
 
 const exportPublickKeyJWK = (
   publicKey: Buffer

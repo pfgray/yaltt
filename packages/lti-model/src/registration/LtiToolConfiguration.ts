@@ -13,7 +13,7 @@ export const LtiToolConfiguration = pipe(
     secondary_domains: S.optional(S.array(Domain)),
     deployment_id: S.optional(S.string),
     target_link_uri: Url,
-    custom_parameters: CustomParameters,
+    custom_parameters: S.optional(CustomParameters),
     messages: S.array(LtiMessage),
     claims: S.array(S.string),
   }),

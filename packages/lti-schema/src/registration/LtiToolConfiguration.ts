@@ -10,7 +10,7 @@ export const LtiToolConfiguration = S.struct({
   secondary_domains: S.optional(S.array(Domain)),
   deployment_id: S.optional(S.string),
   target_link_uri: Url,
-  custom_parameters: CustomParameters,
+  custom_parameters: S.optional(CustomParameters),
   description: Url,
   messages: S.array(LtiMessageS),
   claims: S.array(S.string),

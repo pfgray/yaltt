@@ -115,34 +115,42 @@ export const effRequestHandler: EffRequestHandler =
                   console.error("Decode Error Running: ", v.query);
                   console.error("Actual value:", v.actual);
                   console.error(formatErrors(v.error.errors));
-                  response.status(500);
-                  response.json({ failure: "An error ocurred." });
+                  handleErrorResponse(request, response)(
+                    500,
+                    {
+                      failure: "An error ocurred.",
+                    },
+                    formatErrors(v.error.errors)
+                  );
                 },
                 hash_error: (h) => {
                   console.error("Hash Error", h.cause);
-                  response.status(500);
-                  response.json({ failure: "An error ocurred." });
+                  handleErrorResponse(request, response)(500, {
+                    failure: "An error ocurred.",
+                  });
                 },
                 no_record_found: (nrf) => {
                   console.error("No Record Found Running: ", nrf.query);
-                  response.status(500);
-                  response.json({ failure: "An error ocurred." });
+                  handleErrorResponse(request, response)(500, {
+                    failure: "An error ocurred.",
+                  });
                 },
                 pg_error: (h) => {
                   console.error("PG Error", h.cause);
                   console.log("Executing\n", h.query);
-                  response.status(500);
-                  response.json({ failure: "An error ocurred." });
+                  handleErrorResponse(request, response)(500, {
+                    failure: "An error ocurred.",
+                  });
                 },
                 unauthenticated_error: (e) => {
                   console.info("Rejecting unauthenticated request");
-                  response.status(401);
-                  response.json({ failure: "unauthenticated" });
+                  handleErrorResponse(request, response)(401, {
+                    failure: "unauthenticated",
+                  });
                 },
                 unauthorized_error: (e) => {
                   console.info(`Rejecting unauthorized request: ${e.message}`);
-                  response.status(403);
-                  response.json({
+                  handleErrorResponse(request, response)(403, {
                     failure: "unauthorized",
                     message: e.message,
                   });
@@ -151,47 +159,59 @@ export const effRequestHandler: EffRequestHandler =
                   console.error("Parse body error");
                   console.error("Raw body:", JSON.stringify(e.body, null, 2));
                   console.error(formatErrors(e.error.errors));
-                  response.status(400);
-                  response.json({
-                    failure: "failed to parse body",
-                    message: formatErrors(e.error.errors),
-                  });
+                  handleErrorResponse(request, response)(
+                    400,
+                    {
+                      failure: "failed to parse body",
+                      message: formatErrors(e.error.errors),
+                    },
+                    formatErrors(e.error.errors)
+                  );
                 },
                 parse_params_error: (e) => {
                   console.error("Parse params error");
                   console.log("Raw params:", JSON.stringify(e.params, null, 2));
                   console.error(JSON.stringify(e.error, null, 2));
-                  response.status(400);
-                  response.json({
-                    failure: "failed to parse params",
-                    raw: e.params,
-                    err: e.error,
-                  });
+                  handleErrorResponse(request, response)(
+                    400,
+                    {
+                      failure: "failed to parse params",
+                      raw: e.params,
+                      err: e.error,
+                    },
+                    formatErrors(e.error.errors)
+                  );
                 },
                 parse_query_error: (e) => {
                   console.error("Parse query error");
                   console.log("Raw query:", JSON.stringify(e.query, null, 2));
                   console.error(JSON.stringify(e.error, null, 2));
-                  response.status(400);
-                  response.json({
-                    failure: "failed to parse query",
-                    raw: e.query,
-                    err: e.error,
-                  });
+                  handleErrorResponse(request, response)(
+                    400,
+                    {
+                      failure: "failed to parse query",
+                      raw: e.query,
+                      err: e.error,
+                    },
+                    formatErrors(e.error.errors)
+                  );
                 },
                 key_error: (e) => {
-                  response.status(500);
-                  response.json({ error: "an error ocurred" });
+                  handleErrorResponse(request, response)(500, {
+                    error: "an error ocurred",
+                  });
                 },
                 fetch_error: (e) => {
                   console.error("Fetch Error", e);
-                  response.status(500);
-                  response.json({ error: "an error ocurred" });
+                  handleErrorResponse(request, response)(500, {
+                    error: "an error ocurred",
+                  });
                 },
                 fetch_json_parse_error: (e) => {
                   console.error("Fetch Error", e);
-                  response.status(500);
-                  response.json({ error: "an error ocurred" });
+                  handleErrorResponse(request, response)(500, {
+                    error: "an error ocurred",
+                  });
                 },
               }),
               onDie: () => {},
@@ -240,4 +260,32 @@ export const effRequestHandler: EffRequestHandler =
         }
       }
     );
+  };
+
+const handleErrorResponse =
+  (
+    request: express.Request<unknown, unknown, unknown, unknown, {}>,
+    response: express.Response<unknown, {}>
+  ) =>
+  (status: number, error: unknown, msg?: string) => {
+    response.status(status);
+    if (request.get("Accept") === "application/json") {
+      response.json(error);
+    } else {
+      response.send(`
+        <html>
+          <head>
+            <title>YALTT</title>
+          </head>
+          <body>
+            <div class="container">
+              <h1>YALTT</h1>
+              <h2>An error ocurred</h2> 
+              <pre>${request.url}</pre>
+              <pre>${msg ? msg : JSON.stringify(error, null, 2)}</pre> 
+            </div>
+          </body>
+        </html>
+      `);
+    }
   };
