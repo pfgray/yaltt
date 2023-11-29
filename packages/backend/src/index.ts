@@ -9,7 +9,7 @@ import {
   effRequestHandler,
   successResponse,
 } from "./express/effRequestHandler";
-import { addUserWithLocalPassword } from "./model/users";
+import { addOrUpdateUserWithLocalPassword, addUserWithLocalPassword } from "./model/users";
 import { registrationRouter } from "./routes/registrations/registrationsRouter";
 import { pipe, Effect, Option, Either } from "effect";
 import { launchRouter } from "./routes/registrations/launchRouter";
@@ -74,12 +74,11 @@ app.use("/api", registrationRouter);
 app.use("/api", launchRouter);
 
 if(process.env.ADMIN_USER && process.env.ADMIN_PASSWORD) {
-  console.log("Creating admin user");
   const username = process.env.ADMIN_USER.trim();
   if(username.length > 0) {
     const pgService = mkTransactionalPgService(pool);
     pipe(
-      addUserWithLocalPassword(username, process.env.ADMIN_PASSWORD),
+      addOrUpdateUserWithLocalPassword(username, process.env.ADMIN_PASSWORD),
       Effect.provideService(PgService, pgService.service),
       Effect.runPromise
     )

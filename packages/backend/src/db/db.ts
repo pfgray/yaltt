@@ -1,6 +1,6 @@
 import * as pg from "pg";
 
-import { pipe, Effect, ReadonlyArray } from "effect";
+import { pipe, Effect, ReadonlyArray, Option } from "effect";
 import * as S from "@effect/schema/Schema";
 import { PgService } from "./PgService";
 import { ParseError } from "@effect/schema/ParseResult";
@@ -68,6 +68,36 @@ export const query1 = <T>(schema: S.Schema<any, T>) =>
           onEmpty: () =>
             Effect.fail<NoRecordFound>({ tag: "no_record_found", query }),
           onNonEmpty: ([head]) => Effect.succeed(head),
+        })
+      )
+    )
+  );
+
+  /**
+   * Converts an effect that can fail with "no record found" to
+   * instead succeed with Option.none
+   * @param eff 
+   * @returns 
+   */
+export const toOption = <R, E extends {tag: string}, A>(eff: Effect.Effect<R, E, A>) =>
+  pipe(
+    eff,
+    Effect.map(Option.some),
+    Effect.catch('tag' as const, {
+      failure: 'no_record_found' as const,
+      onFailure: () => Effect.succeed(Option.none<A>()),
+    }),
+  )
+
+export const queryOp1 = <T>(schema: S.Schema<any, T>) =>
+  flow(
+    query_(schema),
+    Effect.map(([query, rows]) =>
+      pipe(
+        rows,
+        ReadonlyArray.match({
+          onEmpty: () => Option.none<T>(),
+          onNonEmpty: ReadonlyArray.head,
         })
       )
     )

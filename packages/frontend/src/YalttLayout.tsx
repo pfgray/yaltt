@@ -4,6 +4,9 @@ import { UserAvatar } from "./lib/auth/UserAvatar";
 import { useDisplayMode } from "./lib/ui/useDisplayMode";
 import { Outlet } from "react-router-dom";
 import { User } from "@yaltt/model";
+import { post } from "./lib/api/request";
+import { Effect, pipe } from "effect";
+import { provideRequestService } from "./lib/api/requestServiceImpl";
 
 export const YalttRouterLayout = () => {
   return <YalttLayout children={<Outlet />} />;
@@ -49,7 +52,7 @@ export const PlainYalttLayout = (props: PlainYalttLayoutProps) => {
               tabIndex={0}
               className="menu menu-sm dropdown-content mt-3 z-[1] p-2 shadow bg-base-200 rounded-box w-52"
             >
-              <li>
+              {/* <li>
                 <a className="justify-between">
                   Profile
                   <span className="badge">New</span>
@@ -57,9 +60,18 @@ export const PlainYalttLayout = (props: PlainYalttLayoutProps) => {
               </li>
               <li>
                 <a>Settings</a>
-              </li>
+              </li> */}
               <li>
-                <a>Logout</a>
+                <a role="button" onClick={() => {
+                  pipe(
+                    post("/api/logout", undefined),
+                    provideRequestService,
+                    Effect.flatMap(() => Effect.sync(() => {
+                      window.location.href = '/';
+                    })),
+                    Effect.runPromise
+                  )
+                }}>Logout</a>
               </li>
             </ul>
           </div>

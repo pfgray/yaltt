@@ -1,7 +1,7 @@
-import { pipe, Effect } from "effect";
+import { pipe, Effect, Option } from "effect";
 import * as S from "@effect/schema/Schema";
 import { buffer } from "../util/BufferSchema";
-import { query1 } from "../db/db";
+import { query1, toOption } from "../db/db";
 
 import { hashPassword } from "../crypto/hash";
 import { passwordUser } from "@yaltt/model";
@@ -58,21 +58,54 @@ export const getLoginByUsername = (username: string) =>
     [username]
   );
 
-export const addUserWithLocalPassword = (username: string, password: string) =>
+export const addOrUpdateUserWithLocalPassword = (username: string, password: string) => {
+  return pipe(
+    Effect.succeed({}),
+    Effect.bind("passwordLogin", () => pipe(
+      getLoginByUsername(username),
+      toOption,
+      Effect.flatMap(Option.match({
+        onNone: () => addUserWithLocalPassword(username, password),
+        onSome: ({id}) => updateLocalPasswordForUser(id, username, password)
+      }))
+    )),
+  );
+}
+
+export const updateLocalPasswordForUser = (userId: number, username: string, pw: string) =>
+  pipe(
+    Effect.succeed({}),
+    Effect.bind("pw", () => hashPassword(pw)),
+    Effect.bind("passwordLogin", ({ pw }) =>
+      query1(PasswordLoginRow)(
+        "update password_logins set hashed_password = $2, salt = $3 where user_id = $1 returning *",
+        [userId, pw.hashedPassword, pw.salt]
+      )
+    ),
+    Effect.map(() => passwordUser(userId, username))
+  )
+
+export const addLocalPasswordForUser = (userId: number, username: string, password: string) =>
   pipe(
     Effect.succeed({}),
     Effect.bind("pw", () => hashPassword(password)),
+    Effect.bind("passwordLogin", ({ pw }) =>
+      query1(PasswordLoginRow)(
+        "insert into password_logins (user_id, username, hashed_password, salt) values ($1, $2, $3, $4) returning *",
+        [userId, username, pw.hashedPassword, pw.salt]
+      )
+    )
+  )
+
+export const addUserWithLocalPassword = (username: string, password: string) =>
+  pipe(
+    Effect.succeed({}),
     Effect.bind("user", () =>
       query1(UserRow)(
         "insert into users (logins) values ('{}'::jsonb) returning *",
         []
       )
     ),
-    Effect.bind("passwordLogin", ({ user, pw }) =>
-      query1(PasswordLoginRow)(
-        "insert into password_logins (user_id, username, hashed_password, salt) values ($1, $2, $3, $4) returning *",
-        [user.id, username, pw.hashedPassword, pw.salt]
-      )
-    ),
+    Effect.bind('passwordLogin', ({user}) => addLocalPasswordForUser(user.id, username, password)),
     Effect.map(({ user }) => passwordUser(user.id, username))
   );
