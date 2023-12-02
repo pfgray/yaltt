@@ -31,6 +31,15 @@ authRouter.post("/logout", function (req, res, next) {
   });
 });
 
+authRouter.get("/logout", function (req, res, next) {
+  req.logout(function (err) {
+    if (err) {
+      return next(err);
+    }
+    res.redirect("/")
+  });
+});
+
 authRouter.post("/signup/password", signupPasswordRoute);
 
 authRouter.get("/me", requireAuth, function (req, res, next) {

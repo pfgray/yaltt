@@ -9,6 +9,7 @@ import { parseBody } from "../../express/parseBody";
 import {
   getLoginByUsername,
   addUserWithLocalPassword,
+  getUserById,
 } from "../../model/users";
 import * as S from "@effect/schema/Schema";
 
@@ -38,9 +39,11 @@ import { PgService } from "../../db/PgService";
     const pgService = mkTransactionalPgService(pool);
     const eff = pipe(
       getLoginByUsername(username),
-      Effect.tap((user) =>
-        validatePassword(password, user.salt, user.hashed_password)
+      Effect.bindTo('login'),
+      Effect.tap(({login}) =>
+        validatePassword(password, login.salt, login.hashed_password)
       ),
+      Effect.bind('user', ({login}) => getUserById(login.id)),
       Effect.provideService(PgService, pgService.service)
     );
 
@@ -50,7 +53,8 @@ import { PgService } from "../../db/PgService";
         cb(status.cause);
       } else {
         cb(null, {
-          id: status.value.id,
+          id: status.value.user.id,
+          role: status.value.user.role,
           login: { tag: "password_login", username },
         });
       }

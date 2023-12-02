@@ -6,7 +6,7 @@ import { User as ModelUser, User } from "@yaltt/model";
 import { ExpressRequestService } from "../express/RequestService";
 import { tap } from "../util/tap";
 import { getAppsForUser } from "../model/entities/apps";
-import { getUserById } from "../model/users";
+import { getPasswordLoginUserById } from "../model/users";
 import { PgService } from "../db/PgService";
 import { DecodeError, NoRecordFound, PgError, pool } from "../db/db";
 import { mkTransactionalPgService } from "../db/TransactionalPgService";
@@ -47,7 +47,7 @@ passport.deserializeUser<number>(function (id, cb) {
     console.log("deserializing user: ", id);
     Effect.runCallback(
       pipe(
-        getUserById(id),
+        getPasswordLoginUserById(id),
         Effect.provideService(PgService, pgService.service)
       ),
       Exit.match({

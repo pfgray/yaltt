@@ -17,6 +17,7 @@ import RedisStore from "connect-redis";
 import { createClient } from "redis";
 import { PgService } from "./db/PgService";
 import { mkTransactionalPgService } from "./db/TransactionalPgService";
+import { adminRouter } from "./admin/adminRouter";
 
 const app = express.default();
 const port = 3000;
@@ -72,15 +73,24 @@ app.use("/api", authRouter);
 app.use("/api", appRouter);
 app.use("/api", registrationRouter);
 app.use("/api", launchRouter);
+app.use("/api", adminRouter)
 
 if(process.env.ADMIN_USER && process.env.ADMIN_PASSWORD) {
   const username = process.env.ADMIN_USER.trim();
   if(username.length > 0) {
     const pgService = mkTransactionalPgService(pool);
     pipe(
-      addOrUpdateUserWithLocalPassword(username, process.env.ADMIN_PASSWORD),
+      addOrUpdateUserWithLocalPassword(username, process.env.ADMIN_PASSWORD, 'admin'),
       Effect.provideService(PgService, pgService.service),
-      Effect.runPromise
-    )
+      Effect.runPromiseExit
+    ).then(exit => {
+      if(exit._tag === 'Failure') {
+        console.error('Failed to create admin user: ', exit.cause)
+        pgService.rollback();
+      } else {
+        pgService.commit();
+        console.log('Created admin user: ', username)
+      }
+    })
   }
 }

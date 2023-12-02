@@ -14,6 +14,7 @@ export const LtiToolConfiguration = S.struct({
   description: Url,
   messages: S.array(LtiMessageS),
   claims: S.array(S.string),
+  "https://canvas.instructure.com/lti/privacy_level": S.optional(S.literal("public", "anonymous", "name_only", "email_only")),
 });
 
 export interface LtiToolConfiguration

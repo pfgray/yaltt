@@ -1,6 +1,7 @@
 create table if not exists users (
   id              serial primary key,
   created         date not null default now(),
+  role            varchar(255) not null default 'user',
   logins          jsonb not null
 );
 
@@ -18,6 +19,18 @@ create table if not exists apps (
   name            varchar(255) not null,
   icon_url        varchar(255),
   user_id         serial references users(id)
+);
+
+create table if not exists registrations (
+  id                      serial primary key,
+  type                    varchar(255) not null,
+  client_id               varchar(255),
+  created                 date not null default now(),
+  app_id                  serial not null references apps(id) on delete cascade,
+  claims                  text[] not null default array[]::text[],
+  scopes                  text[] not null default array[]::text[],
+  custom_parameters       jsonb not null default '{}'::jsonb,
+  platform_configuration  jsonb not null
 );
 
 create table if not exists contexts (
@@ -57,18 +70,6 @@ create table if not exists enrollments (
   person_id       serial not null references people(id) on delete cascade,
   context_id      serial not null references contexts(id) on delete cascade,
   roles           text[] not null default array[]::text[]
-);
-
-create table if not exists registrations (
-  id                      serial primary key,
-  type                    varchar(255) not null,
-  client_id               varchar(255),
-  created                 date not null default now(),
-  app_id                  serial not null references apps(id) on delete cascade,
-  claims                  text[] not null default array[]::text[],
-  scopes                  text[] not null default array[]::text[],
-  custom_parameters       jsonb not null default '{}'::jsonb,
-  platform_configuration  jsonb not null
 );
 
 create table if not exists jwks (

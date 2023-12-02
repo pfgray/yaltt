@@ -2,7 +2,7 @@ import * as React from "react";
 import { WithAuth } from "./lib/auth/WithAuth";
 import { UserAvatar } from "./lib/auth/UserAvatar";
 import { useDisplayMode } from "./lib/ui/useDisplayMode";
-import { Outlet } from "react-router-dom";
+import { Link, Outlet } from "react-router-dom";
 import { User } from "@yaltt/model";
 import { post } from "./lib/api/request";
 import { Effect, pipe } from "effect";
@@ -58,9 +58,19 @@ export const PlainYalttLayout = (props: PlainYalttLayoutProps) => {
                   <span className="badge">New</span>
                 </a>
               </li>
+              */}
+              {props.user.role === 'admin' ? (
+                <li>
+                  <Link to="/admin">
+                    Admin
+                  </Link>
+                </li>
+              ) : null}
               <li>
-                <a>Settings</a>
-              </li> */}
+                <Link to="/">
+                  Apps
+                </Link>
+              </li>
               <li>
                 <a role="button" onClick={() => {
                   pipe(

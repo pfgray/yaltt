@@ -43,6 +43,7 @@ export const mkYalttToolConfiguration =
         domain: config.primaryHostname,
         messages: options.messages,
         target_link_uri: mkRegUrl("/launch"),
+        "https://canvas.instructure.com/lti/privacy_level": "public",
       },
     };
   };

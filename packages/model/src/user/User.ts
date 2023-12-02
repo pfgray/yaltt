@@ -5,9 +5,10 @@ export const PasswordLogin = S.struct({
   username: S.string,
 });
 
-export const passwordUser = (id: number, username: string): User =>
+export const passwordUser = (id: number, username: string, role: 'admin' | 'user'): User =>
   ({
     id,
+    role,
     login: {
       tag: "password_login",
       username,
@@ -18,6 +19,7 @@ export const Login = S.union(PasswordLogin);
 
 export const User = S.struct({
   id: S.number,
+  role: S.literal("admin", "user"),
   login: Login,
 });
 
