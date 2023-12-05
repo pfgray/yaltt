@@ -14,10 +14,16 @@ services:
   frontend:
     labels:
       - traefik.enable=true
+      - "traefik.http.routers.frontend.rule=Host(`yaltt.inst.test`)"
     networks:
       default:
         aliases:
-          - yaltt
+          - yaltt.inst.test
+  db:
+    networks:
+    default:
+      aliases:
+        - yaltt-db
 networks:
   default:
     external: true

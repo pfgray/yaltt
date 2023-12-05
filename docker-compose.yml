@@ -12,14 +12,8 @@ services:
       - PGPORT=5432
       - REDIS_HOST=yaltt-redis
       - YALTT_HOST=yaltt.inst.test
-    labels:
-      - traefik.enable=true
     volumes:
       - ./:/app
-    networks:
-      default:
-        aliases:
-          - yaltt-backend
 
   frontend:
     build:
@@ -27,16 +21,12 @@ services:
       target: frontend
     ports:
       - "5173:80"
-    labels:
-      - traefik.enable=true
-      - "traefik.http.routers.frontend.rule=Host(`yaltt.inst.test`)"
     volumes:
       - ./:/app
     networks:
       default:
         aliases:
           - yaltt.inst.test
-          - yaltt
 
   redis:
     image: redis:7.2.1
@@ -60,7 +50,3 @@ services:
         aliases:
           - yaltt-db
 
-networks:
-  default:
-    external: true
-    name: "inst_shared"
