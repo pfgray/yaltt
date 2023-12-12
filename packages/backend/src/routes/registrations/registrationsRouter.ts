@@ -300,6 +300,8 @@ registrationRouter.post(
           scopes: registration.scopes,
           claims: registration.claims,
         });
+        console.log("##Sending tool configuration:");
+        console.log(JSON.stringify(toolConfiguration, null, 2));
         return Fetch.post(url.toString(), toolConfiguration);
       }),
       Effect.bind("install", ({ installRequest }) =>

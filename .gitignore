@@ -4,3 +4,4 @@ yarn-error.log
 report
 result
 .pnpm-store
+dist

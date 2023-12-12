@@ -2,7 +2,7 @@ version: "3.9"
 services:
   backend:
     build:
-      dockerfile: ./docker/pnpm/Dockerfile
+      dockerfile: ./docker/pnpm-dev/Dockerfile
       target: backend
     environment:
       - PGHOST=yaltt-db
@@ -10,33 +10,46 @@ services:
       - PGPASSWORD=password
       - PGDATABASE=yaltt
       - PGPORT=5432
-      - REDIS_HOST=yaltt-redis
+      - REDIS_HOST=redis
       - YALTT_HOST=yaltt.inst.test
     volumes:
       - ./:/app
+      - /app/node_modules
+      - /app/packages/backend/node_modules
+      - /app/packages/canvas-lti-model/node_modules
+      - /app/packages/frontend/node_modules
+      - /app/packages/lti-model/node_modules
+      - /app/packages/lti-schema/node_modules
+      - /app/packages/model/node_modules
+    command:
+      - bash
+      - ./scripts/start-backend.sh
+    working_dir: /app
 
   frontend:
     build:
-      dockerfile: ./docker/pnpm/Dockerfile
+      dockerfile: ./docker/pnpm-dev/Dockerfile
       target: frontend
     ports:
       - "5173:80"
     volumes:
       - ./:/app
-    networks:
-      default:
-        aliases:
-          - yaltt.inst.test
+      - /app/node_modules
+      - /app/packages/backend/node_modules
+      - /app/packages/canvas-lti-model/node_modules
+      - /app/packages/frontend/node_modules
+      - /app/packages/lti-model/node_modules
+      - /app/packages/lti-schema/node_modules
+      - /app/packages/model/node_modules
+    command:
+      - bash
+      - ./scripts/start-frontend.sh
+    working_dir: /app
 
   redis:
     image: redis:7.2.1
     expose:
       - "6379"
-    networks:
-      default:
-        aliases:
-          - yaltt-redis
-
   db:
     build: ./docker/db
     ports:
@@ -45,8 +58,3 @@ services:
       - POSTGRES_USER=yaltt
       - POSTGRES_PASSWORD=password
       - POSTGRES_DB=yaltt
-    networks:
-      default:
-        aliases:
-          - yaltt-db
-

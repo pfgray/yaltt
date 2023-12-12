@@ -21,9 +21,10 @@ services:
           - yaltt.inst.test
   db:
     networks:
-    default:
-      aliases:
-        - yaltt-db
+      default:
+        aliases:
+          - yaltt-db
+
 networks:
   default:
     external: true

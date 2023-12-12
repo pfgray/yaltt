@@ -7,12 +7,12 @@
     "package.json",
     "lib"
   ],
-  "module": "./lib/index.js",
-  "types": "./lib/index.d.ts",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "exports": {
     ".": {
-      "import": "./lib/index.js",
-      "require": "./lib/index.js"
+      "import": "./dist/index.js",
+      "require": "./dist/index.js"
     }
   },
   "dependencies": {
@@ -26,7 +26,6 @@
     "typescript": "^5.1"
   },
   "scripts": {
-    "build": "tsc --build",
-    "posinstall": "yarn build"
+    "build": "tsc --build"
   }
 }
