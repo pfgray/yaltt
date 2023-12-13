@@ -1,21 +1,11 @@
-import { pipe, Either, Option, ReadonlyArray, Effect } from "effect";
 import * as S from "@effect/schema/Schema";
-import { getDecode, jsonBody, post } from "../../../lib/api/request";
-import { provideRequestService } from "../../../lib/api/requestServiceImpl";
-import * as F from "../../../lib/forms/form";
-import { useParsedParams } from "../../../lib/react-router/useSchemaParams";
-import { List, NewEntityForm } from "../List";
-import {
-  App,
-  Registration,
-  stringToInteger,
-  CanvasPlatformConfiguration,
-  User,
-} from "@yaltt/model";
-import { Link, useParams } from "react-router-dom";
+import { App, Registration, stringToInteger } from "@yaltt/model";
+import { Either, pipe } from "effect";
+import { Link } from "react-router-dom";
 import { YalttLayout } from "../../../YalttLayout";
 import { WithRequest } from "../../../lib/api/WithRequest";
-import React from "react";
+import { getDecode } from "../../../lib/api/request";
+import { useParsedParams } from "../../../lib/react-router/useSchemaParams";
 
 const paramSchema = S.struct({ appId: stringToInteger });
 

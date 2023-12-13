@@ -3,6 +3,7 @@
   "version": "0.0.0",
   "type": "module",
   "sideEffects": false,
+  "license": "MIT",
   "files": [
     "package.json",
     "lib"

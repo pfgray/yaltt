@@ -1,5 +1,17 @@
-import { pipe, Either, Option, ReadonlyArray, Effect } from "effect";
 import * as S from "@effect/schema/Schema";
+import { EllipsisVerticalIcon } from "@heroicons/react/24/outline";
+import {
+  App,
+  CanvasPlatformConfiguration,
+  Registration,
+  stringToInteger,
+} from "@yaltt/model";
+import { Effect, Either, Option, pipe } from "effect";
+import React from "react";
+import { Link } from "react-router-dom";
+import { format } from "timeago.js";
+import { YalttLayout } from "../../../YalttLayout";
+import { WithRequest } from "../../../lib/api/WithRequest";
 import {
   RequestError,
   delete_,
@@ -8,22 +20,10 @@ import {
   post,
 } from "../../../lib/api/request";
 import { provideRequestService } from "../../../lib/api/requestServiceImpl";
+import { confirmWithLoading } from "../../../lib/confirmation/Confirm";
 import * as F from "../../../lib/forms/form";
 import { useParsedParams } from "../../../lib/react-router/useSchemaParams";
-import { List, NewEntityForm } from "../List";
-import {
-  App,
-  Registration,
-  stringToInteger,
-  CanvasPlatformConfiguration,
-} from "@yaltt/model";
-import { Link } from "react-router-dom";
-import { YalttLayout } from "../../../YalttLayout";
-import { WithRequest } from "../../../lib/api/WithRequest";
-import React from "react";
-import { format } from "timeago.js";
-import { TrashIcon, EllipsisVerticalIcon } from "@heroicons/react/24/outline";
-import { confirmWithLoading } from "../../../lib/confirmation/Confirm";
+import { NewEntityForm } from "../NewEntityForm";
 
 const paramSchema = S.struct({ appId: stringToInteger });
 

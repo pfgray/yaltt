@@ -1,17 +1,14 @@
-import * as S from "@effect/schema/Schema";
 import * as Eff from "@effect/io/Effect";
-import * as React from "react";
 import {
-  pipe,
   Either,
+  HashMap,
   Option,
   ReadonlyArray,
-  Effect,
-  HashMap,
   ReadonlyRecord,
+  pipe,
 } from "effect";
+import * as React from "react";
 import { Form, FormField, ValidationError } from "./form";
-import { Button, TextField } from "@mui/material";
 
 const capitalize = (s: string) => {
   return s.charAt(0).toUpperCase() + s.slice(1);
@@ -105,19 +102,21 @@ export const renderManagedForm = <
             );
           } else if (value.tag === "password") {
             return (
-              <TextField
-                label={value.label}
-                key={key as string | number}
-                name={key as string}
-                fullWidth
-                margin="normal"
-                value={pipe(
-                  fields,
-                  HashMap.get(key),
-                  Option.getOrElse(() => "")
-                )}
-                onChange={(e) => setFields(HashMap.set(key, e.target.value))}
-              />
+              <div className="form-control w-full" key={key}>
+                <input
+                  type="text"
+                  name={key}
+                  className="input input-bordered w-full"
+                  placeholder={capitalizeWords(value.label)}
+                  typeof="password"
+                  value={pipe(
+                    fields,
+                    HashMap.get(key),
+                    Option.getOrElse(() => "")
+                  )}
+                  onChange={(e) => setFields(HashMap.set(key, e.target.value))}
+                />
+              </div>
             );
           } else if (value.tag === "textarea") {
             return (

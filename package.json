@@ -12,5 +12,12 @@
     "packages/lti-model",
     "packages/lti-schema",
     "packages/canvas-lti-model"
-  ]
+  ],
+  "engines": {
+    "node": ">=10",
+    "pnpm": ">=3"
+  },
+  "dependencies": {
+    "gbt": "^0.0.5"
+  }
 }

@@ -1,52 +1,15 @@
-import { pipe, Either, Option, ReadonlyArray, Effect } from "effect";
 import * as S from "@effect/schema/Schema";
+import {
+  CanvasPlatformConfiguration,
+  Registration,
+  stringToInteger,
+} from "@yaltt/model";
+import { Either, pipe } from "effect";
 import { getDecode, jsonBody, post } from "../../../lib/api/request";
 import { provideRequestService } from "../../../lib/api/requestServiceImpl";
 import * as F from "../../../lib/forms/form";
 import { useParsedParams } from "../../../lib/react-router/useSchemaParams";
-import { List } from "../List";
-import {
-  Registration,
-  stringToInteger,
-  YalttToolConfiguration,
-  CanvasPlatformConfiguration,
-  match,
-} from "@yaltt/model";
-import * as Eff from "@effect/io/Effect";
-import { useParams } from "react-router-dom";
-import { Link } from "@mui/material";
 
-const columns = [
-  "Id",
-  {
-    name: "JWKS Url",
-    options: {
-      filter: true,
-      customBodyRender: (value: string) => {
-        return <Link href={value}>{value}</Link>;
-      },
-    },
-  },
-  {
-    name: "Tool Configuration",
-    options: {
-      filter: true,
-      customBodyRender: (value: string) => {
-        return <Link href={value}>{value}</Link>;
-      },
-    },
-  },
-  {
-    name: "Canvas Tool Configuration",
-    options: {
-      filter: true,
-      customBodyRender: (value: string) => {
-        return <Link href={value}>{value}</Link>;
-      },
-    },
-  },
-  "Platform Configuration",
-];
 const newRegistrationForm = (appId: number) =>
   F.mkForm({
     platformConfiguration: F.json(
@@ -62,8 +25,6 @@ const newRegistrationForm = (appId: number) =>
   );
 
 const paramSchema = S.struct({ appId: stringToInteger });
-
-const wut = Registration;
 
 const fetchRegistrations = (appId: number) =>
   getDecode(S.array(Registration))(`/api/apps/${appId}/registrations`);

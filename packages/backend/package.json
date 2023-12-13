@@ -2,6 +2,7 @@
   "name": "@yaltt/backend",
   "version": "0.0.0",
   "type": "module",
+  "license": "MIT",
   "dependencies": {
     "@effect/data": "^0.17.6",
     "@effect/io": "^0.38.2",

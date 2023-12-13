@@ -57,11 +57,11 @@
         "nixpkgs": "nixpkgs"
       },
       "locked": {
-        "lastModified": 1666114214,
-        "narHash": "sha256-6lXrvXO/XJs6geuEbFLWm77blenO5p+zuElD0X5rFFY=",
+        "lastModified": 1702435211,
+        "narHash": "sha256-AfSpkqL3c2mbFoMsoOP1Hdeb44xqug9iohFTrcpUHGo=",
         "owner": "pfgray",
         "repo": "gbt",
-        "rev": "113fa40083adfc81d71ec44bea6d65af978c931c",
+        "rev": "7560400f61b979c160e5608f15ff854bc6864aa6",
         "type": "github"
       },
       "original": {

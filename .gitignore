@@ -5,3 +5,4 @@ report
 result
 .pnpm-store
 dist
+.gbt.log
