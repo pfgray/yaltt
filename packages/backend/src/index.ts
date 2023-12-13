@@ -1,26 +1,19 @@
-import * as express from "express";
-import { pool } from "./db/db";
-import * as passport from "passport";
-import * as session from "express-session";
-import * as cors from "cors";
-import { authRouter } from "./auth/authRouter";
-import { appRouter } from "./routes/apps/appRouter";
-import {
-  effRequestHandler,
-  successResponse,
-} from "./express/effRequestHandler";
-import {
-  addOrUpdateUserWithLocalPassword,
-  addUserWithLocalPassword,
-} from "./model/users";
-import { registrationRouter } from "./routes/registrations/registrationsRouter";
-import { pipe, Effect, Option, Either } from "effect";
-import { launchRouter } from "./routes/registrations/launchRouter";
 import RedisStore from "connect-redis";
+import * as cors from "cors";
+import { Effect, pipe } from "effect";
+import * as express from "express";
+import * as session from "express-session";
+import * as passport from "passport";
 import { createClient } from "redis";
+import { adminRouter } from "./admin/adminRouter";
+import { authRouter } from "./auth/authRouter";
 import { PgService } from "./db/PgService";
 import { mkTransactionalPgService } from "./db/TransactionalPgService";
-import { adminRouter } from "./admin/adminRouter";
+import { pool } from "./db/db";
+import { addOrUpdateUserWithLocalPassword } from "./model/users";
+import { appRouter } from "./routes/apps/appRouter";
+import { launchRouter } from "./routes/registrations/launchRouter";
+import { registrationRouter } from "./routes/registrations/registrationsRouter";
 
 const app = express.default();
 const port = 3000;
@@ -60,10 +53,6 @@ app.use(((passport as any).default as typeof passport).authenticate("session"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
-app.get("/", (req, res) => {
-  res.send("Hello World!");
-});
-
 app.get("/login", function (req, res, next) {
   res.render("login");
 });
@@ -100,4 +89,9 @@ if (process.env.ADMIN_USER && process.env.ADMIN_PASSWORD) {
       }
     });
   }
+}
+
+if (process.env.STATIC_ROOT) {
+  console.log(`Using STATIC_ROOT: ${process.env.STATIC_ROOT}`);
+  app.use("/", express.static(process.env.STATIC_ROOT));
 }

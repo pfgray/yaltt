@@ -16,11 +16,11 @@ import { getColorForString } from "../../../lib/ui/colors";
 import { getGradientForString } from "../../../lib/ui/gradients";
 import { format, render, cancel, register } from "timeago.js";
 import React from "react";
-import { NewEntityForm } from "../List";
 import { Link } from "react-router-dom";
 import { YalttLayout } from "../../../YalttLayout";
 import { TrashIcon } from "@heroicons/react/24/outline";
 import { confirmWithLoading } from "../../../lib/confirmation/Confirm";
+import { NewEntityForm } from "../NewEntityForm";
 
 export const newAppForm = F.mkForm({
   name: F.string("Name"),

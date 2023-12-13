@@ -19,5 +19,8 @@
   },
   "dependencies": {
     "gbt": "^0.0.5"
+  },
+  "scripts": {
+    "build": "gbt build"
   }
 }

@@ -9,7 +9,7 @@ import { fetchApps, newAppForm } from "../apps/Apps";
 import { getGradientForString } from "../../../lib/ui/gradients";
 import { format } from "timeago.js";
 import { Link } from "react-router-dom";
-import { NewEntityForm } from "../List";
+import { NewEntityForm } from "../NewEntityForm";
 
 export const DynamicRegistrationAppPicker = () => {
   const query = useParsedQuery(

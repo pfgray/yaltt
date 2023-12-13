@@ -8,8 +8,7 @@ services:
         aliases:
           - yaltt-backend
     environment:
-      - ADMIN_USER=admin
-      - ADMIN_PASSWORD=password
+      - YALTT_HOST=yaltt.inst.test
 
   frontend:
     labels:

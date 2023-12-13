@@ -6,3 +6,5 @@ result
 .pnpm-store
 dist
 .gbt.log
+docker-compose.prod.yml
+.env
