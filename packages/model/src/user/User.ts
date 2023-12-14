@@ -5,7 +5,11 @@ export const PasswordLogin = S.struct({
   username: S.string,
 });
 
-export const passwordUser = (id: number, username: string, role: 'admin' | 'user'): User =>
+export const passwordUser = (
+  id: number,
+  username: string,
+  role: "admin" | "user"
+): User =>
   ({
     id,
     role,
@@ -15,7 +19,35 @@ export const passwordUser = (id: number, username: string, role: 'admin' | 'user
     },
   } as const);
 
-export const Login = S.union(PasswordLogin);
+export const GoogleProfile = S.struct({
+  displayName: S.string,
+  email: S.string,
+  picture: S.optional(S.string),
+});
+
+export const GoogleLogin = S.struct({
+  tag: S.literal("google_login"),
+  googleId: S.string,
+  profile: GoogleProfile,
+});
+
+export const googleUser = (
+  id: number,
+  googleId: string,
+  profile: S.To<typeof GoogleProfile>,
+  role: "admin" | "user"
+): User =>
+  ({
+    id,
+    role,
+    login: {
+      tag: "google_login",
+      googleId,
+      profile,
+    },
+  } as const);
+
+export const Login = S.union(PasswordLogin, GoogleLogin);
 
 export const User = S.struct({
   id: S.number,

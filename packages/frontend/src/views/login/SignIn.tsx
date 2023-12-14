@@ -1,14 +1,57 @@
 import * as React from "react";
-import { formBody, post, RequestService } from "../../lib/api/request";
+import {
+  formBody,
+  post,
+  RequestError,
+  RequestService,
+} from "../../lib/api/request";
 import * as Eff from "@effect/io/Effect";
-import { pipe, Either, Option, ReadonlyArray, Effect } from "effect";
+import {
+  pipe,
+  Either,
+  Option,
+  ReadonlyArray,
+  Effect,
+  Equivalence,
+} from "effect";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "../../lib/react-router/useQuery";
 import img from "../../img/bg.jpg";
+import { getLoginMechanisms } from "../../lib/auth/authApi";
+import { WithRequest } from "../../lib/api/WithRequest";
+import { provideRequestService } from "../../lib/api/requestServiceImpl";
+import { GoogleIcon } from "./GoogleIcon";
 
 export default function SignIn() {
   const navigate = useNavigate();
   let query = useQuery();
+
+  const [loginMechanisms, setLoginMechanisms] = React.useState<
+    Option.Option<
+      Either.Either<RequestError, { types: readonly ("local" | "google")[] }>
+    >
+  >(Option.none);
+
+  const effect = pipe(
+    provideRequestService(getLoginMechanisms),
+    Eff.tap((a) =>
+      Eff.sync(() => {
+        setLoginMechanisms(Option.some(Either.right(a)));
+      })
+    ),
+    Eff.onError((err) =>
+      Eff.sync(() => {
+        console.log("Error", err);
+        if (err._tag === "Fail") {
+          setLoginMechanisms(Option.some(Either.left(err.error)));
+        }
+      })
+    )
+  );
+
+  React.useEffect(() => {
+    Eff.runCallback(effect);
+  }, []);
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -73,10 +116,34 @@ export default function SignIn() {
             />
             <button
               type="submit"
-              className="btn btn-wide bg-zinc-950/70 border-0 text-white"
+              className="btn btn-wide bg-zinc-950/70 border-0 text-white mb-2"
             >
               Sign in
             </button>
+            {pipe(
+              loginMechanisms,
+              Option.flatMap(
+                Either.match({
+                  onLeft: Option.none,
+                  onRight: (r) => Option.some(r.types),
+                })
+              ),
+              Option.filter(
+                ReadonlyArray.containsWith(Equivalence.string)("google")
+              ),
+              Option.match({
+                onNone: () => <></>,
+                onSome: () => (
+                  <a
+                    type="button"
+                    href="/api/login/google"
+                    className="btn btn-wide bg-zinc-950/70 border-0 text-white"
+                  >
+                    <GoogleIcon /> Sign in with Google
+                  </a>
+                ),
+              })
+            )}
           </div>
         </form>
       </div>

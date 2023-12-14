@@ -73,21 +73,23 @@ export const query1 = <T>(schema: S.Schema<any, T>) =>
     )
   );
 
-  /**
-   * Converts an effect that can fail with "no record found" to
-   * instead succeed with Option.none
-   * @param eff 
-   * @returns 
-   */
-export const toOption = <R, E extends {tag: string}, A>(eff: Effect.Effect<R, E, A>) =>
+/**
+ * Converts an effect that can fail with "no record found" to
+ * instead succeed with Option.none
+ * @param eff
+ * @returns
+ */
+export const toOption = <R, E extends { tag: string }, A>(
+  eff: Effect.Effect<R, E, A>
+) =>
   pipe(
     eff,
     Effect.map(Option.some),
-    Effect.catch('tag' as const, {
-      failure: 'no_record_found' as const,
+    Effect.catch("tag" as const, {
+      failure: "no_record_found" as const,
       onFailure: () => Effect.succeed(Option.none<A>()),
-    }),
-  )
+    })
+  );
 
 export const queryOp1 = <T>(schema: S.Schema<any, T>) =>
   flow(

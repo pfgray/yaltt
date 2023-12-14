@@ -12,6 +12,12 @@ create table if not exists password_logins (
   salt            bytea not null
 );
 
+create table if not exists google_logins (
+  user_id         serial not null references users(id),
+  google_id       varchar(255) not null unique,
+  profile         jsonb not null
+);
+
 create table if not exists apps (
   id              serial primary key,
   created         date not null default now(),
