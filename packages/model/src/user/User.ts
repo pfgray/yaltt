@@ -20,10 +20,13 @@ export const passwordUser = (
   } as const);
 
 export const GoogleProfile = S.struct({
+  id: S.string,
   displayName: S.string,
   email: S.string,
   picture: S.optional(S.string),
 });
+
+export interface GoogleProfile extends S.To<typeof GoogleProfile> {}
 
 export const GoogleLogin = S.struct({
   tag: S.literal("google_login"),

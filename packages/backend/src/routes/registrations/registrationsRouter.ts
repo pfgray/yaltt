@@ -282,6 +282,7 @@ registrationRouter.post(
       ),
       Effect.bind("installRequest", ({ body, app, config, registration }) => {
         const url = new URL(body.registrationEndpoint);
+        // todo: this shouldn't be here, remove it once Canvas supports it in the header
         if (body.registrationToken) {
           url.searchParams.append("registration_token", body.registrationToken);
         }
@@ -302,7 +303,17 @@ registrationRouter.post(
         });
         console.log("##Sending tool configuration:");
         console.log(JSON.stringify(toolConfiguration, null, 2));
-        return Fetch.post(url.toString(), toolConfiguration);
+        return Fetch.post(
+          url.toString(),
+          toolConfiguration,
+          body.registrationToken
+            ? {
+                headers: {
+                  Authorization: `Bearer ${body.registrationToken}`,
+                },
+              }
+            : {}
+        );
       }),
       Effect.bind("install", ({ installRequest }) =>
         schemaParse(CreatedToolConfiguration)(installRequest)
@@ -337,7 +348,16 @@ registrationRouter.get(
           );
         }
 
-        return Fetch.get(url.toString());
+        return Fetch.get(
+          url.toString(),
+          query.registration_token
+            ? {
+                headers: {
+                  Authorization: `Bearer ${query.registration_token}`,
+                },
+              }
+            : {}
+        );
       }),
       Effect.map(successResponse)
     )

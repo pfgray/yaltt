@@ -4,7 +4,7 @@ import { buffer } from "../util/BufferSchema";
 import { query, query1, toOption } from "../db/db";
 
 import { hashPassword } from "../crypto/hash";
-import { passwordUser, googleUser } from "@yaltt/model";
+import { passwordUser, googleUser, GoogleProfile } from "@yaltt/model";
 
 const UserRow = S.struct({
   id: S.number,
@@ -22,7 +22,7 @@ const PasswordLoginRow = S.struct({
 
 const GoogleLoginRow = S.struct({
   user_id: S.number,
-  profile: S.unknown,
+  profile: GoogleProfile,
   google_id: S.string,
 });
 
@@ -225,7 +225,7 @@ export const addUserWithLocalPassword = (
 export const addGoogleLoginForUser = (
   userId: number,
   googleId: string,
-  profile: unknown
+  profile: GoogleProfile
 ) =>
   query1(GoogleLoginRow)(
     `
@@ -247,7 +247,7 @@ export const updateGoogleLoginForUser = (googleId: string, profile: unknown) =>
 
 export const addUserWithGoogleLogin = (
   googleId: string,
-  profile: unknown,
+  profile: GoogleProfile,
   role: "admin" | "user" = "user"
 ) =>
   pipe(
@@ -268,7 +268,7 @@ export const addUserWithGoogleLogin = (
 
 export const addOrUpdateUserWithGoogleProfile = (
   googleId: string,
-  profile: unknown,
+  profile: GoogleProfile,
   role: "admin" | "user" = "user"
 ) =>
   pipe(
@@ -304,7 +304,7 @@ export const getGoogleLoginUserById = (id: number) =>
         id: S.number,
         role: S.literal("admin", "user"),
         created: S.ValidDateFromSelf,
-        profile: S.unknown,
+        profile: GoogleProfile,
         google_id: S.string,
       })
     )(

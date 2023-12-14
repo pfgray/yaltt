@@ -1,16 +1,12 @@
-import { Effect, Option, pipe } from "effect";
+import { Effect, pipe } from "effect";
 import * as passport from "passport";
 import { Strategy as GoogleStrategy } from "passport-google-oauth2";
-import {
-  addOrUpdateUserWithGoogleProfile,
-  addUserWithGoogleLogin,
-  getLoginByUsername,
-  getUserByGoogleProfileId,
-} from "../../model/users";
-import { tapSync } from "../../util/effectUtil";
 import { PgService } from "../../db/PgService";
 import { mkTransactionalPgService } from "../../db/TransactionalPgService";
 import { pool } from "../../db/db";
+import { addOrUpdateUserWithGoogleProfile } from "../../model/users";
+import * as S from "@effect/schema/Schema";
+import { GoogleProfile } from "@yaltt/model";
 
 console.log("Initializing Google OAuth2 strategy");
 
@@ -33,13 +29,17 @@ if (typeof clientID === "string" && typeof clientSecret === "string") {
         request: unknown,
         accessToken: unknown,
         refreshToken: unknown,
-        profile: { id: string; email: string },
+        profile: unknown,
         done: Function
       ) {
         console.log("Got new login request from Google: ", profile);
 
         const eff = pipe(
-          addOrUpdateUserWithGoogleProfile(profile.id, profile),
+          profile,
+          S.parse(GoogleProfile),
+          Effect.flatMap((prof) =>
+            addOrUpdateUserWithGoogleProfile(prof.id, prof)
+          ),
           Effect.tap((user) =>
             Effect.sync(() => {
               done(null, user);
