@@ -36,6 +36,7 @@ create table if not exists registrations (
   claims                  text[] not null default array[]::text[],
   scopes                  text[] not null default array[]::text[],
   custom_parameters       jsonb not null default '{}'::jsonb,
+  registration_config_url varchar(255),
   platform_configuration  jsonb not null
 );
 

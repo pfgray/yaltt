@@ -319,7 +319,13 @@ registrationRouter.post(
         schemaParse(CreatedToolConfiguration)(installRequest)
       ),
       Effect.flatMap(({ registration, install }) =>
-        setRegistrationClientId(registration.id, install.client_id)
+        setRegistrationClientId(
+          registration.id,
+          install.client_id,
+          install["https://purl.imsglobal.org/spec/lti-tool-configuration"][
+            "https://canvas.instructure.com/lti/registration_config_url"
+          ]
+        )
       ),
       Effect.map(successResponse)
     )

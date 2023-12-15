@@ -260,6 +260,7 @@ const RegistrationsList = (props: SubViewProps) => {
             <th className="text-center">Launches</th>
             <th className="text-center">Contexts</th>
             <th className="text-center">Users</th>
+            <th>Platform Config</th>
             <th>Config</th>
             <th>Token</th>
             <th>Client Id</th>
@@ -279,6 +280,19 @@ const RegistrationsList = (props: SubViewProps) => {
               <td className="text-center">{0}</td>
               <td className="text-center">{0}</td>
               <td className="text-center">{0}</td>
+              <td>
+                {pipe(
+                  r.registration_config_url,
+                  Option.match({
+                    onNone: () => <></>,
+                    onSome: (url) => (
+                      <a className="link" href={url}>
+                        view
+                      </a>
+                    ),
+                  })
+                )}
+              </td>
               <td>
                 <a
                   href={`/api/registrations/${r.id}/canvas_configuration`}
