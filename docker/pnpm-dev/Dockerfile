@@ -5,21 +5,15 @@ RUN corepack enable
 COPY . /app
 WORKDIR /app
 
-FROM base AS prod-deps
+FROM base AS deps
 RUN pnpm install --frozen-lockfile
 
-FROM prod-deps AS build
-RUN pnpm --filter "lti-model" build
-RUN pnpm --filter "lti-schema" build
-RUN pnpm --filter "canvas-lti-model" build
-RUN pnpm --filter "@yaltt/model" build
-
-FROM build AS frontend
-WORKDIR /app
+FROM deps AS frontend
+RUN pnpm build @yaltt/frontend
 EXPOSE 5173
 CMD [ "pnpm", "dev" ]
 
-FROM build AS backend
-WORKDIR /app
+FROM deps AS backend
+RUN pnpm build @yaltt/backend
 EXPOSE 3000
 CMD [ "pnpm", "start" ]
