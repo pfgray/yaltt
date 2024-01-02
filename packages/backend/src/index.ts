@@ -93,5 +93,8 @@ if (process.env.ADMIN_USER && process.env.ADMIN_PASSWORD) {
 
 if (process.env.STATIC_ROOT) {
   console.log(`Using STATIC_ROOT: ${process.env.STATIC_ROOT}`);
-  app.use("/", express.static(process.env.STATIC_ROOT));
+  app.use("/assets", express.static(process.env.STATIC_ROOT + "/assets"));
+  app.get("*", (req, res) => {
+    res.sendFile(process.env.STATIC_ROOT + "/index.html");
+  });
 }
