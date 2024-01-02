@@ -22,7 +22,7 @@ if (typeof clientID === "string" && typeof clientSecret === "string") {
       {
         clientID,
         clientSecret,
-        callbackURL: `http://yaltt.paulgray.net/api/oauth2/redirect/google`,
+        callbackURL: `${process.env.YALTT_HOST}/api/oauth2/redirect/google`,
         passReqToCallback: true,
       },
       function (
