@@ -20,6 +20,7 @@
     "daisyui": "^3.7.3",
     "effect": "^2.0.0-next.29",
     "esbuild": "^0.17.4",
+    "lti-model": "0.0.0",
     "lti-schema": "0.0.0",
     "postcss": "^8.4.29",
     "react": "^18.2.0",

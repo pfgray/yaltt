@@ -10,6 +10,7 @@ export * from "./registration/Url";
 export * from "./claims/OpenidClaim";
 export * from "./claims/Context";
 export * from "./claims/Custom";
+export * from "./claims/DeepLinkingSettings";
 export * from "./claims/DeploymentId";
 export * from "./claims/LaunchPresentation";
 export * from "./claims/Lis";

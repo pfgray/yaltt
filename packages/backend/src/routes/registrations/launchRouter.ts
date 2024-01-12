@@ -173,10 +173,13 @@ const parseIdToken = pipe(
       )
     )
   ),
-  Effect.flatMap((idToken) =>
+  Effect.map((rawIdToken) => ({ rawIdToken })),
+  Effect.bind("parsedIdToken", ({ rawIdToken }) =>
     pipe(
-      S.parse(LaunchIdToken)(idToken.payload, { onExcessProperty: "ignore" }),
-      Effect.mapError((error) => parseParamsError(idToken.payload, error))
+      S.parse(LaunchIdToken)(rawIdToken.payload, {
+        onExcessProperty: "ignore",
+      }),
+      Effect.mapError((error) => parseParamsError(rawIdToken.payload, error))
     )
   )
 );
@@ -245,7 +248,8 @@ const saveEnrollment = (
 
 const saveLaunch = (
   registrationId: number,
-  idToken: S.To<typeof LaunchIdToken>
+  idToken: S.To<typeof LaunchIdToken>,
+  rawIdToken: unknown
 ) =>
   pipe(
     savePerson(registrationId, idToken),
@@ -257,7 +261,7 @@ const saveLaunch = (
     Effect.bind("launch", ({ enrollment, person, context }) =>
       createLaunchForRegistrationId(
         registrationId,
-        idToken,
+        rawIdToken,
         Option.getOrUndefined(person),
         Option.getOrUndefined(context)
       )
@@ -275,19 +279,11 @@ const handleLaunchRequest = effRequestHandler(
         })
       )
     ),
-    Effect.tap(() => {
-      return Effect.sync(() => {
-        console.log("before the idToken");
-      });
-    }),
     Effect.bind("idToken", () => parseIdToken),
-    Effect.tap(() => {
-      return Effect.sync(() => {
-        console.log("after the idToken");
-      });
-    }),
-    Effect.bind("launch", ({ params, idToken, query }) =>
-      saveLaunch(params.registrationId, idToken)
+    Effect.bind(
+      "launch",
+      ({ params, idToken: { parsedIdToken, rawIdToken }, query }) =>
+        saveLaunch(params.registrationId, parsedIdToken, rawIdToken.payload)
     ),
     Effect.map(
       ({ params, launch, query }) =>

@@ -1,8 +1,9 @@
-import { Either, pipe } from "effect";
+import { Either, Option, pipe } from "effect";
 import { useParsedParamsQuery } from "../../lib/react-router/useParsedParamsQuery";
 import * as S from "@effect/schema/Schema";
 import { WithRequest } from "../../lib/api/WithRequest";
 import { getDecode } from "../../lib/api/request";
+import { DeepLinkingSettingsClaim } from "lti-model";
 
 const Launch = S.struct({
   id: S.number,
@@ -34,6 +35,20 @@ export const LaunchView = () => {
         <WithRequest eff={fetchLaunch(params.launchId)}>
           {(launch) => (
             <div>
+              {pipe(
+                launch.id_token,
+                extractClaim(DeepLinkingSettingsClaim),
+                Option.map(
+                  (c) =>
+                    c[
+                      "https://purl.imsglobal.org/spec/lti-dl/claim/deep_linking_settings"
+                    ]
+                ),
+                Option.map((dl) => (
+                  <div>Deep Link url:{dl.deep_link_return_url}</div>
+                )),
+                Option.getOrNull
+              )}
               <div>Launch ID: {params.launchId}</div>
               <div>Placement: {query.placement}</div>
               <div>
@@ -46,3 +61,8 @@ export const LaunchView = () => {
     })
   );
 };
+
+const extractClaim =
+  <S extends S.Schema<any, any>>(schema: S) =>
+  (id_token: unknown): Option.Option<S.To<S>> =>
+    S.parseOption(schema)(id_token, { onExcessProperty: "ignore" });
