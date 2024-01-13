@@ -22,3 +22,5 @@ export const ImageContentItem = S.struct({
   width: S.optional(S.number),
   height: S.optional(S.number),
 });
+
+export interface ImageContentItem extends S.To<typeof ImageContentItem> {}

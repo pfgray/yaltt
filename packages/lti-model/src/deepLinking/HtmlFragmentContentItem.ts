@@ -6,3 +6,6 @@ export const HtmlFragmentContentItem = S.struct({
   title: S.optional(S.string),
   text: S.optional(S.string),
 });
+
+export interface HtmlFragmentContentItem
+  extends S.To<typeof HtmlFragmentContentItem> {}

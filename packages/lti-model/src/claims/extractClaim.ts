@@ -1,5 +1,10 @@
 import * as S from "@effect/schema/Schema";
+import { Option, pipe } from "effect";
 
 export const extractClaim =
-  <T extends S.Schema<any, any>>(schema: T) =>
-  <Key extends string>(key: K): Option.Option<S.To<T>> => {};
+  <T extends S.Schema<any, any>, Key extends string>(schema: T, key: Key) =>
+  (obj: unknown): Option.Option<S.To<T>[Key]> =>
+    pipe(
+      S.parseOption(schema)(obj, { onExcessProperty: "ignore" }),
+      Option.map((x) => x[key])
+    );

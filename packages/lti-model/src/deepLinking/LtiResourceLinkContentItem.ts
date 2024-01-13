@@ -56,3 +56,6 @@ export const LtiResourceLinkContentItem = S.struct({
     })
   ),
 });
+
+export interface LtiResourceLinkContentItem
+  extends S.To<typeof LtiResourceLinkContentItem> {}

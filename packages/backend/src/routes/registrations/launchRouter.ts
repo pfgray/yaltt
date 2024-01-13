@@ -9,7 +9,6 @@ import {
   effRequestHandler,
   redirectResponse,
   schemaResponse,
-  successResponse,
 } from "../../express/effRequestHandler";
 
 import { parseJwt, stringToInteger } from "@yaltt/model";
@@ -43,6 +42,7 @@ import {
   createLaunchForRegistrationId,
   getLaunchForId,
 } from "../../model/entities/launches";
+import { getAppForId } from "../../model/entities/apps";
 
 const upload = multer.default();
 export const launchRouter = express.Router();
@@ -308,7 +308,29 @@ launchRouter.get(
       launchIdParam,
       Effect.map((l) => l.launchId),
       Effect.flatMap(getLaunchForId),
-      Effect.map(schemaResponse(200, LaunchRow))
+      Effect.bindTo("launch"),
+      Effect.bind("registration", ({ launch }) =>
+        getRegistrationForId(launch.registration_id)
+      ),
+      Effect.bind("app", ({ registration }) =>
+        getAppForId(registration.app_id)
+      ),
+      Effect.map(({ launch, app }) => ({
+        ...launch,
+        appId: app.id,
+      })),
+      Effect.map(
+        schemaResponse(
+          200,
+          LaunchRow.pipe(
+            S.extend(
+              S.struct({
+                appId: S.number,
+              })
+            )
+          )
+        )
+      )
     )
   )
 );

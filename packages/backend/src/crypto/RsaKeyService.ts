@@ -2,7 +2,6 @@ import * as crypto from "crypto";
 import { Effect } from "effect";
 import * as jsonwebtoken from "jsonwebtoken";
 import { KeyError, KeyService } from "./KeyService";
-import { option } from "effect/Config";
 
 const generateKeyPair: KeyService["generateKeyPair"] = () =>
   Effect.async((resume) => {
@@ -30,7 +29,7 @@ const generateKeyPair: KeyService["generateKeyPair"] = () =>
   });
 
 const sign: KeyService["sign"] = (
-  input: {},
+  input: unknown,
   privateKey: Buffer,
   options?: jsonwebtoken.SignOptions
 ) => {

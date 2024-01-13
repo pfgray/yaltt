@@ -39,3 +39,5 @@ export const LinkContentItem = S.struct({
     })
   ),
 });
+
+export interface LinkContentItem extends S.To<typeof LinkContentItem> {}

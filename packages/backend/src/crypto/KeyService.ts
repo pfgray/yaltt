@@ -16,7 +16,7 @@ export interface KeyService {
     }
   >;
   sign: (
-    input: {},
+    input: unknown,
     privateKey: Buffer,
     options?: jsonwebtoken.SignOptions
   ) => string;

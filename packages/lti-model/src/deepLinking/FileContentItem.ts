@@ -21,3 +21,5 @@ export const FileContentItem = S.struct({
   ),
   expiresAt: S.optional(S.string),
 });
+
+export interface FileContentItem extends S.To<typeof FileContentItem> {}

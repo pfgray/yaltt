@@ -3,7 +3,11 @@ import { useParsedParamsQuery } from "../../lib/react-router/useParsedParamsQuer
 import * as S from "@effect/schema/Schema";
 import { WithRequest } from "../../lib/api/WithRequest";
 import { getDecode } from "../../lib/api/request";
-import { DeepLinkingSettingsClaim } from "lti-model";
+import {
+  extractDeepLinkingSettingsClaim,
+  extractDeploymentIdClaim,
+} from "lti-model";
+import { DeepLinkingForm } from "./DeepLinkingForm";
 
 const Launch = S.struct({
   id: S.number,
@@ -12,6 +16,7 @@ const Launch = S.struct({
   registration_id: S.number,
   person_id: S.optional(S.number),
   context_id: S.optional(S.number),
+  appId: S.number,
 });
 
 const fetchLaunch = (launchId: number) =>
@@ -34,25 +39,27 @@ export const LaunchView = () => {
       onRight: ({ query, params }) => (
         <WithRequest eff={fetchLaunch(params.launchId)}>
           {(launch) => (
-            <div>
-              {pipe(
-                launch.id_token,
-                extractClaim(DeepLinkingSettingsClaim),
-                Option.map(
-                  (c) =>
-                    c[
-                      "https://purl.imsglobal.org/spec/lti-dl/claim/deep_linking_settings"
-                    ]
-                ),
-                Option.map((dl) => (
-                  <div>Deep Link url:{dl.deep_link_return_url}</div>
-                )),
-                Option.getOrNull
-              )}
-              <div>Launch ID: {params.launchId}</div>
-              <div>Placement: {query.placement}</div>
-              <div>
-                Launch: <pre>{JSON.stringify(launch, null, 2)}</pre>
+            <div className="p-4">
+              <div className="flex flex-col gap-10">
+                {pipe(
+                  extractDeepLinkingSettingsClaim(launch.id_token),
+                  Option.bindTo("dl"),
+                  Option.bind("deploymentId", () =>
+                    extractDeploymentIdClaim(launch.id_token)
+                  ),
+                  Option.map(({ dl, deploymentId }) => (
+                    <DeepLinkingForm
+                      deepLinkReturnUrl={dl.deep_link_return_url}
+                      registrationId={launch.registration_id}
+                      deploymentId={deploymentId}
+                      appId={launch.appId}
+                    />
+                  )),
+                  Option.getOrNull
+                )}
+                <div className="prose">
+                  Launch: <pre>{JSON.stringify(launch, null, 2)}</pre>
+                </div>
               </div>
             </div>
           )}
@@ -61,8 +68,3 @@ export const LaunchView = () => {
     })
   );
 };
-
-const extractClaim =
-  <S extends S.Schema<any, any>>(schema: S) =>
-  (id_token: unknown): Option.Option<S.To<S>> =>
-    S.parseOption(schema)(id_token, { onExcessProperty: "ignore" });

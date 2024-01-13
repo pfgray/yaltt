@@ -1,21 +1,39 @@
-import * as express from "express";
-import * as passportBase from "passport";
-import { pipe, Effect, Option, Either } from "effect";
-import * as crypto from "crypto";
-import * as multer from "multer";
-import { parseBody, withRequestBody } from "../../express/parseBody";
 import * as S from "@effect/schema/Schema";
-import { requireAuth } from "../../auth/auth";
+import { Effect, pipe } from "effect";
+import * as express from "express";
+import * as multer from "multer";
 import {
   effRequestHandler,
   redirectResponse,
   successResponse,
 } from "../../express/effRequestHandler";
+import { parseBody } from "../../express/parseBody";
 
+import { stringToInteger } from "@yaltt/model";
+import { CanvasPlacement } from "canvas-lti-model";
+import {
+  ContentItem,
+  DeploymentIdClaimKey,
+  LtiMessage,
+  LtiMessageTypes,
+  LtiVersionClaimKey,
+  PlatformConfiguration,
+  ToolConfiguration,
+} from "lti-model";
 import {
   authedRequest,
   unauthorizedError,
 } from "../../auth/authedRequestHandler";
+import { getConfig } from "../../config/ConfigService";
+import { exportPublickKeyJWK } from "../../crypto/KeyService";
+import {
+  parseBodyOrParams,
+  parseParams,
+  parseQuery,
+} from "../../express/parseParams";
+import { Fetch } from "../../fetch/FetchService";
+import { getAppForId } from "../../model/entities/apps";
+import { getKeysWithoutPrivateKeyForRegistrationId } from "../../model/entities/keys";
 import {
   createRegistrationForAppId,
   deleteRegistrationForId,
@@ -23,34 +41,17 @@ import {
   getRegistrationsForAppId,
   setRegistrationClientId,
 } from "../../model/entities/registrations";
-import {
-  parseBodyOrParams,
-  parseParams,
-  parseQuery,
-} from "../../express/parseParams";
-import { ExpressRequestService } from "../../express/RequestService";
-import { getAppForId } from "../../model/entities/apps";
-import {
-  LtiMessage,
-  LtiMessageTypes,
-  PlatformConfiguration,
-  ToolConfiguration,
-} from "lti-model";
-import { stringToInteger } from "@yaltt/model";
+import { schemaParse } from "../../schemaParse";
+import { fetchToken } from "../../tokens/tokens";
+import { tap } from "../../util/tap";
 import { appIdIsForUser, appIdParam } from "../apps/appRouter";
-import { getKeysWithoutPrivateKeyForRegistrationId } from "../../model/entities/keys";
+import { signJwtPayloadForRegistration } from "./jwtSign";
+import { mkYalttCanvasToolConfiguration } from "./mkYalttCanvasToolConfiguration";
 import {
   mkYalttToolConfiguration,
   mkYalttUrl,
 } from "./mkYalttToolConfiguration";
-import { getConfig } from "../../config/ConfigService";
-import { CanvasPlacement } from "canvas-lti-model";
-import { mkYalttCanvasToolConfiguration } from "./mkYalttCanvasToolConfiguration";
-import { exportPublickKeyJWK } from "../../crypto/KeyService";
-import { Fetch } from "../../fetch/FetchService";
-import { tap } from "../../util/tap";
-import { schemaParse } from "../../schemaParse";
-import { fetchToken } from "../../tokens/tokens";
+import { MessageTypeClaimKey, ContentItemsClaimKey } from "lti-model";
 
 const upload = multer.default();
 export const registrationRouter = express.Router();
@@ -375,7 +376,7 @@ registrationRouter.get(
  * Ensuring that the app is for the current authed user,
  * and the registration is for the app.
  */
-const registrationAndAppParams = pipe(
+export const registrationAndAppParams = pipe(
   Effect.succeed({}),
   Effect.bind("app", () => appIdIsForUser),
   Effect.bind("regId", () => registrationIdParam),
@@ -403,6 +404,35 @@ registrationRouter.get(
   pipe(
     registrationAndAppParams,
     Effect.flatMap(({ registration }) => fetchToken(registration)),
+    Effect.map(successResponse),
+    effRequestHandler
+  )
+);
+
+registrationRouter.post(
+  "/apps/:appId/registrations/:registrationId/signDeepLinkingContentItems",
+  pipe(
+    registrationAndAppParams,
+    Effect.bind("body", () =>
+      parseBody(
+        S.struct({
+          contentItems: S.array(ContentItem),
+          deploymentId: S.string,
+        })
+      )
+    ),
+    Effect.bind("signedJwt", ({ registration, body }) => {
+      console.log("Signing payload:", body);
+      return signJwtPayloadForRegistration(registration)({
+        [DeploymentIdClaimKey]: body.deploymentId,
+        [MessageTypeClaimKey]: "LtiDeepLinkingResponse",
+        [LtiVersionClaimKey]: "1.3.0",
+        [ContentItemsClaimKey]: body.contentItems,
+      });
+    }),
+    Effect.tap((payload) =>
+      Effect.sync(() => console.log("Signed payload: ", payload))
+    ),
     Effect.map(successResponse),
     effRequestHandler
   )
