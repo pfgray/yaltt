@@ -48,7 +48,7 @@ app.use(
     cookie: {
       maxAge: 30 * 24 * 60 * 60 * 1000,
       secure: process.env.NODE_ENV !== "development",
-      sameSite: process.env.NODE_ENV === "development" ? "lax" : "none",
+      sameSite: process.env.NODE_ENV !== "development" ? "none" : "lax",
     }, // 30 days
     saveUninitialized: false,
   })
