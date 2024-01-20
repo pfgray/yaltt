@@ -43,7 +43,11 @@ app.use(
     store: redisStore,
     secret: "keyboard cat",
     resave: true,
-    cookie: { maxAge: 30 * 24 * 60 * 60 * 1000 }, // 30 days
+    cookie: {
+      maxAge: 30 * 24 * 60 * 60 * 1000,
+      secure: process.env.NODE_ENV !== "development",
+      sameSite: process.env.NODE_ENV === "development" ? "lax" : "none",
+    }, // 30 days
     saveUninitialized: false,
   })
 );
