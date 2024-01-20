@@ -102,3 +102,10 @@ if (process.env.STATIC_ROOT) {
     res.sendFile(process.env.STATIC_ROOT + "/index.html");
   });
 }
+
+app.get("/status", (req, res) => {
+  res.json({
+    status: "ok",
+    NODE_ENV: process.env.NODE_ENV,
+  });
+});
