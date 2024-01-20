@@ -38,6 +38,8 @@ app.use(
   })
 );
 
+console.log("initializing session: ", process.env.NODE_ENV);
+
 app.use(
   session.default({
     store: redisStore,
@@ -103,7 +105,7 @@ if (process.env.STATIC_ROOT) {
   });
 }
 
-app.get("/status", (req, res) => {
+app.get("/api/status", (req, res) => {
   res.json({
     status: "ok",
     NODE_ENV: process.env.NODE_ENV,
