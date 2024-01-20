@@ -49,7 +49,7 @@ export const LaunchView = () => {
                   ),
                   Option.map(({ dl, deploymentId }) => (
                     <DeepLinkingForm
-                      deepLinkReturnUrl={dl.deep_link_return_url}
+                      deepLinkingSettings={dl}
                       registrationId={launch.registration_id}
                       deploymentId={deploymentId}
                       appId={launch.appId}

@@ -7,3 +7,4 @@ export * from "./schemas/jwt";
 export * from "./yaltt/toolConfiguration";
 export * from "./canvas/platformConfiguration";
 export * from "./yaltt/YalttClaims";
+export * from "./yaltt/ContentItemTypes";

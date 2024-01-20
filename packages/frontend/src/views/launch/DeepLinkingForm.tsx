@@ -1,13 +1,18 @@
-import { Effect, Either, Option, pipe } from "effect";
+import { Effect, Either, Option, ReadonlyArray, pipe } from "effect";
 import { useParsedParamsQuery } from "../../lib/react-router/useParsedParamsQuery";
 import * as S from "@effect/schema/Schema";
 import { WithRequest } from "../../lib/api/WithRequest";
 import { getDecode, postDecode } from "../../lib/api/request";
-import { ContentItem, extractDeepLinkingSettingsClaim } from "lti-model";
+import {
+  ContentItem,
+  DeepLinkingSettings,
+  DeepLinkingSettingsClaim,
+  extractDeepLinkingSettingsClaim,
+} from "lti-model";
 import React from "react";
 import { makeMatchers } from "ts-adt/MakeADT";
 import { provideRequestService } from "../../lib/api/requestServiceImpl";
-import { match } from "@yaltt/model";
+import { isContentItemType, match } from "@yaltt/model";
 import { formatErrors } from "@effect/schema/TreeFormatter";
 
 const sendContentItems = (
@@ -46,14 +51,26 @@ const submitDeepLinking = (signedJwt: string, deepLinkReturnUrl: string) => {
 };
 
 type DeepLinkingFormProps = {
-  deepLinkReturnUrl: string;
+  deepLinkingSettings: DeepLinkingSettings;
   appId: number;
   registrationId: number;
   deploymentId: string;
 };
+
 export const DeepLinkingForm = (props: DeepLinkingFormProps) => {
+  const firstType = pipe(
+    props.deepLinkingSettings.accept_types,
+    ReadonlyArray.filter(isContentItemType),
+    ReadonlyArray.head,
+    Option.getOrElse(() => "file" as const)
+  );
   const [contentItems, setContentItems] = React.useState<ContentItem[]>([
-    { type: "link", url: "", title: "", text: "" },
+    {
+      type: firstType,
+      url: "",
+      title: "",
+      text: "",
+    },
   ]);
   return (
     <div className="prose flex flex-col gap-4">
@@ -64,6 +81,7 @@ export const DeepLinkingForm = (props: DeepLinkingFormProps) => {
         return (
           <div>
             <ContentItemForm
+              deepLinkingSettings={props.deepLinkingSettings}
               contentItem={contentItem}
               update={(newContentItem) => {
                 const newContentItems = [...contentItems];
@@ -84,7 +102,7 @@ export const DeepLinkingForm = (props: DeepLinkingFormProps) => {
                 props.appId,
                 props.registrationId,
                 props.deploymentId,
-                props.deepLinkReturnUrl
+                props.deepLinkingSettings.deep_link_return_url
               ),
               provideRequestService,
               Effect.either,
@@ -101,7 +119,7 @@ export const DeepLinkingForm = (props: DeepLinkingFormProps) => {
                   req_client_error: (err) => console.log(err),
                   req_server_error: (err) => console.log(err),
                 }),
-                onRight: (res) => console.log(res),
+                onRight: (res) => console.log(JSON.stringify(res)),
               })
             );
           }}
@@ -114,6 +132,7 @@ export const DeepLinkingForm = (props: DeepLinkingFormProps) => {
 };
 
 type ContentItemFormProps = {
+  deepLinkingSettings: DeepLinkingSettings;
   contentItem: ContentItem;
   update: (contentItem: ContentItem) => void;
 };
@@ -142,24 +161,16 @@ const ContentItemForm = (props: ContentItemFormProps) => {
             updateField("type")(e);
           }}
         >
-          <option value="file" selected={props.contentItem.type === "file"}>
-            File
-          </option>
-          <option value="link" selected={props.contentItem.type === "link"}>
-            Link
-          </option>
-          <option value="html" selected={props.contentItem.type === "html"}>
-            HTML
-          </option>
-          <option
-            value="ltiResourceLink"
-            selected={props.contentItem.type === "ltiResourceLink"}
-          >
-            LTI Resource Link
-          </option>
-          <option value="image" selected={props.contentItem.type === "image"}>
-            Image
-          </option>
+          {ContentItemTypeOptions.filter((op) => {
+            return props.deepLinkingSettings.accept_types.includes(op.value);
+          }).map((option) => (
+            <option
+              value={option.value}
+              selected={props.contentItem.type === option.value}
+            >
+              {option.display}
+            </option>
+          ))}
         </select>
       </label>
       {pipe(
@@ -294,3 +305,30 @@ const ContentItemForm = (props: ContentItemFormProps) => {
     </div>
   );
 };
+
+const ContentItemTypeOptions = [
+  {
+    value: "file",
+    display: "File",
+  },
+  {
+    value: "link",
+    display: "Link",
+  },
+  {
+    value: "html",
+    display: "HTML",
+  },
+  {
+    value: "ltiResourceLink",
+    display: "LTI Resource Link",
+  },
+  {
+    value: "image",
+    display: "Image",
+  },
+];
+
+// const ContentItemTypeOptions = () => {
+
+// }

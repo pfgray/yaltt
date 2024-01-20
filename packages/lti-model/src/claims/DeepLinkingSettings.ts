@@ -19,6 +19,10 @@ export const DeepLinkingSettingsClaim = S.struct({
   }),
 });
 
+export type DeepLinkingSettings = S.To<
+  typeof DeepLinkingSettingsClaim
+>[typeof DeepLinkingSettingsClaimKey];
+
 export const extractDeepLinkingSettingsClaim = extractClaim(
   DeepLinkingSettingsClaim,
   DeepLinkingSettingsClaimKey
