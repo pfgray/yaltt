@@ -32,8 +32,6 @@ if (typeof clientID === "string" && typeof clientSecret === "string") {
         profile: unknown,
         done: Function
       ) {
-        console.log("Got new login request from Google: ", profile);
-
         const eff = pipe(
           profile,
           S.parse(GoogleProfile),
@@ -55,7 +53,7 @@ if (typeof clientID === "string" && typeof clientSecret === "string") {
             done(status.cause);
           } else {
             pgService.commit();
-            console.log("Logged in user ", status.value.login);
+            // console.log("Logged in user ", status.value.login);
           }
         });
       } as any

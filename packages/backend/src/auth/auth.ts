@@ -35,16 +35,13 @@ declare global {
  */
 passport.serializeUser(function (user, cb) {
   process.nextTick(function () {
-    console.log("serializing user: ", user);
     cb(null, user.id);
   });
 });
 
 passport.deserializeUser<number>(function (id, cb) {
-  console.log("deserializing user (before)...", id);
   process.nextTick(function () {
     const pgService = mkTransactionalPgService(pool);
-    console.log("deserializing user: ", id);
     Effect.runCallback(
       pipe(
         getUserWithLoginById(id),
@@ -56,7 +53,6 @@ passport.deserializeUser<number>(function (id, cb) {
           cb(cause);
         },
         onSuccess: (user) => {
-          console.log("deserialized user: ", user.login);
           cb(null, user);
         },
       })
@@ -69,7 +65,6 @@ export const requireAuth = (
   resp: express.Response,
   next: express.NextFunction
 ) => {
-  console.log("request user: ", req.user);
   if (!req.user) {
     console.log(`Blocked access to ${req.url} for unauthenticated user.`);
     resp.status(401);
