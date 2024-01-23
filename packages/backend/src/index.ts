@@ -47,8 +47,9 @@ app.use(
     resave: true,
     cookie: {
       maxAge: 30 * 24 * 60 * 60 * 1000,
-      secure: process.env.NODE_ENV !== "development",
-      sameSite: process.env.NODE_ENV !== "development" ? "none" : "lax",
+      // ended up doing this in nginx instead https://serverfault.com/a/883824
+      // secure: process.env.NODE_ENV !== "development",
+      // sameSite: process.env.NODE_ENV !== "development" ? "none" : "lax",
     }, // 30 days
     saveUninitialized: false,
   })
