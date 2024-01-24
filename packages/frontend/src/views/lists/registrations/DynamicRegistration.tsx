@@ -172,9 +172,12 @@ export const DynamicRegistration = () => {
                       onLeft: (errors) => (
                         <div className="flex flex-col items-center w-full">
                           <article className="prose">
-                            <pre>{formatErrors(errors.errors)}</pre>
-                            <h3>raw</h3>
+                            <h3>Error retrieving OpenID Configuration from:</h3>
+                            <pre>{query.openid_configuration}</pre>
+                            <h3>Raw Response Body</h3>
                             <pre>{JSON.stringify(openidConfig, null, 2)}</pre>
+                            <h3>Parse Error:</h3>
+                            <pre>{formatErrors(errors.errors)}</pre>
                           </article>
                         </div>
                       ),
@@ -274,6 +277,8 @@ export const DynamicRegistration = () => {
                             <h3>Raw Platform Configuration</h3>
 
                             <pre>{JSON.stringify(openidConfig, null, 2)}</pre>
+                            <h6>Fetched from:</h6>
+                            <pre>{query.openid_configuration}</pre>
                           </article>
                         </div>
                       ),

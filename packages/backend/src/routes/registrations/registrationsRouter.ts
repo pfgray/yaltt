@@ -348,23 +348,7 @@ registrationRouter.get(
       ),
       Effect.flatMap(({ query }) => {
         const url = new URL(query.url);
-        if (query.registration_token) {
-          url.searchParams.append(
-            "registration_token",
-            query.registration_token
-          );
-        }
-
-        return Fetch.get(
-          url.toString(),
-          query.registration_token
-            ? {
-                headers: {
-                  Authorization: `Bearer ${query.registration_token}`,
-                },
-              }
-            : {}
-        );
+        return Fetch.get(url.toString());
       }),
       Effect.map(successResponse)
     )
