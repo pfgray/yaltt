@@ -24,6 +24,7 @@ import {
 import { mkHttpFetchService } from "../fetch/HttpFetchService";
 import { formatErrors } from "@effect/schema/TreeFormatter";
 import * as S from "@effect/schema/Schema";
+import { mkEnvConfigService } from "../config/EnvConfigService";
 
 type Response = {
   status: number;
@@ -94,12 +95,7 @@ export const effRequestHandler: EffRequestHandler =
         }),
         Effect.provideService(PgService, pgService.service),
         provideRsaKeyService,
-        Effect.provideService(ConfigService, {
-          config: {
-            primaryHostname: process.env.YALTT_HOST || "localhost",
-            ssl: process.env.SSL === "true" || false,
-          },
-        }),
+        Effect.provideService(ConfigService, mkEnvConfigService()),
         Effect.provideService(FetchService, mkHttpFetchService())
       ),
       (exit) => {

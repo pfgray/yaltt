@@ -7,22 +7,26 @@ import { pool } from "../../db/db";
 import { addOrUpdateUserWithGoogleProfile } from "../../model/users";
 import * as S from "@effect/schema/Schema";
 import { GoogleProfile } from "@yaltt/model";
+import { mkEnvConfigService } from "../../config/EnvConfigService";
+import { mkYalttUrl } from "../../routes/registrations/mkYalttToolConfiguration";
 
 console.log("Initializing Google OAuth2 strategy");
 
 const clientID = process.env["GOOGLE_CLIENT_ID"];
 const clientSecret = process.env["GOOGLE_CLIENT_SECRET"];
 
-console.log("yaltt host is: ", process.env.YALTT_HOST);
-
 if (typeof clientID === "string" && typeof clientSecret === "string") {
   const pgService = mkTransactionalPgService(pool);
+  const envConfig = mkEnvConfigService();
+
   (passport as any).default.use(
     new GoogleStrategy(
       {
         clientID,
         clientSecret,
-        callbackURL: `${process.env.YALTT_HOST}/api/oauth2/redirect/google`,
+        callbackURL: mkYalttUrl(envConfig.config)(
+          "/api/oauth2/redirect/google"
+        ),
         passReqToCallback: true,
       },
       function (
