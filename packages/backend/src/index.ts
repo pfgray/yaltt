@@ -60,10 +60,6 @@ app.use(((passport as any).default as typeof passport).authenticate("session"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
-app.get("/login", function (req, res, next) {
-  res.render("login");
-});
-
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`);
 });
@@ -98,6 +94,13 @@ if (process.env.ADMIN_USER && process.env.ADMIN_PASSWORD) {
   }
 }
 
+app.get("/api/status", (req, res) => {
+  res.json({
+    status: "ok",
+    NODE_ENV: process.env.NODE_ENV,
+  });
+});
+
 if (process.env.STATIC_ROOT) {
   console.log(`Using STATIC_ROOT: ${process.env.STATIC_ROOT}`);
   app.use("/assets", express.static(process.env.STATIC_ROOT + "/assets"));
@@ -105,10 +108,3 @@ if (process.env.STATIC_ROOT) {
     res.sendFile(process.env.STATIC_ROOT + "/index.html");
   });
 }
-
-app.get("/api/status", (req, res) => {
-  res.json({
-    status: "ok",
-    NODE_ENV: process.env.NODE_ENV,
-  });
-});
