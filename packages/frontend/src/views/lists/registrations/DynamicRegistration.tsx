@@ -272,6 +272,23 @@ export const DynamicRegistration = () => {
                                 )}
                               </button>
                             </div>
+                            {pipe(
+                              install,
+                              match({
+                                initial: () => <></>,
+                                loading: () => <></>,
+                                loaded: () => <></>,
+                                failed: ({ error }) => (
+                                  <div className="w-full flex justify-end flex-row">
+                                    {error.tag === "req_client_error"
+                                      ? "Client"
+                                      : "Server"}{" "}
+                                    Error, status code: {error.status}
+                                    <pre>{JSON.stringify(error.body)}</pre>
+                                  </div>
+                                ),
+                              })
+                            )}
                             <div className="divider"></div>
 
                             <h3>Raw Platform Configuration</h3>
