@@ -133,13 +133,7 @@ export default function SignIn() {
               ),
               Option.match({
                 onNone: () => (
-                  <a
-                    type="button"
-                    href="/api/login/google"
-                    className="btn btn-wide bg-zinc-950/70 border-0 text-white"
-                  >
-                    <GoogleIcon /> Sign in with Google
-                  </a>
+                  <></>
                 ),
                 onSome: () => (
                   <a
