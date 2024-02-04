@@ -20,6 +20,7 @@ import {
   FetchJsonParseError,
   FetchError,
   FetchService,
+  FetchStatusError,
 } from "../fetch/FetchService";
 import { mkHttpFetchService } from "../fetch/HttpFetchService";
 import { formatErrors } from "@effect/schema/TreeFormatter";
@@ -78,6 +79,7 @@ export type EffRequestHandler = (
     | ParseQueryError
     | FetchError
     | FetchJsonParseError
+    | FetchStatusError
     | KeyError,
     Response
   >
@@ -201,12 +203,21 @@ export const effRequestHandler: EffRequestHandler =
                   console.error("Fetch Error", e);
                   handleErrorResponse(request, response)(500, {
                     error: "an error ocurred",
+                    e,
                   });
                 },
                 fetch_json_parse_error: (e) => {
                   console.error("Fetch Error", e);
                   handleErrorResponse(request, response)(500, {
                     error: "an error ocurred",
+                    e,
+                  });
+                },
+                fetch_status_error: (e) => {
+                  console.error("Fetch Status Error", e);
+                  handleErrorResponse(request, response)(500, {
+                    error: "an error ocurred",
+                    e,
                   });
                 },
               }),

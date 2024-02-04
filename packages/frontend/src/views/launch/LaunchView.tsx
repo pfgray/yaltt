@@ -8,16 +8,9 @@ import {
   extractDeploymentIdClaim,
 } from "lti-model";
 import { DeepLinkingForm } from "./DeepLinkingForm";
-
-const Launch = S.struct({
-  id: S.number,
-  created: S.Date,
-  id_token: S.unknown,
-  registration_id: S.number,
-  person_id: S.optional(S.number),
-  context_id: S.optional(S.number),
-  appId: S.number,
-});
+import { TokenFetcher } from "./TokenFetcher";
+import { Launch } from "./Launch";
+import { RawLaunch } from "./RawLaunch";
 
 const fetchLaunch = (launchId: number) =>
   getDecode(Launch)(`/api/launch/${launchId}`);
@@ -40,7 +33,7 @@ export const LaunchView = () => {
         <WithRequest eff={fetchLaunch(params.launchId)}>
           {(launch) => (
             <div className="p-4">
-              <div className="flex flex-col gap-10">
+              <div className="flex flex-col gap-2">
                 {pipe(
                   extractDeepLinkingSettingsClaim(launch.id_token),
                   Option.bindTo("dl"),
@@ -57,9 +50,8 @@ export const LaunchView = () => {
                   )),
                   Option.getOrNull
                 )}
-                <div className="prose">
-                  Launch: <pre>{JSON.stringify(launch, null, 2)}</pre>
-                </div>
+                <RawLaunch launch={launch} />
+                <TokenFetcher launch={launch} />
               </div>
             </div>
           )}

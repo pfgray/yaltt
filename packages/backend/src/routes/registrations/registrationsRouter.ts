@@ -404,6 +404,7 @@ registrationRouter.get(
   pipe(
     registrationAndAppParams,
     Effect.flatMap(({ registration }) => fetchToken(registration)),
+    Effect.mapError((e) => e),
     Effect.map(successResponse),
     effRequestHandler
   )

@@ -6,6 +6,12 @@ import nJwt from "njwt";
 import { getKeyForRegistrationId } from "../model/entities/keys";
 import { signJwt } from "../crypto/KeyService";
 
+/**
+ * Fetches a token from the platform's token endpoint.
+ * @param registration
+ * @param deployment_id
+ * @returns
+ */
 export const fetchToken = (
   registration: RegistrationRow,
   deployment_id?: string
@@ -33,7 +39,7 @@ export const fetchToken = (
       )
     ),
     Effect.flatMap(({ token }) => {
-      const encodeGetParams = (p: Record<string, string>) =>
+      const encodeQueryParams = (p: Record<string, string>) =>
         Object.entries(p)
           .map((kv) => kv.map(encodeURIComponent).join("="))
           .join("&");
@@ -51,7 +57,7 @@ export const fetchToken = (
       return Fetch.post(
         `${
           registration.platform_configuration.token_endpoint
-        }?${encodeGetParams(params)}`,
+        }?${encodeQueryParams(params)}`,
         {}
       );
     })

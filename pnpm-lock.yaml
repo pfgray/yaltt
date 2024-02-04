@@ -1,9 +1,5 @@
 lockfileVersion: '6.0'
 
-settings:
-  autoInstallPeers: true
-  excludeLinksFromLockfile: false
-
 importers:
 
   .:
@@ -222,6 +218,9 @@ importers:
       react:
         specifier: ^18.2.0
         version: 18.2.0
+      react-daisyui:
+        specifier: ^5.0.0
+        version: 5.0.0(daisyui@3.7.3)(react-dom@18.2.0)(react@18.2.0)(tailwindcss@3.3.3)
       react-dom:
         specifier: ^18.2.0
         version: 18.2.0(react@18.2.0)
@@ -2996,6 +2995,20 @@ packages:
       unpipe: 1.0.0
     dev: false
 
+  /react-daisyui@5.0.0(daisyui@3.7.3)(react-dom@18.2.0)(react@18.2.0)(tailwindcss@3.3.3):
+    resolution: {integrity: sha512-j1cugAxALmIbihycGBh7P9H3UXrfsvqu84qM6O55l7nOKST43IjUkZjmNav/7s0ZaUpa9Y+52mFchUb2zvon1A==}
+    peerDependencies:
+      daisyui: ^4.4.6
+      react: '>=16'
+      react-dom: '>=16'
+      tailwindcss: '>=3.2.7'
+    dependencies:
+      daisyui: 3.7.3
+      react: 18.2.0
+      react-dom: 18.2.0(react@18.2.0)
+      tailwindcss: 3.3.3
+    dev: false
+
   /react-devtools-core@4.28.5:
     resolution: {integrity: sha512-cq/o30z9W2Wb4rzBefjv5fBalHU0rJGZCHAkf/RHSBWSSYwh8PlQTqqOJmgIIbBtpj27T6FIPXeomIjZtCNVqA==}
     dependencies:
@@ -3729,3 +3742,7 @@ packages:
       react: 18.2.0
       use-sync-external-store: 1.2.0(react@18.2.0)
     dev: false
+
+settings:
+  autoInstallPeers: true
+  excludeLinksFromLockfile: false
