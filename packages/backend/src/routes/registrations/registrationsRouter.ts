@@ -191,9 +191,9 @@ registrationRouter.get(
         },
       ]
     ),
-    Effect.map(({ reg, app, config, placements }) => {
+    Effect.map(({ reg, app, config, placements, request }) => {
       return successResponse(
-        mkYalttCanvasToolConfiguration(config)(app, reg, [], {}, placements)
+        mkYalttCanvasToolConfiguration(config, request.request)(app, reg, [], {}, placements)
       );
     }),
     effRequestHandler
