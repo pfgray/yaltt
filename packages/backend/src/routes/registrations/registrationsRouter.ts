@@ -52,6 +52,7 @@ import {
   mkYalttUrl,
 } from "./mkYalttToolConfiguration";
 import { MessageTypeClaimKey, ContentItemsClaimKey } from "lti-model";
+import { ExpressRequestService } from "../../express/RequestService";
 
 const upload = multer.default();
 export const registrationRouter = express.Router();
@@ -131,23 +132,30 @@ registrationRouter.get(
   `/registrations/:registrationId/configuration`,
   pipe(
     Effect.succeed({}),
+    Effect.bind("request", () => ExpressRequestService),
     Effect.bind("regId", () => registrationIdParam),
     Effect.bind("config", () => getConfig),
     Effect.bind("reg", ({ regId }) => getRegistrationForId(regId)),
     Effect.bind("app", ({ reg }) => getAppForId(reg.app_id)),
     Effect.let(
       "messages",
-      ({ reg, app, config }): ReadonlyArray<LtiMessage> => [
+      ({ reg, app, config, request }): ReadonlyArray<LtiMessage> => [
         {
           type: LtiMessageTypes.LtiResourceLinkRequest,
           custom_parameters: {},
           label: `${app.name} (ResourceLinkRequest)`,
-          target_link_uri: mkYalttUrl(config)("/resource_link"),
+          target_link_uri: mkYalttUrl(
+            config,
+            request.request
+          )("/resource_link"),
         },
       ]
     ),
-    Effect.map(({ reg, app, config, messages }) =>
-      mkYalttToolConfiguration(config)({
+    Effect.map(({ reg, app, config, messages, request }) =>
+      mkYalttToolConfiguration(
+        config,
+        request.request
+      )({
         app,
         registration: reg,
         claims: default_claims,
@@ -165,19 +173,21 @@ registrationRouter.get(
   `/registrations/:registrationId/canvas_configuration`,
   pipe(
     Effect.succeed({}),
+    Effect.bind("request", () => ExpressRequestService),
     Effect.bind("regId", () => registrationIdParam),
     Effect.bind("config", () => getConfig),
     Effect.bind("reg", ({ regId }) => getRegistrationForId(regId)),
     Effect.bind("app", ({ reg }) => getAppForId(reg.app_id)),
     Effect.let(
       "placements",
-      ({ reg, app, config }): ReadonlyArray<CanvasPlacement> => [
+      ({ reg, app, config, request }): ReadonlyArray<CanvasPlacement> => [
         {
           placement: "course_navigation",
           message_type: "LtiResourceLinkRequest",
-          target_link_uri: mkYalttUrl(config)(
-            `/api/registrations/${reg.id}/resource_link`
-          ),
+          target_link_uri: mkYalttUrl(
+            config,
+            request.request
+          )(`/api/registrations/${reg.id}/resource_link`),
         },
       ]
     ),
@@ -250,6 +260,7 @@ registrationRouter.post(
     pipe(
       authedRequest,
       Effect.bindTo("user"),
+      Effect.bind("request", () => ExpressRequestService),
       Effect.bind("config", () => getConfig),
       Effect.bind("body", () =>
         parseBody(
@@ -281,41 +292,51 @@ registrationRouter.post(
           body.scopes
         )
       ),
-      Effect.bind("installRequest", ({ body, app, config, registration }) => {
-        const url = new URL(body.registrationEndpoint);
-        // todo: this shouldn't be here, remove it once Canvas supports it in the header
-        if (body.registrationToken) {
-          url.searchParams.append("registration_token", body.registrationToken);
+      Effect.bind(
+        "installRequest",
+        ({ body, app, config, registration, request }) => {
+          const url = new URL(body.registrationEndpoint);
+          // todo: this shouldn't be here, remove it once Canvas supports it in the header
+          if (body.registrationToken) {
+            url.searchParams.append(
+              "registration_token",
+              body.registrationToken
+            );
+          }
+          const toolConfiguration = mkYalttToolConfiguration(
+            config,
+            request.request
+          )({
+            app,
+            registration,
+            customParameters: {},
+            messages: body.messages.map((m) => ({
+              ...m,
+              target_link_uri: `http://${
+                config.primaryHostname
+              }/api/registrations/${registration.id}/launch${
+                m.placements ? `?placement=${m.placements.join(",")}` : ""
+              }`,
+            })),
+            scopes: registration.scopes,
+            claims: registration.claims,
+          });
+          console.log("##Sending tool configuration:");
+          console.log(JSON.stringify(toolConfiguration, null, 2));
+
+          return Fetch.post(
+            url.toString(),
+            toolConfiguration,
+            body.registrationToken
+              ? {
+                  headers: {
+                    Authorization: `Bearer ${body.registrationToken}`,
+                  },
+                }
+              : {}
+          );
         }
-        const toolConfiguration = mkYalttToolConfiguration(config)({
-          app,
-          registration,
-          customParameters: {},
-          messages: body.messages.map((m) => ({
-            ...m,
-            target_link_uri: `http://${
-              config.primaryHostname
-            }/api/registrations/${registration.id}/launch${
-              m.placements ? `?placement=${m.placements.join(",")}` : ""
-            }`,
-          })),
-          scopes: registration.scopes,
-          claims: registration.claims,
-        });
-        console.log("##Sending tool configuration:");
-        console.log(JSON.stringify(toolConfiguration, null, 2));
-        return Fetch.post(
-          url.toString(),
-          toolConfiguration,
-          body.registrationToken
-            ? {
-                headers: {
-                  Authorization: `Bearer ${body.registrationToken}`,
-                },
-              }
-            : {}
-        );
-      }),
+      ),
       Effect.bind("install", ({ installRequest }) =>
         schemaParse(CreatedToolConfiguration)(installRequest)
       ),

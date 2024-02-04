@@ -2,16 +2,31 @@ import { App, Registration, YalttClaim } from "@yaltt/model";
 import { LtiMessage, ToolConfiguration } from "lti-model";
 import { pipe, Effect, Option, Either } from "effect";
 import { getConfig, YalttConfig } from "../../config/ConfigService";
+import {
+  ExpressRequest,
+  ExpressRequestService,
+} from "../../express/RequestService";
 
 // export const pathForMessageType = () =>
 
+/**
+ *
+ * @param param0
+ * @param contextRequest The contextual request to use for the hostname
+ * @returns
+ */
 export const mkYalttUrl =
-  ({ ssl, primaryHostname }: YalttConfig) =>
-  (rest: string) =>
-    `http${ssl ? "s" : ""}://${primaryHostname}${rest}`;
+  ({ ssl, primaryHostname }: YalttConfig, contextRequest?: ExpressRequest) =>
+  (rest: string) => {
+    const host =
+      typeof contextRequest !== "undefined"
+        ? contextRequest.get("host")
+        : primaryHostname;
+    return `http${ssl ? "s" : ""}://${host}${rest}`;
+  };
 
 export const mkYalttToolConfiguration =
-  (config: YalttConfig) =>
+  (config: YalttConfig, contextualRequest?: ExpressRequest) =>
   (options: {
     app: App;
     registration: { id: number };
@@ -20,7 +35,7 @@ export const mkYalttToolConfiguration =
     messages: ReadonlyArray<LtiMessage>;
     scopes: ReadonlyArray<string>;
   }): ToolConfiguration => {
-    const mkUrl = mkYalttUrl(config);
+    const mkUrl = mkYalttUrl(config, contextualRequest);
     const mkRegUrl = (rest: string) =>
       mkUrl(`/api/registrations/${options.registration.id}${rest}`);
     const mkAppUrl = (rest: string) =>

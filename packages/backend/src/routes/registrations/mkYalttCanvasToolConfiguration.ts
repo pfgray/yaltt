@@ -4,11 +4,12 @@ import { pipe, Effect, Option, Either } from "effect";
 import { getConfig, YalttConfig } from "../../config/ConfigService";
 import { CanvasPlacement, CanvasToolConfiguration } from "canvas-lti-model";
 import { mkYalttUrl } from "./mkYalttToolConfiguration";
+import { ExpressRequest } from "../../express/RequestService";
 
 // export const pathForMessageType = () =>
 
 export const mkYalttCanvasToolConfiguration =
-  (config: YalttConfig) =>
+  (config: YalttConfig, contextualRequest?: ExpressRequest) =>
   (
     app: App,
     registration: { id: number },
@@ -16,7 +17,7 @@ export const mkYalttCanvasToolConfiguration =
     customParameters: Record<string, string>,
     placements: ReadonlyArray<CanvasPlacement>
   ): CanvasToolConfiguration => {
-    const mkUrl = mkYalttUrl(config);
+    const mkUrl = mkYalttUrl(config, contextualRequest);
     const mkRegUrl = (rest: string) =>
       mkUrl(`/api/registrations/${registration.id}${rest}`);
     return {
