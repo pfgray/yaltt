@@ -98,6 +98,7 @@ app.get("/api/status", (req, res) => {
   res.json({
     status: "ok",
     NODE_ENV: process.env.NODE_ENV,
+    YALTT_HOST: process.env.YALTT_HOST,
   });
 });
 
