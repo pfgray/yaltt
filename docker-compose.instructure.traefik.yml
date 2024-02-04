@@ -3,10 +3,10 @@ services:
   backend:
     labels:
       - traefik.enable=true
-    networks:
-      default:
-        aliases:
-          - yaltt-backend
+    # networks:
+    #   default:
+    #     aliases:
+    #       - yaltt-backend
     environment:
       - YALTT_HOST=yaltt.inst.test
 
@@ -18,11 +18,11 @@ services:
       default:
         aliases:
           - yaltt.inst.test
-  db:
-    networks:
-      default:
-        aliases:
-          - yaltt-db
+  # db:
+  #   networks:
+  #     default:
+  #       aliases:
+  #         - yaltt-db
 
 networks:
   default:

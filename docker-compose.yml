@@ -6,8 +6,6 @@ services:
       - "6379"
   db:
     build: ./docker/db
-    ports:
-      - "5432:5432"
     environment:
       - POSTGRES_USER=yaltt
       - POSTGRES_PASSWORD=password

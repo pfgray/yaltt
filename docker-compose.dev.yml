@@ -1,5 +1,6 @@
 version: "3.9"
 services:
+
   backend:
     build:
       dockerfile: ./docker/pnpm-dev/Dockerfile
@@ -47,14 +48,8 @@ services:
       - ./scripts/start-frontend.sh
     working_dir: /app
 
-  redis:
-    image: redis:7.2.1
-    expose:
-      - "6379"
   db:
     build: ./docker/db
-    ports:
-      - "5432:5432"
     environment:
       - POSTGRES_USER=yaltt
       - POSTGRES_PASSWORD=password

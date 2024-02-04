@@ -10,7 +10,7 @@ export default defineConfig({
     strictPort: true,
     proxy: {
       "/api": {
-        target: "http://yaltt-backend:3000/",
+        target: "http://backend:3000/",
         changeOrigin: true,
         // rewrite: (path) => path.replace(/^\/api/, ""),
       },

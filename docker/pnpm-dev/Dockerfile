@@ -10,7 +10,7 @@ RUN pnpm install --frozen-lockfile
 
 FROM deps AS frontend
 RUN pnpm build @yaltt/frontend
-EXPOSE 5173
+EXPOSE 80
 CMD [ "pnpm", "dev" ]
 
 FROM deps AS backend
