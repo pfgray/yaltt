@@ -193,7 +193,13 @@ registrationRouter.get(
     ),
     Effect.map(({ reg, app, config, placements, request }) => {
       return successResponse(
-        mkYalttCanvasToolConfiguration(config, request.request)(app, reg, [], {}, placements)
+        mkYalttCanvasToolConfiguration(config, request.request)(
+          app,
+          reg,
+          [],
+          {},
+          placements
+        )
       );
     }),
     effRequestHandler
@@ -279,9 +285,6 @@ registrationRouter.post(
       Effect.filterOrFail(
         ({ app, user }) => app.user_id === user.id,
         () => unauthorizedError("This app doesn't belong to you")
-      ),
-      Effect.map(
-        tap((body) => "creating registration: " + JSON.stringify(body, null, 2))
       ),
       Effect.bind("registration", ({ app, body }) =>
         createRegistrationForAppId(
