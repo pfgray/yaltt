@@ -70,12 +70,10 @@ export const DeepLinkingForm = (props: DeepLinkingFormProps) => {
       url: "",
       title: "",
       text: "",
-    },
+    } as ContentItem,
   ]);
   return (
     <div className="prose flex flex-col gap-4">
-      <h1 className="text-lg">Deep Linking</h1>
-      <pre>{JSON.stringify(props, null, 2)}</pre>
       {/* <pre>{JSON.stringify(contentItems)}</pre> */}
       {contentItems.map((contentItem, i) => {
         return (

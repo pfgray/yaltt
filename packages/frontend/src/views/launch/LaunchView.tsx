@@ -11,6 +11,7 @@ import { DeepLinkingForm } from "./DeepLinkingForm";
 import { TokenFetcher } from "./TokenFetcher";
 import { Launch } from "./Launch";
 import { RawLaunch } from "./RawLaunch";
+import { DeepLinkingView } from "./DeepLinkingView";
 
 const fetchLaunch = (launchId: number) =>
   getDecode(Launch)(`/api/launch/${launchId}`);
@@ -34,22 +35,7 @@ export const LaunchView = () => {
           {(launch) => (
             <div className="p-4">
               <div className="flex flex-col gap-2">
-                {pipe(
-                  extractDeepLinkingSettingsClaim(launch.id_token),
-                  Option.bindTo("dl"),
-                  Option.bind("deploymentId", () =>
-                    extractDeploymentIdClaim(launch.id_token)
-                  ),
-                  Option.map(({ dl, deploymentId }) => (
-                    <DeepLinkingForm
-                      deepLinkingSettings={dl}
-                      registrationId={launch.registration_id}
-                      deploymentId={deploymentId}
-                      appId={launch.appId}
-                    />
-                  )),
-                  Option.getOrNull
-                )}
+                <DeepLinkingView launch={launch} />
                 <RawLaunch launch={launch} />
                 <TokenFetcher launch={launch} />
               </div>
