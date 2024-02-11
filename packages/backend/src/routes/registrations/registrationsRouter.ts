@@ -427,7 +427,11 @@ registrationRouter.get(
   "/apps/:appId/registrations/:registrationId/token",
   pipe(
     registrationAndAppParams,
-    Effect.flatMap(({ registration }) => fetchToken(registration)),
+    Effect.bind("scopesRaw", () => parseQuery(S.struct({ scope: S.string }))),
+    Effect.let("scopes", ({ scopesRaw }) => scopesRaw.scope.split(",")),
+    Effect.flatMap(({ registration, scopes }) =>
+      fetchToken(registration, scopes)
+    ),
     Effect.mapError((e) => e),
     Effect.map(successResponse),
     effRequestHandler

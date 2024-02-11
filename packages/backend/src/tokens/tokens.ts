@@ -14,6 +14,7 @@ import { signJwt } from "../crypto/KeyService";
  */
 export const fetchToken = (
   registration: RegistrationRow,
+  scopes: ReadonlyArray<string>,
   deployment_id?: string
 ) =>
   pipe(
@@ -31,8 +32,8 @@ export const fetchToken = (
         {
           expiresIn: "1h",
           audience: registration.platform_configuration.token_endpoint,
-          issuer: registration.client_id || "",
-          subject: registration.client_id || "",
+          issuer: Option.getOrUndefined(registration.client_id),
+          subject: Option.getOrUndefined(registration.client_id),
           keyid: key.id.toString(),
           jwtid: crypto.randomBytes(16).toString("hex"),
         }
@@ -49,10 +50,12 @@ export const fetchToken = (
           "urn:ietf:params:oauth:client-assertion-type:jwt-bearer",
         client_assertion: token,
         grant_type: "client_credentials",
-        scope: registration.scopes.join(" "),
-        ...(registration.client_id
-          ? { client_id: registration.client_id }
-          : {}),
+        scope: scopes.join(" "),
+        ...pipe(
+          registration.client_id,
+          Option.map((client_id) => ({ client_id })),
+          Option.getOrElse(() => ({}))
+        ),
       };
       return Fetch.post(
         `${

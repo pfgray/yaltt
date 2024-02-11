@@ -122,7 +122,7 @@ export const DeepLinkingForm = (props: DeepLinkingFormProps) => {
             );
           }}
         >
-          Send Content Items
+          Return Content Item
         </button>
       </div>
     </div>
@@ -149,6 +149,7 @@ const ContentItemForm = (props: ContentItemFormProps) => {
     };
   return (
     <div className="flex flex-col gap-4 w-full">
+      <h4>Content Item to Return</h4>
       <label className="form-control w-full max-w-xs">
         <div className="label">
           <span className="label-text">Content Item Type</span>

@@ -9,7 +9,7 @@ const RegistrationType = S.union(S.literal("manual"), S.literal("dynamic"));
 
 export const RegistrationRow = S.struct({
   id: S.number,
-  client_id: S.nullable(S.string),
+  client_id: S.optionFromNullable(S.string),
   type: RegistrationType,
   created: S.ValidDateFromSelf,
   app_id: S.number,
@@ -17,7 +17,7 @@ export const RegistrationRow = S.struct({
   scopes: S.array(S.string),
   custom_parameters: S.record(S.string, S.string),
   platform_configuration: PlatformConfiguration,
-  registration_config_url: S.nullable(S.string),
+  registration_config_url: S.optionFromNullable(S.string),
 });
 
 export interface RegistrationRow extends S.To<typeof RegistrationRow> {}

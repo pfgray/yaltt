@@ -1,5 +1,5 @@
 import * as crypto from "crypto";
-import { Effect, pipe } from "effect";
+import { Effect, Option, pipe } from "effect";
 
 import { signJwt } from "../../crypto/KeyService";
 import { getKeyForRegistrationId } from "../../model/entities/keys";
@@ -18,8 +18,8 @@ export const signJwtPayloadForRegistration =
         return signJwt(payload, key.private_key, {
           expiresIn: "1h",
           audience: registration.platform_configuration.issuer,
-          issuer: registration.client_id || "",
-          subject: registration.client_id || "",
+          issuer: Option.getOrUndefined(registration.client_id),
+          subject: Option.getOrUndefined(registration.client_id),
           keyid: key.id.toString(),
           jwtid: crypto.randomBytes(16).toString("hex"),
         });

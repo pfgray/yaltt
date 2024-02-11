@@ -8,7 +8,7 @@ const AppRow = S.struct({
   user_id: S.number,
   created: S.ValidDateFromSelf,
   modified: S.ValidDateFromSelf,
-  icon_url: S.union(S.string, S.null),
+  icon_url: S.optionFromNullable(S.string),
 });
 
 export const getAppForId = (appId: number) =>

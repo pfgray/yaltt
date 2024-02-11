@@ -4,7 +4,7 @@ import { RequestError, RequestService } from "../../lib/api/request";
 import { provideRequestService } from "../../lib/api/requestServiceImpl";
 import { fetchToken } from "../../lib/token/fetchToken";
 import { match } from "@yaltt/model";
-import { Collapse } from "react-daisyui";
+import { Checkbox, Collapse, Form } from "react-daisyui";
 import { useRemoteState } from "../../lib/remote/useRemoteState";
 import { Launch } from "./Launch";
 import {
@@ -18,25 +18,58 @@ export type TokenFetcherProps = {
   launch: Launch;
 };
 
+type TokenFetcherState = {
+  scopes: Array<string>;
+};
+
 export const TokenFetcher = (props: TokenFetcherProps) => {
   const { launch } = props;
 
   const token = useRemoteState(fetchToken);
 
+  const scopesSupported =
+    props.launch.registration.platform_configuration.scopes_supported;
+
+  const [selectedScopes, setSelectedScopes] = useState(scopesSupported);
+
+  const toggleScope = (scope: string) => {
+    if (selectedScopes.includes(scope)) {
+      setSelectedScopes(selectedScopes.filter((s) => s !== scope));
+    } else {
+      setSelectedScopes([...selectedScopes, scope]);
+    }
+  };
+
   return (
     <LaunchCollapsible title="API Tokens">
       <div className="flex flex-col">
+        <Form className="shadow bg-base-200 rounded-lg p-4">
+          {scopesSupported.map((scope, i) => (
+            <Form.Label
+              title={scope}
+              className={(i === 0 ? "" : "border-t-2 ") + "border-neutral"}
+            >
+              <Checkbox
+                checked={selectedScopes.includes(scope)}
+                onChange={() => {
+                  toggleScope(scope);
+                }}
+              />
+            </Form.Label>
+          ))}
+        </Form>
         <button
-          className="btn btn-neutral flex-1"
+          className="btn btn-neutral"
           disabled={token.data.tag === "loading"}
-          onClick={() => token.fetch(launch.appId, launch.registration_id)}
+          onClick={() =>
+            token.fetch(launch.app.id, launch.registration_id, selectedScopes)
+          }
         >
           {token.data.tag === "loading" ? (
             <span className="loading loading-dots loading-xs"></span>
           ) : null}
           Fetch API Token
         </button>
-
         {pipe(
           token.data,
           match({

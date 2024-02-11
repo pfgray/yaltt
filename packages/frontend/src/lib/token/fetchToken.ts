@@ -1,7 +1,11 @@
 import { getDecode } from "../api/request";
 import * as S from "@effect/schema/Schema";
 
-export const fetchToken = (appId: number, registrationId: number) =>
+export const fetchToken = (
+  appId: number,
+  registrationId: number,
+  selectedScopes: readonly string[]
+) =>
   getDecode(
     S.struct({
       access_token: S.string,
@@ -9,4 +13,8 @@ export const fetchToken = (appId: number, registrationId: number) =>
       expires_in: S.number,
       scope: S.string,
     })
-  )(`/api/apps/${appId}/registrations/${registrationId}/token`);
+  )(
+    `/api/apps/${appId}/registrations/${registrationId}/token?scope=${selectedScopes.join(
+      ","
+    )}`
+  );
