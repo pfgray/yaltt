@@ -23,7 +23,7 @@ import {
   getAppsForUser,
 } from "../../model/entities/apps";
 import { parseParams } from "../../express/parseParams";
-import { App, stringToInteger } from "@yaltt/model";
+import { App, Registration, stringToInteger } from "@yaltt/model";
 import { getRegistrationsForAppId } from "../../model/entities/registrations";
 import { getIconForApp } from "./appIcon";
 
@@ -75,7 +75,18 @@ appRouter.get(
         ...app,
         registrations,
       })),
-      Effect.map(schemaResponse(200, App))
+      Effect.map(
+        schemaResponse(
+          200,
+          App.pipe(
+            S.extend(
+              S.struct({
+                registrations: S.array(Registration),
+              })
+            )
+          )
+        )
+      )
     )
   )
 );
