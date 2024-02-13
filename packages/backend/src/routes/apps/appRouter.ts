@@ -8,6 +8,7 @@ import * as S from "@effect/schema/Schema";
 import { requireAuth } from "../../auth/auth";
 import {
   effRequestHandler,
+  schemaResponse,
   successResponse,
 } from "../../express/effRequestHandler";
 
@@ -22,7 +23,7 @@ import {
   getAppsForUser,
 } from "../../model/entities/apps";
 import { parseParams } from "../../express/parseParams";
-import { stringToInteger } from "@yaltt/model";
+import { App, Registration, stringToInteger } from "@yaltt/model";
 import { getRegistrationsForAppId } from "../../model/entities/registrations";
 import { getIconForApp } from "./appIcon";
 
@@ -56,7 +57,7 @@ appRouter.get(
     pipe(
       authedRequest,
       Effect.flatMap(getAppsForUser),
-      Effect.map(successResponse)
+      Effect.map(schemaResponse(200, S.array(App)))
     )
   )
 );
@@ -74,7 +75,18 @@ appRouter.get(
         ...app,
         registrations,
       })),
-      Effect.map(successResponse)
+      Effect.map(
+        schemaResponse(
+          200,
+          App.pipe(
+            S.extend(
+              S.struct({
+                registrations: S.array(Registration),
+              })
+            )
+          )
+        )
+      )
     )
   )
 );
@@ -122,7 +134,7 @@ appRouter.post(
         console.log("Got err:", err);
         return err;
       }),
-      Effect.map(successResponse)
+      Effect.map(schemaResponse(200, App))
     )
   )
 );
