@@ -11,6 +11,7 @@ RUN pnpm install --frozen-lockfile
 FROM deps AS web
 RUN pnpm build @yaltt/frontend
 RUN pnpm build @yaltt/backend
+RUN pnpm build @yaltt/docs
 WORKDIR /app
 EXPOSE 3000
 

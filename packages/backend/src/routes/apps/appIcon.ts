@@ -28,7 +28,7 @@ export const getGradientForString = (str: string) => {
   return Gradients[Math.abs(hashed) % Gradients.length];
 };
 
-export const getIconForApp = (app: App) => {
+export const getIconForApp = (app: { name: string }) => {
   const gradient = getGradientForString(app.name);
   const newAngle = (gradient.angle + 270) % 360;
   return `
@@ -39,7 +39,16 @@ export const getIconForApp = (app: App) => {
   </linearGradient>
   <g>
     <rect x="0" width="100" height="100" rx="25" fill="url(#grad)"/>
-    <text x="50%" y="50%" text-anchor="middle" dy=".3em" fill="rgb(31, 41, 55)" font-family="Arial, Helvetica, sans-serif" font-size="3em">${app.name[0].toUpperCase()}</text>
+    <text 
+      x="50%"
+      y="52%"
+      text-anchor="middle"
+      dy=".3em"
+      fill="rgb(31, 41, 55)"
+      font-family="Arial, Helvetica, sans-serif"
+      font-size="4em"
+      font-weight="bold"
+    >${app.name[0].toUpperCase()}</text>
   </g>
 </svg>
 

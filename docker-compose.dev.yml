@@ -14,6 +14,7 @@ services:
       - REDIS_HOST=redis
       - ADMIN_USER=admin
       - ADMIN_PASSWORD=password
+      - DOCS_ROOT=/app/packages/docs/build
     volumes:
       - ./:/app
       - /app/node_modules

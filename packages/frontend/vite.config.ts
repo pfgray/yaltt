@@ -14,6 +14,14 @@ export default defineConfig({
         changeOrigin: false,
         // rewrite: (path) => path.replace(/^\/api/, ""),
       },
+      "/favicon.svg": {
+        target: "http://backend:3000/",
+        changeOrigin: false,
+      },
+      "/docs": {
+        target: "http://backend:3000/",
+        changeOrigin: false,
+      },
     },
     host: true,
   },

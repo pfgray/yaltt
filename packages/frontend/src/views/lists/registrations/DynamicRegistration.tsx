@@ -267,7 +267,7 @@ export const DynamicRegistration = () => {
                                     initial: () => "Install",
                                     loading: () => "Installing...",
                                     loaded: () => "Installed",
-                                    failed: () => "Failed (Try Again)",
+                                    failed: (err) => "Failed (Try Again)",
                                   })
                                 )}
                               </button>
