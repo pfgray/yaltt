@@ -14,6 +14,11 @@ import { addOrUpdateUserWithLocalPassword } from "./model/users";
 import { appRouter } from "./routes/apps/appRouter";
 import { launchRouter } from "./routes/registrations/launchRouter";
 import { registrationRouter } from "./routes/registrations/registrationsRouter";
+import {
+  effRequestHandler,
+  successResponse,
+} from "./express/effRequestHandler";
+import { getIconForApp } from "./routes/apps/appIcon";
 
 const app = express.default();
 const port = 3000;
@@ -101,6 +106,24 @@ app.get("/api/status", (req, res) => {
     YALTT_HOST: process.env.YALTT_HOST,
   });
 });
+
+app.get(
+  "/favicon.svg",
+  pipe(
+    successResponse(
+      getIconForApp({ name: "Yaltt" }),
+      { "Content-Type": "image/svg+xml" },
+      true
+    ),
+    Effect.succeed,
+    effRequestHandler
+  )
+);
+
+if (process.env.DOCS_ROOT) {
+  console.log(`Using DOCS_ROOT: ${process.env.DOCS_ROOT}`);
+  app.use("/docs", express.static(process.env.DOCS_ROOT));
+}
 
 if (process.env.STATIC_ROOT) {
   console.log(`Using STATIC_ROOT: ${process.env.STATIC_ROOT}`);

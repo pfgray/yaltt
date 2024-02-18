@@ -11,7 +11,8 @@
     "packages/model",
     "packages/lti-model",
     "packages/lti-schema",
-    "packages/canvas-lti-model"
+    "packages/canvas-lti-model",
+    "packages/docs"
   ],
   "engines": {
     "node": ">=10",

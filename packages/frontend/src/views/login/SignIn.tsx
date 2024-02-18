@@ -99,7 +99,7 @@ export default function SignIn() {
       >
         <form onSubmit={handleSubmit}>
           <div className="container mx-auto flex flex-col items-center">
-            <h1 className="text-3xl font-bold underline mb-4 text-white">
+            <h1 className="text-3xl font-bold underline mb-2 text-white">
               yaltt
             </h1>
             <input
@@ -132,20 +132,21 @@ export default function SignIn() {
                 ReadonlyArray.containsWith(Equivalence.string)("google")
               ),
               Option.match({
-                onNone: () => (
-                  <></>
-                ),
+                onNone: () => <></>,
                 onSome: () => (
                   <a
                     type="button"
                     href="/api/login/google"
-                    className="btn btn-wide bg-zinc-950/70 border-0 text-white"
+                    className="btn btn-wide bg-zinc-950/70 border-0 text-white mb-2"
                   >
                     <GoogleIcon /> Sign in with Google
                   </a>
                 ),
               })
             )}
+            <a className="text-1xl mb-2 text-white link" href="/docs">
+              docs/user guide
+            </a>
           </div>
         </form>
       </div>

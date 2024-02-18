@@ -8,3 +8,4 @@ dist
 .gbt.log
 docker-compose.prod.yml
 .env
+.docusaurus
