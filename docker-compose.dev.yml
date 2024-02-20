@@ -28,6 +28,8 @@ services:
       - bash
       - ./scripts/start-backend.sh
     working_dir: /app
+    depends_on:
+      - db
 
   frontend:
     build:
