@@ -2,18 +2,18 @@ import { Effect, Context } from "effect";
 import * as jsonwebtoken from "jsonwebtoken";
 
 export interface KeyError {
-  tag: "key_error";
+  _tag: "key_error";
   error?: unknown;
 }
 
-export interface KeyService {
+export type KeyServiceInterface = {
   generateKeyPair: () => Effect.Effect<
-    never,
-    KeyError,
     {
       publicKey: Buffer;
       privateKey: Buffer;
-    }
+    },
+    KeyError,
+    never
   >;
   sign: (
     input: unknown,
@@ -26,10 +26,13 @@ export interface KeyService {
   ) => string | jsonwebtoken.JwtPayload;
   exportPublickKeyJWK: (
     b: Buffer
-  ) => Effect.Effect<never, KeyError, Record<string, unknown>>;
-}
+  ) => Effect.Effect<Record<string, unknown>, KeyError, never>;
+};
 
-export const KeyService = Context.Tag<KeyService>();
+export class KeyService extends Context.Tag("KeyService")<
+  KeyService,
+  KeyServiceInterface
+>() {}
 
 export const generateKeyPair = KeyService.pipe(
   Effect.flatMap(({ generateKeyPair }) => generateKeyPair())

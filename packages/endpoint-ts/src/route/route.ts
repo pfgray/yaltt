@@ -23,7 +23,7 @@ export type Route<
   R extends Array<string>,
   RPs extends Partial<Record<RouteParamsFromRoute<R>, RouteCodec<any>>>
 > = {
-  tag: "RouteDefinition";
+  _tag: "RouteDefinition";
   routeSegments: R;
   routeParamCodecs: RPs;
 };
@@ -41,7 +41,7 @@ export type RouteParameters<RPs extends Record<string, RouteCodec<any>>> = {
 
 // eslint-disable-next-line @typescript-eslint/ban-types
 export const RootPath: Route<[], {}> = {
-  tag: "RouteDefinition",
+  _tag: "RouteDefinition",
   routeSegments: [],
   routeParamCodecs: {},
 };
@@ -53,11 +53,11 @@ type SlashlessNonparameter<S> = S extends `:${string}`
   : S;
 
 export type OptionalQueryParamCodec<T> = {
-  tag: "optional";
+  _tag: "optional";
   codec: RouteCodec<T>;
 };
 export type RequiredQueryParamCodec<T> = {
-  tag: "required";
+  _tag: "required";
   codec: RouteCodec<T>;
 };
 

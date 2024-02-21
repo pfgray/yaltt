@@ -57,6 +57,7 @@ appRouter.get(
     pipe(
       authedRequest,
       Effect.flatMap(getAppsForUser),
+      (a) => a,
       Effect.map(schemaResponse(200, S.array(App)))
     )
   )

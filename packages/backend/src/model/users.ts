@@ -50,7 +50,10 @@ export const getAllUsers = () =>
         id: result.id,
         created: result.created,
         role: result.role,
-        login: { tag: "password_login" as const, username: result.pl_username },
+        login: {
+          _tag: "password_login" as const,
+          username: result.pl_username,
+        },
       }))
     )
   );
@@ -72,7 +75,9 @@ export const getUserById = (id: number) =>
 export const getUserWithLoginById = (id: number) =>
   pipe(
     getPasswordLoginUserById(id),
+    (a) => a,
     toOption,
+    (a) => a,
     Effect.flatMap(
       Option.match({
         onNone: () => getGoogleLoginUserById(id),
@@ -105,7 +110,7 @@ export const getPasswordLoginUserById = (id: number) =>
       id: result.id,
       created: result.created,
       role: result.role,
-      login: { tag: "password_login" as const, username: result.pl_username },
+      login: { _tag: "password_login" as const, username: result.pl_username },
     }))
   );
 

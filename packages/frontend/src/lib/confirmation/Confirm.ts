@@ -15,7 +15,7 @@ export const confirmWithLoading = <E>(options: {
   description: string;
   onSubmit: () => Effect.Effect<never, E, void>;
 }) =>
-  Effect.async<never, E, void>((resume) => {
+  Effect.async<void, E, never>((resume) => {
     // confirm_modal_root
     const confirmModalRootEl = document.getElementById("confirmation_modal");
     const submitBtn = document.getElementById("confirmation_modal_confirm");

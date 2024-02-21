@@ -4,7 +4,7 @@ import { Either } from "effect";
 export interface ValidationError {}
 
 export interface FormField<T, A> {
-  tag: "string" | "password" | "textarea";
+  _tag: "string" | "password" | "textarea";
   initialValue: T;
   label: string;
   validate: (t: T) => Either.Either<ValidationError, A>;
@@ -14,7 +14,7 @@ export const string = (
   label: string,
   initialValue?: string
 ): FormField<string, string> => ({
-  tag: "string",
+  _tag: "string",
   initialValue: initialValue || "",
   label,
   validate: Either.right,
@@ -24,7 +24,7 @@ export const password = (
   label: string,
   initialValue?: string
 ): FormField<string, string> => ({
-  tag: "password",
+  _tag: "password",
   label,
   initialValue: initialValue || "",
   validate: Either.right,
@@ -34,7 +34,7 @@ export const textarea = (
   label: string,
   initialValue: string
 ): FormField<string, string> => ({
-  tag: "textarea",
+  _tag: "textarea",
   label,
   initialValue: initialValue,
   validate: Either.right,
@@ -44,7 +44,7 @@ export const checkbox = (
   label: string,
   initialValue: boolean
 ): FormField<boolean, boolean> => ({
-  tag: "textarea",
+  _tag: "textarea",
   label,
   initialValue: initialValue,
   validate: Either.right,
@@ -54,7 +54,7 @@ export const json = (
   label: string,
   initialValue?: string
 ): FormField<string, {}> => ({
-  tag: "textarea",
+  _tag: "textarea",
   label,
   initialValue: initialValue || "",
   validate: (v) => Either.right(JSON.parse(v)), // todo: actually validate

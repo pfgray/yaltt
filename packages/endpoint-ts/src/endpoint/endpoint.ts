@@ -1,59 +1,53 @@
 import * as S from "@effect/schema/Schema";
-import { Route, RouteCodec, RouteParamsFromRoute } from "../route/route";
+import { Route, RouteParametersForRoute } from "../route/route";
 
 export type Endpoint<
-  R extends Array<string>,
-  RPs extends Partial<Record<RouteParamsFromRoute<R>, RouteCodec<any>>>,
+  R extends Route<any, any>,
   M extends "get" | "post" | "put" | "delete" | "patch" | "head" | "options",
   Body extends S.Schema<any, any, never>,
   Resp extends S.Schema<any, any, never>
 > = {
-  route: Route<R, RPs>;
+  route: R;
   method: M;
   body?: Body;
   response: Resp;
 };
 
-export type BodyFromEndpoint<E extends Endpoint<any, any, any, any, any>> =
-  E extends Endpoint<any, any, any, S.Schema<infer B, any, never>, any>
-    ? B
+export type BodyFromEndpoint<E extends Endpoint<any, any, any, any>> =
+  E extends Endpoint<any, any, S.Schema<infer B, any, never>, any> ? B : never;
+
+export type ResponseFromEndpoint<E extends Endpoint<any, any, any, any>> =
+  E extends Endpoint<any, any, any, S.Schema<infer B, any, never>> ? B : never;
+
+export type RouteFromEndpoint<E extends Endpoint<any, any, any, any>> =
+  E extends Endpoint<infer R, any, any, any> ? R : never;
+
+export type RouteParametersForEndpoint<E extends Endpoint<any, any, any, any>> =
+  E extends Endpoint<infer R, any, any, any>
+    ? RouteParametersForRoute<R>
     : never;
-
-export type ResponseFromEndpoint<E extends Endpoint<any, any, any, any, any>> =
-  E extends Endpoint<any, any, any, any, S.Schema<infer B, any, never>>
-    ? B
-    : never;
-
-export type RouteFromEndpoint<E extends Endpoint<any, any, any, any, any>> =
-  E extends Endpoint<infer R, any, any, any, any> ? R : never;
-
-export type RouteParamsFromEndpoint<
-  E extends Endpoint<any, any, any, any, any>
-> = e extends Endpoint<infer R, infer RPs, any, any, any> ? RPs : never;
 
 export function makeEndpoint<
-  R extends Array<string>,
-  RPs extends Partial<Record<RouteParamsFromRoute<R>, RouteCodec<any>>>,
+  R extends Route<any, any>,
   M extends "get" | "post" | "put" | "delete" | "patch" | "head" | "options",
   Body extends S.Schema<any, any, never>,
   Resp extends S.Schema<any, any, never>
 >(params: {
-  route: Route<R, RPs>;
+  route: R;
   method: M;
   body: Body;
   response: Resp;
-}): Endpoint<R, RPs, M, Body, Resp> {
+}): Endpoint<R, M, Body, Resp> {
   return params;
 }
 
 export function getEndpoint<
-  R extends Array<string>,
-  RPs extends Partial<Record<RouteParamsFromRoute<R>, RouteCodec<any>>>,
+  R extends Route<any, any>,
   Resp extends S.Schema<any, any, never>
 >(
-  route: Route<R, RPs>,
+  route: R,
   response: Resp
-): Endpoint<R, RPs, "get", S.Schema<unknown, any, never>, Resp> {
+): Endpoint<R, "get", S.Schema<unknown, any, never>, Resp> {
   return {
     route,
     method: "get",
@@ -62,15 +56,10 @@ export function getEndpoint<
 }
 
 export function postEndpoint<
-  R extends Array<string>,
-  RPs extends Partial<Record<RouteParamsFromRoute<R>, RouteCodec<any>>>,
+  R extends Route<any, any>,
   Body extends S.Schema<any, any, never>,
   Resp extends S.Schema<any, any, never>
->(
-  route: Route<R, RPs>,
-  body: Body,
-  response: Resp
-): Endpoint<R, RPs, "post", Body, Resp> {
+>(route: R, body: Body, response: Resp): Endpoint<R, "post", Body, Resp> {
   return {
     route,
     method: "post",

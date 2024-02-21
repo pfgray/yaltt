@@ -5,17 +5,17 @@ import { provideRequestService } from "../../lib/api/requestServiceImpl";
 
 export type RemoteState<E, A> =
   | {
-      tag: "initial";
+      _tag: "initial";
     }
   | {
-      tag: "loading";
+      _tag: "loading";
     }
   | {
-      tag: "error";
+      _tag: "error";
       error: E;
     }
   | {
-      tag: "loaded";
+      _tag: "loaded";
       value: A;
     };
 
@@ -38,11 +38,11 @@ export const useRemoteState = <
   const [data, setData] = useState<
     RemoteState<RequestError, EffectData<ReturnType<F>>>
   >({
-    tag: "initial" as const,
+    _tag: "initial" as const,
   });
   const fetch = (...params: Parameters<F>) => {
     setData({
-      tag: "loading",
+      _tag: "loading",
     });
     pipe(
       eff(...params),
@@ -54,13 +54,13 @@ export const useRemoteState = <
         Either.match({
           onRight: (value) => {
             setData({
-              tag: "loaded",
+              _tag: "loaded",
               value,
             });
           },
           onLeft: (error) => {
             setData({
-              tag: "error",
+              _tag: "error",
               error,
             });
           },
@@ -68,9 +68,9 @@ export const useRemoteState = <
       )
       .catch((e) => {
         setData({
-          tag: "error",
+          _tag: "error",
           error: {
-            tag: "req_client_error",
+            _tag: "req_client_error",
             status: 100,
             body: {},
           },

@@ -68,13 +68,12 @@ export const renderManagedForm = <
                 (): ValidationError => ({ message: `cant find key: ${key}` })
               ),
               Either.flatMap((a) => a),
-              Either.mapRight((v) => [key, v] as const)
+              Either.map((v) => [key, v] as const)
             )
           ),
           Either.all,
-          (a) => a,
-          Either.mapRight(toObj),
-          Either.mapRight((values) => {
+          Either.map(toObj),
+          Either.map((values) => {
             Eff.runCallback(form.onSubmit(values as any));
           })
         );
@@ -83,7 +82,7 @@ export const renderManagedForm = <
       {pipe(
         fieldsHm,
         HashMap.map((value, key) => {
-          if (value.tag === "string") {
+          if (value._tag === "string") {
             return (
               <div className="form-control w-full" key={key}>
                 <input
@@ -100,7 +99,7 @@ export const renderManagedForm = <
                 />
               </div>
             );
-          } else if (value.tag === "password") {
+          } else if (value._tag === "password") {
             return (
               <div className="form-control w-full" key={key}>
                 <input
@@ -118,7 +117,7 @@ export const renderManagedForm = <
                 />
               </div>
             );
-          } else if (value.tag === "textarea") {
+          } else if (value._tag === "textarea") {
             return (
               <textarea
                 name={key}

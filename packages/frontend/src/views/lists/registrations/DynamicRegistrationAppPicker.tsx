@@ -4,7 +4,7 @@ import * as S from "@effect/schema/Schema";
 import { WithAuth } from "../../../lib/auth/WithAuth";
 import { WithRequest } from "../../../lib/api/WithRequest";
 import { Effect, Either, pipe } from "effect";
-import { formatErrors } from "@effect/schema/TreeFormatter";
+import { formatError } from "@effect/schema/TreeFormatter";
 import { fetchApps, newAppForm } from "../apps/Apps";
 import { getGradientForString } from "../../../lib/ui/gradients";
 import { format } from "timeago.js";
@@ -119,7 +119,7 @@ export const DynamicRegistrationAppPicker = () => {
               return (
                 <div>
                   error
-                  <pre>{formatErrors(err.errors)}</pre>{" "}
+                  <pre>{formatError(err)}</pre>{" "}
                 </div>
               );
             },

@@ -7,8 +7,8 @@ import { ExpressRequestService } from "../express/RequestService";
 import { tap } from "../util/tap";
 import { getAppsForUser } from "../model/entities/apps";
 import { getPasswordLoginUserById, getUserWithLoginById } from "../model/users";
-import { PgService } from "../db/PgService";
-import { DecodeError, NoRecordFound, PgError, pool } from "../db/db";
+import { QueryService } from "../db/QueryService";
+import { DecodeQueryError, NoRecordFound, PgError, pool } from "../db/db";
 import { mkTransactionalPgService } from "../db/TransactionalPgService";
 const passport = (passportBase as any).default as typeof passportBase;
 
@@ -42,11 +42,9 @@ passport.serializeUser(function (user, cb) {
 passport.deserializeUser<number>(function (id, cb) {
   process.nextTick(function () {
     const pgService = mkTransactionalPgService(pool);
-    Effect.runCallback(
-      pipe(
-        getUserWithLoginById(id),
-        Effect.provideService(PgService, pgService.service)
-      ),
+    Effect.runPromiseExit(
+      pipe(getUserWithLoginById(id), pgService.provide)
+    ).then(
       Exit.match({
         onFailure: (cause) => {
           console.error("Couldn't deserialize user: ", cause);
@@ -75,17 +73,17 @@ export const requireAuth = (
 };
 
 interface LoginError {
-  tag: "login_error";
+  _tag: "login_error";
   cause: unknown;
 }
 export const login = (user: User) =>
   ExpressRequestService.pipe(
     tap(() => "logging in"),
     Effect.flatMap(({ request }) =>
-      Effect.async<never, LoginError, {}>((resume) => {
+      Effect.async<{}, LoginError, never>((resume) => {
         request.login(user, function (err) {
           if (err) {
-            resume(Effect.fail({ tag: "login_error", cause: err }));
+            resume(Effect.fail({ _tag: "login_error", cause: err }));
           } else {
             resume(Effect.succeed({}));
           }

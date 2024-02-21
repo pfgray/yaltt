@@ -1,3 +1,4 @@
+import * as S from "@effect/schema/Schema";
 import * as passport from "passport";
 import * as LocalStrategy from "passport-local";
 import { validatePassword } from "../../crypto/hash";
@@ -7,21 +8,17 @@ import {
 } from "../../express/effRequestHandler";
 import { parseBody } from "../../express/parseBody";
 import {
-  getLoginByUsername,
   addUserWithLocalPassword,
+  getLoginByUsername,
   getUserById,
 } from "../../model/users";
-import * as S from "@effect/schema/Schema";
 
-import { pipe, Effect, Option, Either } from "effect";
-import { login } from "../auth";
-import {
-  unauthenticatedError,
-  UnauthenticatedError,
-} from "../authedRequestHandler";
+import { Effect, pipe } from "effect";
+import { QueryService } from "../../db/QueryService";
 import { mkTransactionalPgService } from "../../db/TransactionalPgService";
 import { pool } from "../../db/db";
-import { PgService } from "../../db/PgService";
+import { login } from "../auth";
+import { unauthenticatedError } from "../authedRequestHandler";
 
 /* Configure password authentication strategy.
  *
@@ -39,15 +36,15 @@ import { PgService } from "../../db/PgService";
     const pgService = mkTransactionalPgService(pool);
     const eff = pipe(
       getLoginByUsername(username),
-      Effect.bindTo('login'),
-      Effect.tap(({login}) =>
+      Effect.bindTo("login"),
+      Effect.tap(({ login }) =>
         validatePassword(password, login.salt, login.hashed_password)
       ),
-      Effect.bind('user', ({login}) => getUserById(login.id)),
-      Effect.provideService(PgService, pgService.service)
+      Effect.bind("user", ({ login }) => getUserById(login.id)),
+      pgService.provide
     );
 
-    Effect.runCallback(eff, (status) => {
+    Effect.runPromiseExit(eff).then((status) => {
       if (status._tag === "Failure") {
         console.log("Failed to login user ", username, status.cause);
         cb(status.cause);
@@ -55,7 +52,7 @@ import { PgService } from "../../db/PgService";
         cb(null, {
           id: status.value.user.id,
           role: status.value.user.role,
-          login: { tag: "password_login", username },
+          login: { _tag: "password_login", username },
         });
       }
     });

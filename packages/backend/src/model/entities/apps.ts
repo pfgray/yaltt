@@ -1,9 +1,9 @@
-import { User } from "@yaltt/model";
+import { AppId, User } from "@yaltt/model";
 import * as S from "@effect/schema/Schema";
 import { query, query1 } from "../../db/db";
 
 const AppRow = S.struct({
-  id: S.number,
+  id: AppId,
   name: S.string,
   user_id: S.number,
   created: S.ValidDateFromSelf,

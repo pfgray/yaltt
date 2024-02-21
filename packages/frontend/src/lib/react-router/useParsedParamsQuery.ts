@@ -1,14 +1,11 @@
-import React from "react";
 import * as S from "@effect/schema/Schema";
-import { useQuery } from "./useQuery";
-import { useParams } from "react-router-dom";
-import { useParsedParams } from "./useSchemaParams";
-import { useParsedQuery } from "./useParsedQuery";
 import { Either, pipe } from "effect";
+import { useParsedQuery } from "./useParsedQuery";
+import { useParsedParams } from "./useSchemaParams";
 
 export function useParsedParamsQuery<P, Q>(
-  paramsSchema: S.Schema<any, P>,
-  querySchema: S.Schema<any, Q>
+  paramsSchema: S.Schema<P, any>,
+  querySchema: S.Schema<Q, any>
 ) {
   const parsedQuery = useParsedQuery(querySchema);
   const parsedParams = useParsedParams(paramsSchema);
@@ -18,7 +15,7 @@ export function useParsedParamsQuery<P, Q>(
     Either.flatMap((params) =>
       pipe(
         parsedQuery,
-        Either.mapRight((query) => ({ query, params }))
+        Either.map((query) => ({ query, params }))
       )
     )
   );

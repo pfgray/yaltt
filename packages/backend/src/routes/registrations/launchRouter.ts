@@ -14,6 +14,7 @@ import {
 import { App, Registration, parseJwt, stringToInteger } from "@yaltt/model";
 import {
   parseBodyOrParams,
+  parseJwtError,
   parseParams,
   parseParamsError,
   parseQuery,
@@ -156,6 +157,8 @@ const LaunchIdToken = UserIdentityClaim.pipe(
   S.extend(TargetLinkUriClaim)
 );
 
+export interface LaunchIdToken extends S.Schema.To<typeof LaunchIdToken> {}
+
 const parseIdToken = pipe(
   parseBodyOrParams(
     S.struct({
@@ -166,18 +169,13 @@ const parseIdToken = pipe(
   Effect.flatMap((s) =>
     pipe(
       parseJwt(s.id_token),
-      Effect.mapError(() =>
-        parseParamsError(
-          { id_token: s },
-          PR.parseError(ReadonlyArray.make(PR.type(AST.stringKeyword, s)))
-        )
-      )
+      Effect.mapError((err) => parseJwtError(s.id_token))
     )
   ),
   Effect.map((rawIdToken) => ({ rawIdToken })),
   Effect.bind("parsedIdToken", ({ rawIdToken }) =>
     pipe(
-      S.parse(LaunchIdToken)(rawIdToken.payload, {
+      S.decode<LaunchIdToken, any, never>(LaunchIdToken)(rawIdToken.payload, {
         onExcessProperty: "ignore",
       }),
       Effect.mapError((error) => parseParamsError(rawIdToken.payload, error))

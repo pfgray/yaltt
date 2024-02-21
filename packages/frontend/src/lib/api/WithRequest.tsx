@@ -1,16 +1,15 @@
-import * as Eff from "@effect/io/Effect";
-import { formatErrors } from "@effect/schema/TreeFormatter";
+import { formatError } from "@effect/schema/TreeFormatter";
 import { match } from "@yaltt/model";
-import { Either, Option, pipe } from "effect";
+import { Effect, Either, Option, pipe } from "effect";
 import * as React from "react";
 import { RequestError, RequestService } from "./request";
 import { provideRequestService } from "./requestServiceImpl";
 
 type WithRequestProps<A> = {
-  eff: Eff.Effect<RequestService, RequestError, A>;
+  eff: Effect.Effect<A, RequestError, RequestService>;
   children: (
     a: A,
-    reloadData: Eff.Effect<never, RequestError, A>
+    reloadData: Effect.Effect<A, RequestError, never>
   ) => React.ReactNode;
 };
 
@@ -18,16 +17,20 @@ export const WithRequest = <A,>(props: WithRequestProps<A>): JSX.Element => {
   const [value, setValue] = React.useState<
     Option.Option<Either.Either<RequestError, A>>
   >(Option.none);
+  props.eff;
+  provideRequestService<A, RequestError, RequestService>(props.eff);
+  provideRequestService(props.eff);
 
   const effect = pipe(
     provideRequestService(props.eff),
-    Eff.tap((a) =>
-      Eff.sync(() => {
+    (a) => a,
+    Effect.tap((a) =>
+      Effect.sync(() => {
         setValue(Option.some(Either.right(a)));
       })
     ),
-    Eff.onError((err) =>
-      Eff.sync(() => {
+    Effect.onError((err) =>
+      Effect.sync(() => {
         console.log("Error", err);
         if (err._tag === "Fail") {
           setValue(Option.some(Either.left(err.error)));
@@ -37,7 +40,7 @@ export const WithRequest = <A,>(props: WithRequestProps<A>): JSX.Element => {
   );
 
   React.useEffect(() => {
-    Eff.runCallback(effect);
+    Effect.runCallback(effect);
   }, []);
 
   return pipe(
@@ -62,7 +65,7 @@ export const WithRequest = <A,>(props: WithRequestProps<A>): JSX.Element => {
           ),
           decode_error: (err) => (
             <div>
-              <pre>{formatErrors(err.errors.errors)}</pre>
+              <pre>{formatError(err.errors)}</pre>
             </div>
           ),
         }),

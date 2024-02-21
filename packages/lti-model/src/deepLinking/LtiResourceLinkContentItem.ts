@@ -39,7 +39,7 @@ export const LtiResourceLinkContentItem = S.struct({
       label: S.optional(S.string),
       scoreMaximum: S.number,
       resourceId: S.optional(S.string),
-      tag: S.optional(S.string),
+      _tag: S.optional(S.string),
       gradesReleased: S.optional(S.boolean),
     })
   ),

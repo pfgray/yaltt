@@ -13,7 +13,7 @@ import {
 } from "../../../lib/api/request";
 import { Effect, Either, ReadonlyArray, pipe, Option } from "effect";
 import { LtiMessage, PlatformConfiguration } from "lti-schema";
-import { formatErrors } from "@effect/schema/TreeFormatter";
+import { formatError } from "@effect/schema/TreeFormatter";
 import {
   CheckCircleIcon,
   ChevronDownIcon,
@@ -23,7 +23,7 @@ import { provideRequestService } from "../../../lib/api/requestServiceImpl";
 import { AppWithRegistrations, fetchApp } from "../apps/AppDetails";
 import { create } from "zustand";
 import { ADT } from "ts-adt";
-import { TagADT, match } from "@yaltt/model";
+import { AppId, TagADT, match } from "@yaltt/model";
 import { useParsedParamsQuery } from "../../../lib/react-router/useParsedParamsQuery";
 
 type SelectedScopeState = {
@@ -53,45 +53,45 @@ type Request<E, A> = TagADT<{
 type InstallingState = {
   install: Request<ClientError | ServerError, unknown>;
   installTool: <R, A>(
-    eff: Effect.Effect<R, ClientError | ServerError, A>
-  ) => Effect.Effect<R, ClientError | ServerError, A>;
-  setInstalling: () => Effect.Effect<never, never, void>;
+    eff: Effect.Effect<A, ClientError | ServerError, R>
+  ) => Effect.Effect<A, ClientError | ServerError, R>;
+  setInstalling: () => Effect.Effect<void, never, never>;
   setInstallFailed: (
     err: ClientError | ServerError
-  ) => Effect.Effect<never, never, void>;
-  setInstallSucceeded: () => Effect.Effect<never, never, void>;
+  ) => Effect.Effect<void, never, never>;
+  setInstallSucceeded: () => Effect.Effect<void, never, never>;
 };
 
 const useInstallingState = create<InstallingState>()((set) => ({
-  install: { tag: "initial" },
+  install: { _tag: "initial" },
   installTool: (eff) =>
     pipe(
-      Effect.sync(() => set((state) => ({ install: { tag: "loading" } }))),
+      Effect.sync(() => set((state) => ({ install: { _tag: "loading" } }))),
       Effect.flatMap(() => eff),
       Effect.tap(() =>
         Effect.sync(() =>
-          set((state) => ({ install: { tag: "loaded", data: {} } }))
+          set((state) => ({ install: { _tag: "loaded", data: {} } }))
         )
       ),
       Effect.tapError((err) =>
         Effect.sync(() =>
           set((state) => ({
-            install: { tag: "failed", error: err },
+            install: { _tag: "failed", error: err },
           }))
         )
       )
     ),
   setInstalling: () =>
-    Effect.sync(() => set((state) => ({ install: { tag: "loading" } }))),
+    Effect.sync(() => set((state) => ({ install: { _tag: "loading" } }))),
   setInstallFailed: (err: ClientError | ServerError) =>
     Effect.sync(() =>
       set((state) => ({
-        install: { tag: "failed", error: err },
+        install: { _tag: "failed", error: err },
       }))
     ),
   setInstallSucceeded: () =>
     Effect.sync(() =>
-      set((state) => ({ install: { tag: "loaded", data: {} } }))
+      set((state) => ({ install: { _tag: "loaded", data: {} } }))
     ),
 }));
 
@@ -140,7 +140,7 @@ const installToolReq = (
 export const DynamicRegistration = () => {
   const parsedParamsQuery = useParsedParamsQuery(
     S.struct({
-      appId: S.numberFromString(S.string),
+      appId: S.compose(S.NumberFromString, AppId),
     }),
     S.struct({
       openid_configuration: S.string,
@@ -165,7 +165,7 @@ export const DynamicRegistration = () => {
               >
                 {({ openidConfig, app }) =>
                   pipe(
-                    S.parseEither(PlatformConfiguration)(openidConfig, {
+                    S.decodeEither(PlatformConfiguration)(openidConfig, {
                       onExcessProperty: "ignore",
                     }),
                     Either.match({
@@ -177,7 +177,7 @@ export const DynamicRegistration = () => {
                             <h3>Raw Response Body</h3>
                             <pre>{JSON.stringify(openidConfig, null, 2)}</pre>
                             <h3>Parse Error:</h3>
-                            <pre>{formatErrors(errors.errors)}</pre>
+                            <pre>{formatError(errors)}</pre>
                           </article>
                         </div>
                       ),
@@ -280,7 +280,7 @@ export const DynamicRegistration = () => {
                                 loaded: () => <></>,
                                 failed: ({ error }) => (
                                   <div className="w-full flex justify-end flex-row">
-                                    {error.tag === "req_client_error"
+                                    {error._tag === "req_client_error"
                                       ? "Client"
                                       : "Server"}{" "}
                                     Error, status code: {error.status}
@@ -307,7 +307,7 @@ export const DynamicRegistration = () => {
             onLeft: (err) => (
               <div>
                 error
-                <pre>{formatErrors(err.errors)}</pre>{" "}
+                <pre>{formatError(err)}</pre>{" "}
               </div>
             ),
           })

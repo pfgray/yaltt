@@ -1,5 +1,6 @@
 export * from "./user/User";
 export * from "./app/App";
+export * from "./lib/decode";
 export * from "./matchers/match";
 export * from "./registration/Registration";
 export * from "./schemas/stringInteger";

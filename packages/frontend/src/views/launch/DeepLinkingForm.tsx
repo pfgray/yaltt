@@ -13,7 +13,7 @@ import React from "react";
 import { makeMatchers } from "ts-adt/MakeADT";
 import { provideRequestService } from "../../lib/api/requestServiceImpl";
 import { isContentItemType, match } from "@yaltt/model";
-import { formatErrors } from "@effect/schema/TreeFormatter";
+import { formatError } from "@effect/schema/TreeFormatter";
 
 const sendContentItems = (
   contentItems: ContentItem[],
@@ -27,7 +27,7 @@ const sendContentItems = (
       `/api/apps/${appId}/registrations/${registrationId}/signDeepLinkingContentItems`,
       {
         body: { contentItems, deploymentId },
-        tag: "json_post_data",
+        _tag: "json_post_data",
       }
     ),
     Effect.tap(({ signedJwt }) =>
@@ -111,7 +111,7 @@ export const DeepLinkingForm = (props: DeepLinkingFormProps) => {
                   decode_error: (err) => {
                     console.error(
                       "error decoding response:",
-                      formatErrors(err.errors.errors)
+                      formatError(err.errors)
                     );
                   },
                   req_client_error: (err) => console.log(err),

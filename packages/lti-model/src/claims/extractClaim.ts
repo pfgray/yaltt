@@ -5,6 +5,6 @@ export const extractClaim =
   <T extends S.Schema<any, any>, Key extends string>(schema: T, key: Key) =>
   (obj: unknown): Option.Option<S.Schema.To<T>[Key]> =>
     pipe(
-      S.parseOption(schema)(obj, { onExcessProperty: "ignore" }),
+      S.decodeOption(schema)(obj, { onExcessProperty: "ignore" }),
       Option.map((x) => x[key])
     );

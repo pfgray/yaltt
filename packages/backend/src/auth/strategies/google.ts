@@ -1,7 +1,7 @@
 import { Effect, pipe } from "effect";
 import * as passport from "passport";
 import { Strategy as GoogleStrategy } from "passport-google-oauth2";
-import { PgService } from "../../db/PgService";
+import { QueryService } from "../../db/QueryService";
 import { mkTransactionalPgService } from "../../db/TransactionalPgService";
 import { pool } from "../../db/db";
 import { addOrUpdateUserWithGoogleProfile } from "../../model/users";
@@ -38,7 +38,9 @@ if (typeof clientID === "string" && typeof clientSecret === "string") {
       ) {
         const eff = pipe(
           profile,
-          S.parse(GoogleProfile),
+          S.decode<GoogleProfile, any, never>(GoogleProfile, {
+            onExcessProperty: "ignore",
+          }),
           Effect.flatMap((prof) =>
             addOrUpdateUserWithGoogleProfile(prof.id, prof)
           ),
@@ -47,10 +49,10 @@ if (typeof clientID === "string" && typeof clientSecret === "string") {
               done(null, user);
             })
           ),
-          Effect.provideService(PgService, pgService.service)
+          pgService.provide
         );
 
-        Effect.runCallback(eff, (status) => {
+        Effect.runPromiseExit(eff).then((status) => {
           if (status._tag === "Failure") {
             console.log("Failed to login user ", profile, status.cause);
             pgService.rollback();

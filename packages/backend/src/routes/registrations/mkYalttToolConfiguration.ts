@@ -2,10 +2,7 @@ import { App, Registration, YalttClaim } from "@yaltt/model";
 import { LtiMessage, ToolConfiguration } from "lti-model";
 import { pipe, Effect, Option, Either } from "effect";
 import { getConfig, YalttConfig } from "../../config/ConfigService";
-import {
-  ExpressRequest,
-  ExpressRequestService,
-} from "../../express/RequestService";
+import { ExpressRequest } from "../../express/RequestService";
 
 // export const pathForMessageType = () =>
 

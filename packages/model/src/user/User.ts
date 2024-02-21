@@ -1,7 +1,7 @@
 import * as S from "@effect/schema/Schema";
 
 export const PasswordLogin = S.struct({
-  tag: S.literal("password_login"),
+  _tag: S.literal("password_login"),
   username: S.string,
 });
 
@@ -14,7 +14,7 @@ export const passwordUser = (
     id,
     role,
     login: {
-      tag: "password_login",
+      _tag: "password_login",
       username,
     },
   } as const);
@@ -29,7 +29,7 @@ export const GoogleProfile = S.struct({
 export interface GoogleProfile extends S.Schema.To<typeof GoogleProfile> {}
 
 export const GoogleLogin = S.struct({
-  tag: S.literal("google_login"),
+  _tag: S.literal("google_login"),
   googleId: S.string,
   profile: GoogleProfile,
 });
@@ -44,7 +44,7 @@ export const googleUser = (
     id,
     role,
     login: {
-      tag: "google_login",
+      _tag: "google_login",
       googleId,
       profile,
     },

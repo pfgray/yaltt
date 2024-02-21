@@ -1,17 +1,15 @@
 import { pipe } from "effect";
 import { basePath } from "./base";
-import {
-  getEndpoint,
-  makeEndpoint,
-  param,
-  path,
-  postEndpoint,
-} from "endpoint-ts";
+import { getEndpoint, param, path, postEndpoint } from "endpoint-ts";
 import { App, AppId, UncreatedApp } from "../app/App";
+import * as S from "@effect/schema/Schema";
 
 export const appsRoute = pipe(basePath, path("apps"));
 
-export const appRoute = pipe(appsRoute, param("appId", AppId));
+export const appRoute = pipe(
+  appsRoute,
+  param("appId", S.compose(S.NumberFromString, AppId))
+);
 
 export const AppEndpoints = {
   getApp: getEndpoint(appRoute, App),

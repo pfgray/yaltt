@@ -5,7 +5,7 @@ import { ExpressRequestService } from "./RequestService";
 import { ParseError } from "@effect/schema/ParseResult";
 
 export interface ParseBodyError {
-  tag: "parse_body_error";
+  _tag: "parse_body_error";
   body: unknown;
   error: ParseError;
 }
@@ -14,28 +14,28 @@ export const parseBodyError = (
   body: unknown,
   error: ParseError
 ): ParseBodyError => ({
-  tag: "parse_body_error",
+  _tag: "parse_body_error",
   body,
   error,
 });
 
-export const parseBody = <A>(bodySchema: S.Schema<any, A>) =>
+export const parseBody = <A>(bodySchema: S.Schema<A, any>) =>
   ExpressRequestService.pipe(
     Effect.flatMap(({ request }) =>
       pipe(
         request.body,
-        S.parse(bodySchema),
+        S.decode(bodySchema),
         Effect.mapError((error) => parseBodyError(request.body, error))
       )
     )
   );
 
 export const withRequestBody =
-  <A>(bodySchema: S.Schema<A>) =>
+  <A>(bodySchema: S.Schema<A, any>) =>
   (
     handler: (
       body: A
-    ) => Effect.Effect<ExpressRequestService, ParseBodyError, A>
+    ) => Effect.Effect<A, ParseBodyError, ExpressRequestService>
   ) =>
     effRequestHandler(
       pipe(

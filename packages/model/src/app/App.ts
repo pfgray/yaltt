@@ -2,9 +2,9 @@ import * as S from "@effect/schema/Schema";
 
 import type * as B from "effect/Brand";
 
-export type AppId = string & B.Brand<"AppId">;
+export type AppId = number & B.Brand<"AppId">;
 
-export const AppId = S.string.pipe(S.brand("AppId"));
+export const AppId = S.number.pipe(S.brand("AppId"));
 
 export const UncreatedApp = S.struct({
   name: S.string,
