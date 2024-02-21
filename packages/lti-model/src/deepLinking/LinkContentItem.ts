@@ -40,4 +40,4 @@ export const LinkContentItem = S.struct({
   ),
 });
 
-export interface LinkContentItem extends S.To<typeof LinkContentItem> {}
+export interface LinkContentItem extends S.Schema.To<typeof LinkContentItem> {}

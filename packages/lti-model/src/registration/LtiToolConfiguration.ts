@@ -27,4 +27,4 @@ export const LtiToolConfiguration = pipe(
 );
 
 export interface LtiToolConfiguration
-  extends S.To<typeof LtiToolConfiguration> {}
+  extends S.Schema.To<typeof LtiToolConfiguration> {}

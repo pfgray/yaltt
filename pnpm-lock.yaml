@@ -10,24 +10,9 @@ importers:
 
   packages/backend:
     dependencies:
-      '@effect/data':
-        specifier: ^0.17.6
-        version: 0.17.6
-      '@effect/io':
-        specifier: ^0.38.2
-        version: 0.38.2(@effect/data@0.17.6)
-      '@effect/match':
-        specifier: ^0.34.0
-        version: 0.34.0(@effect/data@0.17.6)
       '@effect/schema':
-        specifier: ^0.33.2
-        version: 0.33.2(@effect/data@0.17.6)(@effect/io@0.38.2)
-      '@effect/stm':
-        specifier: ^0.22.0
-        version: 0.22.0(@effect/data@0.17.6)(@effect/io@0.38.2)
-      '@effect/stream':
-        specifier: ^0.34.0
-        version: 0.34.0(@effect/data@0.17.6)(@effect/io@0.38.2)
+        specifier: ^0.62.9
+        version: 0.62.9(effect@2.3.8)(fast-check@3.14.0)
       '@types/connect-pg-simple':
         specifier: ^7.0.0
         version: 7.0.0
@@ -80,8 +65,8 @@ importers:
         specifier: ^2.8.5
         version: 2.8.5
       effect:
-        specifier: 2.0.0-next.29
-        version: 2.0.0-next.29(@effect/data@0.17.6)(@effect/io@0.38.2)(@effect/match@0.34.0)(@effect/stm@0.22.0)(@effect/stream@0.34.0)
+        specifier: ^2.3.8
+        version: 2.3.8
       express:
         specifier: ^4.18.2
         version: 4.18.2
@@ -134,11 +119,11 @@ importers:
   packages/canvas-lti-model:
     dependencies:
       '@effect/schema':
-        specifier: ^0.33.2
-        version: 0.33.2(@effect/data@0.17.6)(@effect/io@0.38.2)
+        specifier: ^0.62.9
+        version: 0.62.9(effect@2.3.8)(fast-check@3.14.0)
       effect:
-        specifier: 2.0.0-next.24
-        version: 2.0.0-next.24(@effect/data@0.17.6)(@effect/io@0.38.2)(@effect/match@0.32.0)(@effect/stm@0.22.0)(@effect/stream@0.34.0)
+        specifier: ^2.3.8
+        version: 2.3.8
       lti-model:
         specifier: 0.0.0
         version: link:../lti-model
@@ -184,26 +169,20 @@ importers:
         specifier: 3.1.0
         version: 3.1.0(react-dom@18.2.0)(react@18.2.0)
 
+  packages/endpoint-ts:
+    dependencies:
+      '@effect/schema':
+        specifier: ^0.62.9
+        version: 0.62.9(effect@2.3.8)(fast-check@3.14.0)
+      effect:
+        specifier: ^2.3.8
+        version: 2.3.8
+
   packages/frontend:
     dependencies:
-      '@effect/data':
-        specifier: ^0.17.6
-        version: 0.17.6
-      '@effect/io':
-        specifier: ^0.38.2
-        version: 0.38.2(@effect/data@0.17.6)
-      '@effect/match':
-        specifier: ^0.34.0
-        version: 0.34.0(@effect/data@0.17.6)
       '@effect/schema':
-        specifier: ^0.33.2
-        version: 0.33.2(@effect/data@0.17.6)(@effect/io@0.38.2)
-      '@effect/stm':
-        specifier: ^0.22.0
-        version: 0.22.0(@effect/data@0.17.6)(@effect/io@0.38.2)
-      '@effect/stream':
-        specifier: ^0.34.0
-        version: 0.34.0(@effect/data@0.17.6)(@effect/io@0.38.2)
+        specifier: ^0.62.9
+        version: 0.62.9(effect@2.3.8)(fast-check@3.14.0)
       '@heroicons/react':
         specifier: ^2.0.18
         version: 2.0.18(react@18.2.0)
@@ -229,11 +208,14 @@ importers:
         specifier: ^10.4.15
         version: 10.4.15(postcss@8.4.29)
       daisyui:
-        specifier: ^3.7.3
-        version: 3.7.3
+        specifier: ^4.4.6
+        version: 4.4.6(postcss@8.4.29)
       effect:
-        specifier: ^2.0.0-next.29
-        version: 2.0.0-next.29(@effect/data@0.17.6)(@effect/io@0.38.2)(@effect/match@0.34.0)(@effect/stm@0.22.0)(@effect/stream@0.34.0)
+        specifier: ^2.3.8
+        version: 2.3.8
+      endpoint-ts:
+        specifier: ^0.0.0
+        version: link:../endpoint-ts
       esbuild:
         specifier: ^0.17.4
         version: 0.17.19
@@ -251,7 +233,7 @@ importers:
         version: 18.2.0
       react-daisyui:
         specifier: ^5.0.0
-        version: 5.0.0(daisyui@3.7.3)(react-dom@18.2.0)(react@18.2.0)(tailwindcss@3.3.3)
+        version: 5.0.0(daisyui@4.4.6)(react-dom@18.2.0)(react@18.2.0)(tailwindcss@3.3.3)
       react-dom:
         specifier: ^18.2.0
         version: 18.2.0(react@18.2.0)
@@ -280,11 +262,11 @@ importers:
   packages/lti-model:
     dependencies:
       '@effect/schema':
-        specifier: ^0.33.2
-        version: 0.33.2(@effect/data@0.17.6)(@effect/io@0.38.2)
+        specifier: ^0.62.9
+        version: 0.62.9(effect@2.3.8)(fast-check@3.14.0)
       effect:
-        specifier: 2.0.0-next.24
-        version: 2.0.0-next.24(@effect/data@0.17.6)(@effect/io@0.38.2)(@effect/match@0.32.0)(@effect/stm@0.22.0)(@effect/stream@0.34.0)
+        specifier: ^2.3.8
+        version: 2.3.8
       node-fetch:
         specifier: ^3.3.2
         version: 3.3.2
@@ -301,27 +283,12 @@ importers:
 
   packages/lti-schema:
     dependencies:
-      '@effect/data':
-        specifier: ^0.17.6
-        version: 0.17.6
-      '@effect/io':
-        specifier: ^0.38.2
-        version: 0.38.2(@effect/data@0.17.6)
-      '@effect/match':
-        specifier: ^0.34.0
-        version: 0.34.0(@effect/data@0.17.6)
       '@effect/schema':
-        specifier: ^0.33.2
-        version: 0.33.2(@effect/data@0.17.6)(@effect/io@0.38.2)
-      '@effect/stm':
-        specifier: ^0.22.0
-        version: 0.22.0(@effect/data@0.17.6)(@effect/io@0.38.2)
-      '@effect/stream':
-        specifier: ^0.34.0
-        version: 0.34.0(@effect/data@0.17.6)(@effect/io@0.38.2)
+        specifier: ^0.62.9
+        version: 0.62.9(effect@2.3.8)(fast-check@3.14.0)
       effect:
-        specifier: 2.0.0-next.29
-        version: 2.0.0-next.29(@effect/data@0.17.6)(@effect/io@0.38.2)(@effect/match@0.34.0)(@effect/stm@0.22.0)(@effect/stream@0.34.0)
+        specifier: ^2.3.8
+        version: 2.3.8
       ts-adt:
         specifier: ^2.1.2
         version: 2.1.2
@@ -335,27 +302,15 @@ importers:
 
   packages/model:
     dependencies:
-      '@effect/data':
-        specifier: ^0.17.6
-        version: 0.17.6
-      '@effect/io':
-        specifier: ^0.38.2
-        version: 0.38.2(@effect/data@0.17.6)
-      '@effect/match':
-        specifier: ^0.34.0
-        version: 0.34.0(@effect/data@0.17.6)
       '@effect/schema':
-        specifier: ^0.33.2
-        version: 0.33.2(@effect/data@0.17.6)(@effect/io@0.38.2)
-      '@effect/stm':
-        specifier: ^0.22.0
-        version: 0.22.0(@effect/data@0.17.6)(@effect/io@0.38.2)
-      '@effect/stream':
-        specifier: ^0.34.0
-        version: 0.34.0(@effect/data@0.17.6)(@effect/io@0.38.2)
+        specifier: ^0.62.9
+        version: 0.62.9(effect@2.3.8)(fast-check@3.14.0)
       effect:
-        specifier: 2.0.0-next.29
-        version: 2.0.0-next.29(@effect/data@0.17.6)(@effect/io@0.38.2)(@effect/match@0.34.0)(@effect/stm@0.22.0)(@effect/stream@0.34.0)
+        specifier: ^2.3.8
+        version: 2.3.8
+      endpoint-ts:
+        specifier: 0.0.0
+        version: link:../endpoint-ts
       lti-model:
         specifier: 0.0.0
         version: link:../lti-model
@@ -2877,75 +2832,24 @@ packages:
       - webpack-cli
     dev: false
 
-  /@effect/data@0.17.6:
-    resolution: {integrity: sha512-/vwz7Jh05eS0qY8kczR/YyJd18d0C+PMtUkAealh4f6gwvhABLGCnktNJTcq/+UHxY0Cbv18r5uaJ4+7PPC+WQ==}
-    dev: false
-
-  /@effect/io@0.38.2(@effect/data@0.17.6):
-    resolution: {integrity: sha512-rnAXFo9BDLbY7DgQE1e8uP/sEniyVCsB7gNs+yXPu0XK9s4kaGinH6XgwYRDBuu7Fu1tQ1yd7JoAdEb7yutNRg==}
-    peerDependencies:
-      '@effect/data': ^0.17.1
-    dependencies:
-      '@effect/data': 0.17.6
-    dev: false
-
-  /@effect/match@0.32.0(@effect/data@0.17.6)(@effect/schema@0.33.2):
-    resolution: {integrity: sha512-04QfnIgCcMnnNbGxTv2xa9/7q1c5kgpsBodqTUZ8eX86A/EdE8Czz+JkVarG00/xE+nYhQLXOXCN9Zj+dtqVkQ==}
-    peerDependencies:
-      '@effect/data': ^0.17.1
-      '@effect/schema': ^0.33.0
-    dependencies:
-      '@effect/data': 0.17.6
-      '@effect/schema': 0.33.2(@effect/data@0.17.6)(@effect/io@0.38.2)
-    dev: false
-
-  /@effect/match@0.34.0(@effect/data@0.17.6):
-    resolution: {integrity: sha512-3fPqDT81rOU+83s84dx7Dh8pMtBq6BE+FGxq5U6FB48IeUdr35jayeuIXe6ZGQC6YorM3GJny6XYO5gOy0AAow==}
-    peerDependencies:
-      '@effect/data': ^0.17.1
-    dependencies:
-      '@effect/data': 0.17.6
-    dev: false
-
-  /@effect/schema@0.33.2(@effect/data@0.17.6)(@effect/io@0.38.2):
-    resolution: {integrity: sha512-GfV4kXAs4tkx09bGD6J4RDqVN+xea4UP0I05r1wloox6j0eYgXYaSKAXAZ7qBKVywkba3cDUDZhc9nplAD8TAA==}
-    peerDependencies:
-      '@effect/data': ^0.17.1
-      '@effect/io': ^0.38.0
-    dependencies:
-      '@effect/data': 0.17.6
-      '@effect/io': 0.38.2(@effect/data@0.17.6)
-      fast-check: 3.12.0
-    dev: false
-
-  /@effect/schema@0.52.0(effect@2.0.0-next.60)(fast-check@3.14.0):
+  /@effect/schema@0.52.0(effect@2.3.2)(fast-check@3.14.0):
     resolution: {integrity: sha512-x6SmSdoL6PeZVAaK895NoRkKF8D/w+XyO8i17cUsQYFJBHNyUTi9Y1H2wrO8TkxhTmC93ejburpM+35/OKCi2Q==}
     peerDependencies:
       effect: 2.0.0-next.59
       fast-check: ^3.13.2
     dependencies:
-      effect: 2.0.0-next.60
+      effect: 2.3.2
       fast-check: 3.14.0
     dev: false
 
-  /@effect/stm@0.22.0(@effect/data@0.17.6)(@effect/io@0.38.2):
-    resolution: {integrity: sha512-K+v05Iveg9h//xZbo/JekZE4mHln8QA7dpfl84L3VKQlUfiAZOiN4ABTyb41Ly+n+YywSSbeTdbOya0ccxx/rQ==}
+  /@effect/schema@0.62.9(effect@2.3.8)(fast-check@3.14.0):
+    resolution: {integrity: sha512-u5LJqk3MClXr8DxiN/AGUBUxVnsl8o6glOTfToFECn3I+slVW/vbzLMRyUqbNNp2uBpdP6UGwmp9VVYxd72bBg==}
     peerDependencies:
-      '@effect/data': ^0.17.1
-      '@effect/io': ^0.38.0
+      effect: ^2.3.8
+      fast-check: ^3.13.2
     dependencies:
-      '@effect/data': 0.17.6
-      '@effect/io': 0.38.2(@effect/data@0.17.6)
-    dev: false
-
-  /@effect/stream@0.34.0(@effect/data@0.17.6)(@effect/io@0.38.2):
-    resolution: {integrity: sha512-8eDDQ0JG+ctsstLH/Qo4ojBkcEIFtqpEsWZS6leAwY9gXVmEG54PMWXZiX6dTchgQXKmSnLkEh36leAq4piawQ==}
-    peerDependencies:
-      '@effect/data': ^0.17.1
-      '@effect/io': ^0.38.0
-    dependencies:
-      '@effect/data': 0.17.6
-      '@effect/io': 0.38.2(@effect/data@0.17.6)
+      effect: 2.3.8
+      fast-check: 3.14.0
     dev: false
 
   /@esbuild/android-arm64@0.17.19:
@@ -5335,17 +5239,21 @@ packages:
   /csstype@3.1.2:
     resolution: {integrity: sha512-I7K1Uu0MBPzaFKg4nI5Q7Vs2t+3gWWW648spaF+Rg7pI9ds18Ugn+lvg4SHczUdKlHI5LWBXyqfS8+DufyBsgQ==}
 
-  /daisyui@3.7.3:
-    resolution: {integrity: sha512-gKlz3RwfaukZxf8nQZsDAZ7quUSi7F8HjGGB34tkHruvfQB9cgVDQsmqUqSQtkAJYvzbrg/3dLUa9+5jF4iC1A==}
+  /culori@3.3.0:
+    resolution: {integrity: sha512-pHJg+jbuFsCjz9iclQBqyL3B2HLCBF71BwVNujUYEvCeQMvV97R59MNK3R2+jgJ3a1fcZgI9B3vYgz8lzr/BFQ==}
+    engines: {node: ^12.20.0 || ^14.13.1 || >=16.0.0}
+    dev: false
+
+  /daisyui@4.4.6(postcss@8.4.29):
+    resolution: {integrity: sha512-Zum9dWsYufduID4IfwI1h/+qQIuoXBpVaG9l/rOlLOVbCmpvE7LQK/GDYE7YOT8NDXHOH+EqMqT8uzGqlbTFig==}
     engines: {node: '>=16.9.0'}
     dependencies:
-      colord: 2.9.3
       css-selector-tokenizer: 0.8.0
-      postcss: 8.4.29
+      culori: 3.3.0
+      picocolors: 1.0.0
       postcss-js: 4.0.1(postcss@8.4.29)
-      tailwindcss: 3.3.3
     transitivePeerDependencies:
-      - ts-node
+      - postcss
     dev: false
 
   /data-uri-to-buffer@4.0.1:
@@ -5626,40 +5534,12 @@ packages:
     resolution: {integrity: sha512-WMwm9LhRUo+WUaRN+vRuETqG89IgZphVSNkdFgeb6sS/E4OrDIN7t48CAewSHXc6C8lefD8KKfr5vY61brQlow==}
     dev: false
 
-  /effect@2.0.0-next.24(@effect/data@0.17.6)(@effect/io@0.38.2)(@effect/match@0.32.0)(@effect/stm@0.22.0)(@effect/stream@0.34.0):
-    resolution: {integrity: sha512-vPGoP5oLrc6TahWNcPWIMPYilVkJpmthv/pBTm+2FvSBYR9AcrzspUbpB2poMDaQ5pcKQTAMSVAmPpfAjssCTg==}
-    peerDependencies:
-      '@effect/data': '>=0.17.1 <0.18.0'
-      '@effect/io': '>=0.38.0 <0.39.0'
-      '@effect/match': '>=0.32.0 <0.33.0'
-      '@effect/stm': '>=0.22.0 <0.23.0'
-      '@effect/stream': '>=0.34.0 <0.35.0'
-    dependencies:
-      '@effect/data': 0.17.6
-      '@effect/io': 0.38.2(@effect/data@0.17.6)
-      '@effect/match': 0.32.0(@effect/data@0.17.6)(@effect/schema@0.33.2)
-      '@effect/stm': 0.22.0(@effect/data@0.17.6)(@effect/io@0.38.2)
-      '@effect/stream': 0.34.0(@effect/data@0.17.6)(@effect/io@0.38.2)
+  /effect@2.3.2:
+    resolution: {integrity: sha512-cEgbb56c9415hiHwX55mG3w8IH147bk1W9i12fEpM+LBCmMISrFoYFXPTxVYA1ezNKJW/6rrBdNTRBM8DVYrBw==}
     dev: false
 
-  /effect@2.0.0-next.29(@effect/data@0.17.6)(@effect/io@0.38.2)(@effect/match@0.34.0)(@effect/stm@0.22.0)(@effect/stream@0.34.0):
-    resolution: {integrity: sha512-CgQRDXcaGVBJUS7816vOwIP9CPRKXYBZMOP4ifJ4UdDLs1t/+EE4FSjiaHHjOCqIU7pRyCi2QZYuDjAT3OgFaw==}
-    peerDependencies:
-      '@effect/data': ^0.17.6
-      '@effect/io': ^0.38.2
-      '@effect/match': ^0.34.0
-      '@effect/stm': ^0.22.0
-      '@effect/stream': ^0.34.0
-    dependencies:
-      '@effect/data': 0.17.6
-      '@effect/io': 0.38.2(@effect/data@0.17.6)
-      '@effect/match': 0.34.0(@effect/data@0.17.6)
-      '@effect/stm': 0.22.0(@effect/data@0.17.6)(@effect/io@0.38.2)
-      '@effect/stream': 0.34.0(@effect/data@0.17.6)(@effect/io@0.38.2)
-    dev: false
-
-  /effect@2.0.0-next.60:
-    resolution: {integrity: sha512-23KhlVACgrg5UPFu9i4szybSU4cCU4T/7CX4pe0jV84QBZX0zm96WzwCtg6dqOnmUzBL7hm6S+iiPW2Rab13Uw==}
+  /effect@2.3.8:
+    resolution: {integrity: sha512-jLPRJp1f85HwIu2eP1BFJGF2La0wS8xfqYNSJsTKDlCemyDSGMbtHvtEGKJCB0TQg+CK+DxJAvWOHloTGqMa9w==}
     dev: false
 
   /electron-to-chromium@1.4.512:
@@ -5974,13 +5854,6 @@ packages:
   /extend@3.0.2:
     resolution: {integrity: sha512-fjquC59cD7CyW6urNXK0FBufkZcoiGG80wTuPujX590cB5Ttln20E2UB4S/WARVqhXffZl2LNgS+gQdPIIim/g==}
 
-  /fast-check@3.12.0:
-    resolution: {integrity: sha512-SqahE9mlL3+lhjJ39joMLwcj6F+24hfZdf/tchlNO8sHcTdrUUdA5P/ZbSFZM9Xpzs36XaneGwE0FWepm/zyOA==}
-    engines: {node: '>=8.0.0'}
-    dependencies:
-      pure-rand: 6.0.2
-    dev: false
-
   /fast-check@3.14.0:
     resolution: {integrity: sha512-9Z0zqASzDNjXBox/ileV/fd+4P+V/f3o4shM6QawvcdLFh8yjPG4h5BrHUZ8yzY6amKGDTAmRMyb/JZqe+dCgw==}
     engines: {node: '>=8.0.0'}
@@ -6253,7 +6126,7 @@ packages:
     resolution: {integrity: sha512-A3Sb88UUoOYjJbPnL1AwvOgSUb5RtlRPdp1Pt2xW2i3D6ssIJu320EAdn1os9D6LFD/dQGMEEwCNe38yBiGlDg==}
     hasBin: true
     dependencies:
-      '@effect/schema': 0.52.0(effect@2.0.0-next.60)(fast-check@3.14.0)
+      '@effect/schema': 0.52.0(effect@2.3.2)(fast-check@3.14.0)
       '@types/chokidar': 2.1.3
       '@types/glob': 7.2.0
       '@types/gradient-string': 1.1.5
@@ -6263,7 +6136,7 @@ packages:
       '@types/react': 17.0.59
       '@types/yargs': 16.0.9
       chokidar: 3.5.3
-      effect: 2.0.0-next.60
+      effect: 2.3.2
       frp-ts: 0.0.1(fp-ts@2.16.1)
       glob: 7.2.3
       gradient-string: 1.2.0
@@ -9451,7 +9324,7 @@ packages:
       strip-json-comments: 2.0.1
     dev: false
 
-  /react-daisyui@5.0.0(daisyui@3.7.3)(react-dom@18.2.0)(react@18.2.0)(tailwindcss@3.3.3):
+  /react-daisyui@5.0.0(daisyui@4.4.6)(react-dom@18.2.0)(react@18.2.0)(tailwindcss@3.3.3):
     resolution: {integrity: sha512-j1cugAxALmIbihycGBh7P9H3UXrfsvqu84qM6O55l7nOKST43IjUkZjmNav/7s0ZaUpa9Y+52mFchUb2zvon1A==}
     peerDependencies:
       daisyui: ^4.4.6
@@ -9459,7 +9332,7 @@ packages:
       react-dom: '>=16'
       tailwindcss: '>=3.2.7'
     dependencies:
-      daisyui: 3.7.3
+      daisyui: 4.4.6(postcss@8.4.29)
       react: 18.2.0
       react-dom: 18.2.0(react@18.2.0)
       tailwindcss: 3.3.3

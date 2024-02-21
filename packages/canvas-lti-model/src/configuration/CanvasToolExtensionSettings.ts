@@ -7,4 +7,4 @@ export const CanvasToolExtensionSettings = S.struct({
 });
 
 export interface CanvasToolExtensionSettings
-  extends S.To<typeof CanvasToolExtensionSettings> {}
+  extends S.Schema.To<typeof CanvasToolExtensionSettings> {}

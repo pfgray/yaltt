@@ -8,4 +8,4 @@ export const HtmlFragmentContentItem = S.struct({
 });
 
 export interface HtmlFragmentContentItem
-  extends S.To<typeof HtmlFragmentContentItem> {}
+  extends S.Schema.To<typeof HtmlFragmentContentItem> {}

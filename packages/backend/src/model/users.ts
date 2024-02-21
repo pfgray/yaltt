@@ -171,7 +171,7 @@ export const addOrUpdateUserWithLocalPassword = (
 };
 
 export const updateLocalPasswordForUser = (
-  user: S.To<typeof UserRow>,
+  user: S.Schema.To<typeof UserRow>,
   username: string,
   pw: string
 ) =>

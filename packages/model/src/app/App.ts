@@ -1,7 +1,12 @@
 import * as S from "@effect/schema/Schema";
 
-export const App = S.struct({
-  id: S.number,
+import type * as B from "effect/Brand";
+
+export type AppId = string & B.Brand<"AppId">;
+
+export const AppId = S.string.pipe(S.brand("AppId"));
+
+export const UncreatedApp = S.struct({
   name: S.string,
   user_id: S.number,
   created: S.Date,
@@ -9,4 +14,8 @@ export const App = S.struct({
   icon_url: S.optionFromNullable(S.string),
 });
 
-export type App = S.To<typeof App>;
+export interface UncreatedApp extends S.Schema.To<typeof UncreatedApp> {}
+
+export const App = UncreatedApp.pipe(S.extend(S.struct({ id: AppId })));
+
+export interface App extends S.Schema.To<typeof App> {}

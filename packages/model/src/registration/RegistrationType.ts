@@ -5,4 +5,4 @@ export const RegistrationType = S.union(
   S.literal("dynamic")
 );
 
-export type RegistrationType = S.To<typeof RegistrationType>;
+export type RegistrationType = S.Schema.To<typeof RegistrationType>;

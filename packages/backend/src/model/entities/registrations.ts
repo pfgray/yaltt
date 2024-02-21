@@ -20,7 +20,7 @@ export const RegistrationRow = S.struct({
   registration_config_url: S.optionFromNullable(S.string),
 });
 
-export interface RegistrationRow extends S.To<typeof RegistrationRow> {}
+export interface RegistrationRow extends S.Schema.To<typeof RegistrationRow> {}
 
 export const getRegistrationForId = (registrationId: number) =>
   query1(RegistrationRow)(
@@ -39,7 +39,7 @@ export const getRegistrationsForAppId = (appId: number) =>
 
 export const createRegistrationForAppId = (
   appId: number,
-  type: S.To<typeof RegistrationType>,
+  type: S.Schema.To<typeof RegistrationType>,
   platformConfiguration: PlatformConfiguration,
   claims: ReadonlyArray<string> = [],
   scopes: ReadonlyArray<string> = [],

@@ -187,7 +187,7 @@ const parseIdToken = pipe(
 
 const savePerson = (
   registrationId: number,
-  idToken: S.To<typeof LaunchIdToken>
+  idToken: S.Schema.To<typeof LaunchIdToken>
 ) => {
   if (typeof idToken.sub !== "undefined") {
     idToken;
@@ -211,7 +211,7 @@ const savePerson = (
 
 const saveContext = (
   registrationId: number,
-  idToken: S.To<typeof LaunchIdToken>
+  idToken: S.Schema.To<typeof LaunchIdToken>
 ) => {
   const context = idToken["https://purl.imsglobal.org/spec/lti/claim/context"];
   if (typeof context !== "undefined") {
@@ -232,7 +232,7 @@ const saveContext = (
 const saveEnrollment = (
   person: Option.Option<number>,
   context: Option.Option<number>,
-  idToken: S.To<typeof LaunchIdToken>
+  idToken: S.Schema.To<typeof LaunchIdToken>
 ) =>
   pipe(
     idToken["https://purl.imsglobal.org/spec/lti/claim/roles"],
@@ -249,7 +249,7 @@ const saveEnrollment = (
 
 const saveLaunch = (
   registrationId: number,
-  idToken: S.To<typeof LaunchIdToken>,
+  idToken: S.Schema.To<typeof LaunchIdToken>,
   rawIdToken: unknown
 ) =>
   pipe(

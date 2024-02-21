@@ -5,7 +5,8 @@ export const LtiSupportedMessage = S.struct({
   placements: S.array(S.string),
 });
 
-export interface LtiSupportedMessage extends S.To<typeof LtiSupportedMessage> {}
+export interface LtiSupportedMessage
+  extends S.Schema.To<typeof LtiSupportedMessage> {}
 
 export const LtiPlatformConfiguration = S.struct({
   product_family_code: S.string,
@@ -15,4 +16,4 @@ export const LtiPlatformConfiguration = S.struct({
 });
 
 export interface LtiPlatformConfiguration
-  extends S.To<typeof LtiPlatformConfiguration> {}
+  extends S.Schema.To<typeof LtiPlatformConfiguration> {}

@@ -23,4 +23,4 @@ export const LtiToolConfiguration = S.struct({
 });
 
 export interface LtiToolConfiguration
-  extends S.To<typeof LtiToolConfiguration> {}
+  extends S.Schema.To<typeof LtiToolConfiguration> {}

@@ -14,4 +14,4 @@ export const Registration = S.struct({
   registration_config_url: S.optionFromNullable(S.string),
 });
 
-export interface Registration extends S.To<typeof Registration> {}
+export interface Registration extends S.Schema.To<typeof Registration> {}

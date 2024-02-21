@@ -23,4 +23,5 @@ export const ImageContentItem = S.struct({
   height: S.optional(S.number),
 });
 
-export interface ImageContentItem extends S.To<typeof ImageContentItem> {}
+export interface ImageContentItem
+  extends S.Schema.To<typeof ImageContentItem> {}

@@ -1,9 +1,12 @@
 {
-  "name": "lti-schema",
+  "name": "endpoint-ts",
   "version": "0.0.0",
+  "description": "",
   "type": "module",
-  "sideEffects": false,
-  "license": "MIT",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "tsc"
+  },
   "files": [
     "package.json",
     "lib"
@@ -16,16 +19,11 @@
       "require": "./dist/index.js"
     }
   },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
   "dependencies": {
     "@effect/schema": "^0.62.9",
-    "effect": "^2.3.8",
-    "ts-adt": "^2.1.2"
-  },
-  "devDependencies": {
-    "esbuild": "^0.17.4",
-    "typescript": "^5.1"
-  },
-  "scripts": {
-    "build": "tsc --build"
+    "effect": "^2.3.8"
   }
 }

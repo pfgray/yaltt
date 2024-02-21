@@ -13,4 +13,4 @@ export const CanvasPlacement = S.struct({
   selection_height: S.optional(S.string),
 });
 
-export interface CanvasPlacement extends S.To<typeof CanvasPlacement> {}
+export interface CanvasPlacement extends S.Schema.To<typeof CanvasPlacement> {}

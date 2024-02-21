@@ -26,7 +26,7 @@ export const GoogleProfile = S.struct({
   picture: S.optional(S.string),
 });
 
-export interface GoogleProfile extends S.To<typeof GoogleProfile> {}
+export interface GoogleProfile extends S.Schema.To<typeof GoogleProfile> {}
 
 export const GoogleLogin = S.struct({
   tag: S.literal("google_login"),
@@ -37,7 +37,7 @@ export const GoogleLogin = S.struct({
 export const googleUser = (
   id: number,
   googleId: string,
-  profile: S.To<typeof GoogleProfile>,
+  profile: S.Schema.To<typeof GoogleProfile>,
   role: "admin" | "user"
 ): User =>
   ({
@@ -58,4 +58,4 @@ export const User = S.struct({
   login: Login,
 });
 
-export type User = S.To<typeof User>;
+export type User = S.Schema.To<typeof User>;

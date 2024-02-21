@@ -16,4 +16,4 @@ export const LtiMessageS = pipe(
   S.extend(LocalizedKey("label"))
 );
 
-export interface LtiMessage extends S.To<typeof LtiMessageS> {}
+export interface LtiMessage extends S.Schema.To<typeof LtiMessageS> {}
