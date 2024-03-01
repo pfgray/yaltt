@@ -108,8 +108,6 @@ export const effRequestHandler: EffRequestHandler =
       provideHttpFetchService,
       (a) => a
     );
-    const wut = Effect.runCallback(requestEffect);
-    const wuta = Effect.runPromiseExit(requestEffect);
 
     Effect.runPromiseExit(requestEffect).then((exit) => {
       if (Exit.isFailure(exit)) {

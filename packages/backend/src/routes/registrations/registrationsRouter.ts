@@ -312,7 +312,9 @@ registrationRouter.post(
           )({
             app,
             registration,
-            customParameters: {},
+            customParameters: {
+              overall: "fooo",
+            },
             messages: body.messages.map((m) => ({
               ...m,
               target_link_uri: `http://${

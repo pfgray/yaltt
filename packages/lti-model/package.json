@@ -23,7 +23,6 @@
     "ts-adt": "^2.1.2"
   },
   "devDependencies": {
-    "esbuild": "^0.17.4",
     "typescript": "^5.1"
   },
   "scripts": {

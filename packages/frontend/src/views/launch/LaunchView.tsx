@@ -19,7 +19,7 @@ const fetchLaunch = (launchId: number) =>
 export const LaunchView = () => {
   const parsedParamsQuery = useParsedParamsQuery(
     S.struct({
-      launchId: S.numberFromString(S.string),
+      launchId: S.NumberFromString,
     }),
     S.struct({
       placement: S.string,

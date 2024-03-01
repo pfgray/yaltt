@@ -3,7 +3,7 @@ services:
 
   backend:
     build:
-      dockerfile: ./docker/pnpm-dev/Dockerfile
+      dockerfile: ./docker/nix/Dockerfile
       target: backend
     environment:
       - PGHOST=db
@@ -24,6 +24,7 @@ services:
       - /app/packages/lti-model/node_modules
       - /app/packages/lti-schema/node_modules
       - /app/packages/model/node_modules
+      - /app/result
     command:
       - bash
       - ./scripts/start-backend.sh
@@ -33,7 +34,7 @@ services:
 
   frontend:
     build:
-      dockerfile: ./docker/pnpm-dev/Dockerfile
+      dockerfile: ./docker/nix/Dockerfile
       target: frontend
     ports:
       - "5173:80"
@@ -46,6 +47,7 @@ services:
       - /app/packages/lti-model/node_modules
       - /app/packages/lti-schema/node_modules
       - /app/packages/model/node_modules
+      - /app/result
     command:
       - bash
       - ./scripts/start-frontend.sh

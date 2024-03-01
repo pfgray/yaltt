@@ -1,7 +1,7 @@
 import * as React from "react";
 import * as F from "../../lib/forms/form";
 
-import * as Eff from "@effect/io/Effect";
+import { Effect } from "effect";
 import { pipe } from "effect";
 import { RequestError, RequestService } from "../../lib/api/request";
 import { WithRequest } from "../../lib/api/WithRequest";
@@ -14,7 +14,7 @@ export type NewEntityFormProps<
   close: () => void;
   entityName: string;
   renderExtra?: () => JSX.Element;
-  afterSubmit?: Eff.Effect<never, unknown, void>;
+  afterSubmit?: Effect.Effect<never, unknown, void>;
   extraUnderHeader?: () => JSX.Element;
 };
 
@@ -26,9 +26,11 @@ export const NewEntityForm = <R extends Record<string, F.FormField<any, any>>>(
       F.mkForm(props.form.fields)((fields) =>
         pipe(
           props.form.onSubmit(fields),
-          Eff.flatMap(() => (props.afterSubmit ? props.afterSubmit : Eff.unit)),
-          Eff.flatMap(() =>
-            Eff.sync(() => {
+          Effect.flatMap(() =>
+            props.afterSubmit ? props.afterSubmit : Effect.unit
+          ),
+          Effect.flatMap(() =>
+            Effect.sync(() => {
               props.close();
             })
           )

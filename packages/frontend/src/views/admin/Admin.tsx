@@ -5,7 +5,6 @@ import {
   post,
   RequestService,
 } from "../../lib/api/request";
-import * as Eff from "@effect/io/Effect";
 import { pipe, Either, Option, ReadonlyArray, Effect } from "effect";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "../../lib/react-router/useQuery";

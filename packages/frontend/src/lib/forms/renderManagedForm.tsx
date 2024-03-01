@@ -1,4 +1,3 @@
-import * as Eff from "@effect/io/Effect";
 import {
   Either,
   HashMap,
@@ -6,6 +5,7 @@ import {
   ReadonlyArray,
   ReadonlyRecord,
   pipe,
+  Effect,
 } from "effect";
 import * as React from "react";
 import { Form, FormField, ValidationError } from "./form";
@@ -74,7 +74,7 @@ export const renderManagedForm = <
           Either.all,
           Either.map(toObj),
           Either.map((values) => {
-            Eff.runCallback(form.onSubmit(values as any));
+            Effect.runCallback(form.onSubmit(values as any));
           })
         );
       }}

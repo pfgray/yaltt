@@ -1,5 +1,4 @@
-import * as Eff from "@effect/io/Effect";
-import { Either } from "effect";
+import { Effect, Either } from "effect";
 
 export interface ValidationError {}
 
@@ -62,7 +61,9 @@ export const json = (
 
 export type Form<K extends string, R extends Record<K, FormField<any, any>>> = {
   fields: R;
-  onSubmit: (fields: ValidatedFields<K, R>) => Eff.Effect<never, unknown, any>;
+  onSubmit: (
+    fields: ValidatedFields<K, R>
+  ) => Effect.Effect<never, unknown, any>;
 };
 
 export type ValidatedField<T> = T extends FormField<any, infer Z> ? Z : never;
@@ -79,7 +80,7 @@ export const mkForm =
   (
     onSubmit: (
       fields: ValidatedFields<KeyOf<keyof R>, R>
-    ) => Eff.Effect<never, unknown, any>
+    ) => Effect.Effect<never, unknown, any>
   ): Form<KeyOf<keyof R>, R> => ({
     fields,
     onSubmit,

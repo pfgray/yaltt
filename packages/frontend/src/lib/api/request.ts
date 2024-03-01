@@ -156,7 +156,7 @@ const decodeRespBody = <A>(schema: S.Schema<A, any>) =>
     (resp: Response): Effect.Effect<A, DecodeError, never> =>
       pipe(
         resp.body,
-        P.decode(schema),
+        S.decode(schema),
         (a) => a,
         Effect.mapError(
           (errors): DecodeError => ({

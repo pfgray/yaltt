@@ -49,7 +49,17 @@
             shellHook = ''
             '';
           };
-          packages = workspaces.packages // workspaces.remotePackages;
+          # packages = workspaces.packages // workspaces.remotePackages;
+          packages.default = pkgs.buildEnv {
+            name = "devenv";
+            paths = with pkgs; [ 
+              nodejs-18_x
+              nodejs.pkgs.pnpm
+              # nodePackages.pnpm
+              gbt.packages.${system}.gbt
+              gnused
+            ];
+          };
         }
     );
 }

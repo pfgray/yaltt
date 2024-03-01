@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { pipe } from "effect";
+import { Either, ReadonlyArray, pipe } from "effect";
 import * as S from "@effect/schema/Schema";
 
 //#region Type definitions
@@ -118,18 +118,25 @@ export const param =
     },
   });
 
-const myPath = pipe(
-  RootPath,
-  path("api"),
-  path("v1"),
-  path("accounts"),
-  param("account_id", S.string)
-);
-
-const foo = getRouteString(myPath);
-
-const accountsRoute = pipe(RootPath, path("api"), path("v1"), path("accounts"));
-
-const accountRoute = pipe(accountsRoute, param("account_id", S.string));
-
-type wut = RouteParametersForRoute<typeof accountRoute>;
+export const buildPath = <
+  R extends Array<string>,
+  RPs extends Record<string, RouteCodec<any>>
+>(
+  route: Route<R, RPs>,
+  routeParams: RouteParameters<RPs>
+) =>
+  pipe(
+    route.routeSegments.map((segment) => {
+      if (segment.startsWith(":")) {
+        const name = segment.slice(1);
+        const schema = route.routeParamCodecs[name];
+        const value = routeParams[name];
+        return S.encodeEither(schema, {})(value);
+      } else {
+        return Either.right(segment);
+      }
+    }),
+    (a) => a,
+    Either.all,
+    Either.map(ReadonlyArray.join("/"))
+  );

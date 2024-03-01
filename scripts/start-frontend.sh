@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
 
-pnpm install --frozen-lockfile
-pnpm build "@yaltt/frontend"
-pnpm run --filter "@yaltt/frontend" start
+gbt build "@yaltt/frontend"
+/app/result/bin/pnpm run --filter "@yaltt/frontend" start

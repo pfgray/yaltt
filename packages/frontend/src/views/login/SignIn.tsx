@@ -5,7 +5,6 @@ import {
   RequestError,
   RequestService,
 } from "../../lib/api/request";
-import * as Eff from "@effect/io/Effect";
 import {
   pipe,
   Either,
@@ -34,13 +33,13 @@ export default function SignIn() {
 
   const effect = pipe(
     provideRequestService(getLoginMechanisms),
-    Eff.tap((a) =>
-      Eff.sync(() => {
+    Effect.tap((a) =>
+      Effect.sync(() => {
         setLoginMechanisms(Option.some(Either.right(a)));
       })
     ),
-    Eff.onError((err) =>
-      Eff.sync(() => {
+    Effect.onError((err) =>
+      Effect.sync(() => {
         console.log("Error", err);
         if (err._tag === "Fail") {
           setLoginMechanisms(Option.some(Either.left(err.error)));
@@ -50,7 +49,7 @@ export default function SignIn() {
   );
 
   React.useEffect(() => {
-    Eff.runCallback(effect);
+    Effect.runCallback(effect);
   }, []);
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
@@ -60,26 +59,23 @@ export default function SignIn() {
       username: data.get("username"),
       password: data.get("password"),
     });
-    Eff.runCallback(
+    Effect.runPromiseExit(
       pipe(
         post("/api/login/password", formBody(data)),
-        Eff.flatMap(() =>
-          Eff.async<never, never, {}>((resume) => {
+        Effect.flatMap(() =>
+          Effect.async<{}, never, never>((resume) => {
             const redirectUrl = query.get("redirectUrl") || "/";
             console.log("REDIRECTING TO:", redirectUrl);
             navigate(redirectUrl, {
               replace: true,
             });
-            resume(Eff.succeed({}));
+            resume(Effect.succeed({}));
           })
         ),
-        Eff.provideService(RequestService, {
+        Effect.provideService(RequestService, {
           config: { baseUrl: import.meta.env.VITE_API_URL },
         })
-      ),
-      (exit) => {
-        console.log("finished?", exit);
-      }
+      )
     );
   };
 
