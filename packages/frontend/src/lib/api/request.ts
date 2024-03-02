@@ -4,6 +4,11 @@ import * as S from "@effect/schema/Schema";
 import * as P from "@effect/schema/Parser";
 import { match } from "@yaltt/model";
 import { flow } from "effect/Function";
+import {
+  FetchException,
+  FetchParseError,
+  FetchParseJsonError,
+} from "../endpoint-ts/fetchFromEndpoint";
 
 export class RequestService extends Context.Tag("Request")<
   RequestService,

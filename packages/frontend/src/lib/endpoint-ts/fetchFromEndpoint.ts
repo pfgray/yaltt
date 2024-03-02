@@ -6,26 +6,20 @@ import {
   RouteParametersForEndpoint,
   buildPath,
   EndpointResponse,
-  EndpointBody,
-  path,
-  RootPath,
-  Response,
-  ResponseTypeFromResponse,
-  param,
 } from "endpoint-ts";
-import { Effect, ReadonlyArray, pipe } from "effect";
-import { RequestService } from "../api/request";
-import { App, AppId, createApp, getApp, getApps, match } from "@yaltt/model";
+import { Effect, pipe } from "effect";
 import * as S from "@effect/schema/Schema";
 import { ParseError } from "@effect/schema/ParseResult";
 
-export type FetchError = {
-  _tag: "fetch_error";
+export type FetchError = FetchException | FetchParseJsonError | FetchParseError;
+
+export type FetchException = {
+  _tag: "fetch_exception";
   reason: unknown;
 };
 
-const fetchError = (reason: unknown): FetchError => ({
-  _tag: "fetch_error",
+const fetchError = (reason: unknown): FetchException => ({
+  _tag: "fetch_exception",
   reason,
 });
 
@@ -47,12 +41,12 @@ const fetchParseJsonError = (
 export type FetchParseError = {
   _tag: "fetch_parse_error";
   original: unknown;
-  reason?: ParseError;
+  reason: ParseError;
 };
 
 const fetchParseError = (
   original: unknown,
-  reason?: ParseError
+  reason: ParseError
 ): FetchParseError => ({
   _tag: "fetch_parse_error",
   original,
@@ -63,8 +57,6 @@ export type FetchFromEndpoint = <
   R extends Route<any, any>,
   RSchema extends S.Schema<any, any, never>,
   Resp extends EndpointResponse<RSchema>,
-  // BSchema extends S.Schema<any, any, never>,
-  // Body extends { _tag: "empty" },
   E extends Endpoint<
     R,
     "get" | "delete" | "options" | "head",
@@ -79,8 +71,8 @@ export type FetchFromEndpoint = <
   routeParams: RouteParametersForEndpoint<E>
 ) => Effect.Effect<
   ResponseFromEndpoint<E>,
-  FetchError | FetchParseError | FetchParseJsonError,
-  RequestService
+  FetchException | FetchParseError | FetchParseJsonError,
+  never
 >;
 
 export const fetchFromEndpoint: FetchFromEndpoint =
@@ -112,8 +104,8 @@ export type FetchBodyFromEndpoint = <
   body: BodyFromEndpoint<E>
 ) => Effect.Effect<
   ResponseFromEndpoint<E>,
-  FetchError | FetchParseError | FetchParseJsonError,
-  RequestService
+  FetchException | FetchParseError | FetchParseJsonError,
+  never
 >;
 
 export const fetchBodyFromEndpoint: FetchBodyFromEndpoint =
@@ -157,7 +149,7 @@ const parseResponseForEndpoint =
         switch (resp._tag) {
           case "json":
             return pipe(
-              Effect.tryPromise(() => JSON.parse(responseBody)),
+              Effect.try(() => JSON.parse(responseBody)),
               Effect.mapError((err) => fetchParseJsonError(responseBody, err)),
               Effect.flatMap((json) =>
                 pipe(
@@ -175,18 +167,3 @@ const parseResponseForEndpoint =
         }
       })
     );
-
-const fetchApps = fetchFromEndpoint(getApps);
-const fetchApp = fetchFromEndpoint(getApp);
-const fetchCreateApp = fetchBodyFromEndpoint(createApp);
-
-pipe(
-  fetchCreateApp({})({}),
-  Effect.map((a) => a)
-);
-
-pipe(
-  fetchApps({}),
-  Effect.flatMap((apps) => ReadonlyArray.head(apps)),
-  Effect.flatMap((app) => fetchApp({ appId: app.id }))
-);

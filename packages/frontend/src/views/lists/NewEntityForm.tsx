@@ -14,7 +14,7 @@ export type NewEntityFormProps<
   close: () => void;
   entityName: string;
   renderExtra?: () => JSX.Element;
-  afterSubmit?: Effect.Effect<never, unknown, void>;
+  afterSubmit?: Effect.Effect<void, unknown, never>;
   extraUnderHeader?: () => JSX.Element;
 };
 

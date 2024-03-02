@@ -5,7 +5,7 @@ import { WithAuth } from "../../../lib/auth/WithAuth";
 import { WithRequest } from "../../../lib/api/WithRequest";
 import { Effect, Either, pipe } from "effect";
 import { formatError } from "@effect/schema/TreeFormatter";
-import { fetchApps, newAppForm } from "../apps/Apps";
+import { newAppForm } from "../apps/Apps";
 import { getGradientForString } from "../../../lib/ui/gradients";
 import { format } from "timeago.js";
 import { Link } from "react-router-dom";

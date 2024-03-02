@@ -1,8 +1,13 @@
 import { Context, Effect, pipe } from "effect";
 
-export interface ConfirmationService {}
-
-export const ConfirmationService = Context.Tag<ConfirmationService>();
+export class ConfirmationService extends Context.Tag("ConfirmationService")<
+  ConfirmationService,
+  {
+    config: {
+      baseUrl: string;
+    };
+  }
+>() {}
 
 /**
  * Opens up a confirmation dialog that succeeds if the user
@@ -13,7 +18,7 @@ export const ConfirmationService = Context.Tag<ConfirmationService>();
 export const confirmWithLoading = <E>(options: {
   title: string;
   description: string;
-  onSubmit: () => Effect.Effect<never, E, void>;
+  onSubmit: () => Effect.Effect<void, E, never>;
 }) =>
   Effect.async<void, E, never>((resume) => {
     // confirm_modal_root
