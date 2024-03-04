@@ -18,5 +18,11 @@
   "engines": {
     "node": ">=10",
     "pnpm": ">=3"
+  },
+  "scripts": {
+    "build": "gbt build"
+  },
+  "dependencies": {
+    "gbt": "0.0.7"
   }
 }

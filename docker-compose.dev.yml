@@ -3,7 +3,7 @@ services:
 
   backend:
     build:
-      dockerfile: ./docker/nix/Dockerfile
+      dockerfile: ./docker/pnpm-dev/Dockerfile
       target: backend
     environment:
       - PGHOST=db
@@ -34,7 +34,7 @@ services:
 
   frontend:
     build:
-      dockerfile: ./docker/nix/Dockerfile
+      dockerfile: ./docker/pnpm-dev/Dockerfile
       target: frontend
     ports:
       - "5173:80"
