@@ -6,7 +6,7 @@ export interface FormField<T, A> {
   _tag: "string" | "password" | "textarea";
   initialValue: T;
   label: string;
-  validate: (t: T) => Either.Either<ValidationError, A>;
+  validate: (t: T) => Either.Either<A, ValidationError>;
 }
 
 export const string = (

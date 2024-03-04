@@ -128,7 +128,7 @@ type EndpointEffect<A> = Effect.Effect<A, EffErrors, EffServices>;
 const endpointHandler: EndpointHandler = (endpoint) => (eff) =>
   pipe(
     eff,
-    Effect.flatMap((respBody): Either.Either<DecodeError, Response> => {
+    Effect.flatMap((respBody): Either.Either<Response, DecodeError> => {
       const responseMeta = endpoint.response;
       if (responseMeta._tag === "json") {
         return pipe(
