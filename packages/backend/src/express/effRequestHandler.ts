@@ -8,7 +8,7 @@ import {
   UnauthenticatedError,
   UnauthorizedError,
 } from "../auth/authedRequestHandler";
-import { match } from "@yaltt/model";
+import { DecodeError, match } from "@yaltt/model";
 import { ParseBodyError } from "./parseBody";
 import {
   ParseJwtError,
@@ -68,29 +68,32 @@ export const redirectResponse = (location: string) =>
     Location: location,
   });
 
+type EffErrors =
+  | PgError
+  | DecodeQueryError
+  | DecodeError
+  | NoRecordFound
+  | HashError
+  | UnauthenticatedError
+  | UnauthorizedError
+  | ParseBodyError
+  | ParseParamsError
+  | ParseQueryError
+  | FetchError
+  | FetchJsonParseError
+  | FetchStatusError
+  | KeyError
+  | ParseJwtError;
+
+type EffServices =
+  | ExpressRequestService
+  | QueryService
+  | KeyService
+  | ConfigService
+  | FetchService;
+
 export type EffRequestHandler = (
-  eff: Effect.Effect<
-    Response,
-    | PgError
-    | DecodeQueryError
-    | NoRecordFound
-    | HashError
-    | UnauthenticatedError
-    | UnauthorizedError
-    | ParseBodyError
-    | ParseParamsError
-    | ParseQueryError
-    | FetchError
-    | FetchJsonParseError
-    | FetchStatusError
-    | KeyError
-    | ParseJwtError,
-    | ExpressRequestService
-    | QueryService
-    | KeyService
-    | ConfigService
-    | FetchService
-  >
+  eff: Effect.Effect<Response, EffErrors, EffServices>
 ) => express.RequestHandler<unknown, unknown, unknown, unknown, {}>;
 
 export const effRequestHandler: EffRequestHandler =
@@ -120,6 +123,12 @@ export const effRequestHandler: EffRequestHandler =
           Cause.match({
             onEmpty: void 0,
             onFail: match({
+              decode_error: (e) => {
+                console.error("Decode Error", e);
+                handleErrorResponse(request, response)(500, {
+                  failure: "An error ocurred.",
+                });
+              },
               decode_query_error: (dqe) => {
                 console.error("Decode Query Error Running: \n", dqe.query);
                 console.error(formatError(dqe.error.error));

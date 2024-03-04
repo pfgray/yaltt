@@ -1,6 +1,6 @@
 import * as express from "express";
 import * as passportBase from "passport";
-import { pipe, Effect, Option, Either } from "effect";
+import { pipe, Effect, Option, Either, ReadonlyArray } from "effect";
 
 import * as multer from "multer";
 import { parseBody, withRequestBody } from "../../express/parseBody";
@@ -23,9 +23,10 @@ import {
   getAppsForUser,
 } from "../../model/entities/apps";
 import { parseParams } from "../../express/parseParams";
-import { App, Registration, stringToInteger } from "@yaltt/model";
+import { App, Registration, getApps, stringToInteger } from "@yaltt/model";
 import { getRegistrationsForAppId } from "../../model/entities/registrations";
 import { getIconForApp } from "./appIcon";
+import { endpointHandler } from "../../express/endpointRequestHandler";
 
 const upload = multer.default();
 export const appRouter = express.Router();
@@ -53,14 +54,14 @@ export const appIdParam = pipe(
 
 appRouter.get(
   "/apps",
-  effRequestHandler(
-    pipe(
-      authedRequest,
-      Effect.flatMap(getAppsForUser),
-      (a) => a,
-      Effect.map(schemaResponse(200, S.array(App)))
-    )
-  )
+  endpointHandler(getApps)(pipe(authedRequest, Effect.flatMap(getAppsForUser)))
+  // effRequestHandler(
+  //   pipe(
+  //     authedRequest,
+  //     Effect.flatMap(getAppsForUser),
+  //     Effect.map(schemaResponse(200, S.array(App)))
+  //   )
+  // )
 );
 
 appRouter.get(
