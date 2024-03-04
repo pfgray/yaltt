@@ -7,8 +7,8 @@ importers:
   packages/backend:
     dependencies:
       '@effect/schema':
-        specifier: ^0.62.9
-        version: 0.62.9(effect@2.3.8)(fast-check@3.14.0)
+        specifier: ^0.63.2
+        version: 0.63.2(effect@2.4.1)(fast-check@3.14.0)
       '@types/connect-pg-simple':
         specifier: ^7.0.0
         version: 7.0.0
@@ -61,8 +61,8 @@ importers:
         specifier: ^2.8.5
         version: 2.8.5
       effect:
-        specifier: ^2.3.8
-        version: 2.3.8
+        specifier: ^2.4.1
+        version: 2.4.1
       endpoint-ts:
         specifier: ^0.0.0
         version: link:../endpoint-ts
@@ -118,11 +118,11 @@ importers:
   packages/canvas-lti-model:
     dependencies:
       '@effect/schema':
-        specifier: ^0.62.9
-        version: 0.62.9(effect@2.3.8)(fast-check@3.14.0)
+        specifier: ^0.63.2
+        version: 0.63.2(effect@2.4.1)(fast-check@3.14.0)
       effect:
-        specifier: ^2.3.8
-        version: 2.3.8
+        specifier: ^2.4.1
+        version: 2.4.1
       lti-model:
         specifier: 0.0.0
         version: link:../lti-model
@@ -171,11 +171,11 @@ importers:
   packages/endpoint-ts:
     dependencies:
       '@effect/schema':
-        specifier: ^0.62.9
-        version: 0.62.9(effect@2.3.8)(fast-check@3.14.0)
+        specifier: ^0.63.2
+        version: 0.63.2(effect@2.4.1)(fast-check@3.14.0)
       effect:
-        specifier: ^2.3.8
-        version: 2.3.8
+        specifier: ^2.4.1
+        version: 2.4.1
       ts-adt:
         specifier: ^2.1.2
         version: 2.1.2
@@ -190,8 +190,8 @@ importers:
   packages/frontend:
     dependencies:
       '@effect/schema':
-        specifier: ^0.62.9
-        version: 0.62.9(effect@2.3.8)(fast-check@3.14.0)
+        specifier: ^0.63.2
+        version: 0.63.2(effect@2.4.1)(fast-check@3.14.0)
       '@heroicons/react':
         specifier: ^2.0.18
         version: 2.0.18(react@18.2.0)
@@ -220,8 +220,8 @@ importers:
         specifier: ^4.4.6
         version: 4.4.6(postcss@8.4.29)
       effect:
-        specifier: ^2.3.8
-        version: 2.3.8
+        specifier: ^2.4.1
+        version: 2.4.1
       endpoint-ts:
         specifier: ^0.0.0
         version: link:../endpoint-ts
@@ -271,11 +271,11 @@ importers:
   packages/lti-model:
     dependencies:
       '@effect/schema':
-        specifier: ^0.62.9
-        version: 0.62.9(effect@2.3.8)(fast-check@3.14.0)
+        specifier: ^0.63.2
+        version: 0.63.2(effect@2.4.1)(fast-check@3.14.0)
       effect:
-        specifier: ^2.3.8
-        version: 2.3.8
+        specifier: ^2.4.1
+        version: 2.4.1
       node-fetch:
         specifier: ^3.3.2
         version: 3.3.2
@@ -290,11 +290,11 @@ importers:
   packages/lti-schema:
     dependencies:
       '@effect/schema':
-        specifier: ^0.62.9
-        version: 0.62.9(effect@2.3.8)(fast-check@3.14.0)
+        specifier: ^0.63.2
+        version: 0.63.2(effect@2.4.1)(fast-check@3.14.0)
       effect:
-        specifier: ^2.3.8
-        version: 2.3.8
+        specifier: ^2.4.1
+        version: 2.4.1
       ts-adt:
         specifier: ^2.1.2
         version: 2.1.2
@@ -309,11 +309,11 @@ importers:
   packages/model:
     dependencies:
       '@effect/schema':
-        specifier: ^0.62.9
-        version: 0.62.9(effect@2.3.8)(fast-check@3.14.0)
+        specifier: ^0.63.2
+        version: 0.63.2(effect@2.4.1)(fast-check@3.14.0)
       effect:
-        specifier: ^2.3.8
-        version: 2.3.8
+        specifier: ^2.4.1
+        version: 2.4.1
       endpoint-ts:
         specifier: 0.0.0
         version: link:../endpoint-ts
@@ -2838,13 +2838,13 @@ packages:
       - webpack-cli
     dev: false
 
-  /@effect/schema@0.62.9(effect@2.3.8)(fast-check@3.14.0):
-    resolution: {integrity: sha512-u5LJqk3MClXr8DxiN/AGUBUxVnsl8o6glOTfToFECn3I+slVW/vbzLMRyUqbNNp2uBpdP6UGwmp9VVYxd72bBg==}
+  /@effect/schema@0.63.2(effect@2.4.1)(fast-check@3.14.0):
+    resolution: {integrity: sha512-piS+6dlGmcX8sAPGXdY4T6QmBbY2YXVnYjUguXpClk6FL7lQ9u2aIDib5kjCpciawJjil2VwltmPnMj0NJKKQQ==}
     peerDependencies:
-      effect: ^2.3.8
+      effect: ^2.4.1
       fast-check: ^3.13.2
     dependencies:
-      effect: 2.3.8
+      effect: 2.4.1
       fast-check: 3.14.0
     dev: false
 
@@ -5888,8 +5888,8 @@ packages:
     resolution: {integrity: sha512-WMwm9LhRUo+WUaRN+vRuETqG89IgZphVSNkdFgeb6sS/E4OrDIN7t48CAewSHXc6C8lefD8KKfr5vY61brQlow==}
     dev: false
 
-  /effect@2.3.8:
-    resolution: {integrity: sha512-jLPRJp1f85HwIu2eP1BFJGF2La0wS8xfqYNSJsTKDlCemyDSGMbtHvtEGKJCB0TQg+CK+DxJAvWOHloTGqMa9w==}
+  /effect@2.4.1:
+    resolution: {integrity: sha512-YsoMB/EGCohGKFyTPYqaFe2B7UCU2MM303dkoowF8DNOdks/4q/00cyhTbBUmM/0FMDoUPmUi/AJ0Aj3E7vO1A==}
     dev: false
 
   /electron-to-chromium@1.4.512:

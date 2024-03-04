@@ -16,8 +16,8 @@
     }
   },
   "dependencies": {
-    "@effect/schema": "^0.62.9",
-    "effect": "^2.3.8",
+    "@effect/schema": "^0.63.2",
+    "effect": "^2.4.1",
     "lti-model": "0.0.0",
     "ts-adt": "^2.1.2"
   },
