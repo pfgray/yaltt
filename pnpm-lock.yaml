@@ -63,6 +63,9 @@ importers:
       effect:
         specifier: ^2.3.8
         version: 2.3.8
+      endpoint-ts:
+        specifier: ^0.0.0
+        version: link:../endpoint-ts
       express:
         specifier: ^4.18.2
         version: 4.18.2
