@@ -1,12 +1,20 @@
 import { Effect, Either, pipe } from "effect";
 
 import * as S from "@effect/schema/Schema";
-import { DecodeError } from "@yaltt/model";
+import { DecodeError, decodeError } from "@yaltt/model";
 import {
+  BodyFromEndpoint,
   Endpoint,
+  EndpointBody,
+  EndpointMethod,
   EndpointResponse,
+  QueryParametersFromEndpoint,
   ResponseFromEndpoint,
   Route,
+  RouteCodec,
+  RouteParametersFromEndpoint,
+  RouteParamsFromRoute,
+  getRouteString,
 } from "endpoint-ts";
 import * as express from "express";
 import {
@@ -32,6 +40,7 @@ import {
   ParseParamsError,
   ParseQueryError,
 } from "./parseParams";
+import { adminRouter } from "../admin/adminRouter";
 
 type Response = {
   status: number;
@@ -97,39 +106,81 @@ export type EffRequestHandler = (
 
 export type EndpointHandler = {
   <
-    R extends Route<any, any>,
+    R extends Route<any, Record<string, RouteCodec<any>>>,
+    Q extends Record<string, S.Schema<any, string, never>>,
     RSchema extends S.Schema<any, any, never>,
     Resp extends EndpointResponse<RSchema>,
-    E extends Endpoint<
-      R,
-      "get" | "delete" | "options" | "head",
-      RSchema,
-      Resp,
-      never,
-      { _tag: "empty" }
-    >
+    BSchema extends S.Schema<any, any, never>,
+    Body extends EndpointBody<BSchema>,
+    E extends Endpoint<R, Q, any, RSchema, Resp, BSchema, Body>
   >(
     endpoint: E
   ): (
-    endpointHandler: EndpointEffect<ResponseFromEndpoint<E>>
-  ) => express.RequestHandler<unknown, unknown, unknown, unknown, {}>;
+    endpointHandler: (
+      params: RouteParametersFromEndpoint<E>,
+      query: QueryParametersFromEndpoint<E>,
+      body: BodyFromEndpoint<E>
+    ) => EndpointEffect<ResponseFromEndpoint<E>>
+  ) => express.RequestHandler<
+    Record<string, string>,
+    unknown,
+    unknown,
+    unknown,
+    {}
+  >;
 };
 
 type EndpointEffect<A> = Effect.Effect<A, EffErrors, EffServices>;
 
+export const bindEndpoint =
+  (router: express.Router) =>
+  <
+    R extends Route<any, Record<string, RouteCodec<any>>>,
+    Q extends Record<string, S.Schema<any, string, never>>,
+    RSchema extends S.Schema<any, any, never>,
+    Resp extends EndpointResponse<RSchema>,
+    BSchema extends S.Schema<any, any, never>,
+    Body extends EndpointBody<BSchema>,
+    E extends Endpoint<R, Q, EndpointMethod, RSchema, Resp, BSchema, Body>
+  >(
+    endpoint: E
+  ) =>
+  (
+    eff: (
+      params: RouteParametersFromEndpoint<E>,
+      query: QueryParametersFromEndpoint<E>,
+      body: BodyFromEndpoint<E>
+    ) => EndpointEffect<ResponseFromEndpoint<E>>
+  ) => {
+    router[endpoint.method](
+      getRouteString(endpoint.route),
+      endpointHandler(endpoint)(eff)
+    );
+  };
+
 export const endpointHandler: EndpointHandler = (endpoint) => (eff) =>
   pipe(
-    eff,
+    parseParams(endpoint.route.routeParamCodecs, "params"),
+    Effect.bindTo("routeParams"),
+    Effect.bind("queryParams", () => parseParams(endpoint.query, "query")),
+    Effect.bind("body", () => {
+      if (endpoint.body._tag === "json") {
+        return parseBody(endpoint.body.schema);
+      } else {
+        return Effect.succeed(undefined);
+      }
+    }),
+    Effect.flatMap(({ routeParams, queryParams, body }) =>
+      eff(routeParams, queryParams, body)
+    ),
     Effect.flatMap((respBody): Either.Either<Response, DecodeError> => {
       const responseMeta = endpoint.response;
       if (responseMeta._tag === "json") {
         return pipe(
           S.encodeEither(responseMeta.schema)(respBody),
           Either.map(response(200)),
-          Either.mapLeft((e) => ({
-            _tag: "decode_error" as const,
-            error: e,
-            actual: respBody,
+          Either.mapLeft((a) => ({
+            ...decodeError(respBody)(a),
           }))
         );
       } else {
@@ -137,4 +188,38 @@ export const endpointHandler: EndpointHandler = (endpoint) => (eff) =>
       }
     }),
     effRequestHandler
+  );
+
+export const parseParams = (
+  paramCodecs: Record<string, RouteCodec<any>>,
+  from: "params" | "query"
+) =>
+  ExpressRequestService.pipe(
+    Effect.flatMap(({ request, response }) => {
+      return pipe(
+        Object.entries(paramCodecs).map(([name, codec]) =>
+          pipe(
+            S.decodeEither(codec)((request[from] as any)[name]),
+            Either.mapLeft((a) => ({
+              ...decodeError((request[from] as any)[name])(a),
+              message: `Failed to parse parameter ${name} from value: ${request.params[name]}`,
+            })),
+            Either.map((v) => [name, v] as const)
+          )
+        ),
+        (a) => a,
+        Either.all,
+        Either.map(Object.fromEntries)
+      );
+    })
+  );
+
+export const parseBody = (codec: S.Schema<any, any, never>) =>
+  ExpressRequestService.pipe(
+    Effect.flatMap(({ request, response }) =>
+      pipe(
+        S.decodeEither(codec)(request.body),
+        Either.mapLeft(decodeError(request.body))
+      )
+    )
   );

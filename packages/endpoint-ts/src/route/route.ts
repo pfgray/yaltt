@@ -72,12 +72,16 @@ type Join<R extends Array<string>, Acc extends string = ""> = R extends [
     : never
   : Acc;
 
+export type RouteStringForRoute<R> = R extends Route<infer S, any>
+  ? Join<S>
+  : never;
+
 export const getRouteString: <
   R extends Array<string>,
   RPs extends Partial<Record<RouteParamsFromRoute<R, never>, RouteCodec<any>>>
 >(
   route: Route<R, RPs>
-) => Join<R> = (route) =>
+) => RouteStringForRoute<Route<R, RPs>> = (route) =>
   ("/" + route.routeSegments.join("/")) as Join<
     (typeof route)["routeSegments"]
   >;
@@ -136,7 +140,6 @@ export const buildPath = <
         return Either.right(segment);
       }
     }),
-    (a) => a,
     Either.all,
     Either.map(ReadonlyArray.join("/"))
   );

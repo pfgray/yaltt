@@ -29,7 +29,7 @@ export const DynamicRegistrationAppPicker = () => {
           query,
           Either.match({
             onRight: (query) => (
-              <WithRequest eff={fetchApps({})}>
+              <WithRequest eff={fetchApps()}>
                 {(apps, reloadApps) => (
                   <div className="container my-12 mx-auto px-4 md:px-12">
                     <dialog ref={dialogRef} className="modal">

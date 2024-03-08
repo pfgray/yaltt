@@ -3,11 +3,17 @@ import {
   Endpoint,
   ResponseFromEndpoint,
   Route,
-  RouteParametersForEndpoint,
+  RouteParametersFromEndpoint,
   buildPath,
   EndpointResponse,
+  RootPath,
+  path,
+  param,
+  Response,
+  QueryFromEndpoint,
+  QueryParametersFromEndpoint,
 } from "endpoint-ts";
-import { Effect, pipe } from "effect";
+import { Effect, Either, pipe } from "effect";
 import * as S from "@effect/schema/Schema";
 import { ParseError } from "@effect/schema/ParseResult";
 
@@ -53,12 +59,29 @@ const fetchParseError = (
   reason,
 });
 
+type EndpointFetchParametersFromEndpoint<
+  E extends Endpoint<any, any, any, any, any, any, any>
+> = E extends Endpoint<infer Route, infer Query, any, any, any, any, any>
+  ? HasKey<Query> extends false
+    ? HasKey<RouteParametersFromEndpoint<E>> extends true
+      ? [routeParams: RouteParametersFromEndpoint<E>]
+      : []
+    : [
+        routeParams: RouteParametersFromEndpoint<E>,
+        query: QueryParametersFromEndpoint<E>
+      ]
+  : never;
+
+type HasKey<T extends {}> = keyof T extends never ? false : true;
+
 export type FetchFromEndpoint = <
   R extends Route<any, any>,
+  Q extends Record<string, S.Schema<any, any, never>>,
   RSchema extends S.Schema<any, any, never>,
   Resp extends EndpointResponse<RSchema>,
   E extends Endpoint<
     R,
+    Q,
     "get" | "delete" | "options" | "head",
     RSchema,
     Resp,
@@ -68,38 +91,99 @@ export type FetchFromEndpoint = <
 >(
   endpoint: E
 ) => (
-  routeParams: RouteParametersForEndpoint<E>
+  ...params: EndpointFetchParametersFromEndpoint<E>
 ) => Effect.Effect<
   ResponseFromEndpoint<E>,
   FetchException | FetchParseError | FetchParseJsonError,
   never
 >;
 
-export const fetchFromEndpoint: FetchFromEndpoint =
-  (endpoint) => (routeParams) =>
+const buildUrlForEndpointAndParams =
+  <
+    R extends Route<any, any>,
+    Q extends Record<string, S.Schema<any, any, never>>,
+    RSchema extends S.Schema<any, any, never>,
+    Resp extends EndpointResponse<RSchema>,
+    E extends Endpoint<R, Q, any, RSchema, Resp, never, { _tag: "empty" }>
+  >(
+    endpoint: E
+  ) =>
+  (
+    routeParams?: RouteParametersFromEndpoint<E>,
+    queryParams?: QueryParametersFromEndpoint<E>
+  ) =>
     pipe(
-      buildPath(endpoint.route, routeParams),
-      Effect.flatMap((path) =>
-        Effect.tryPromise((signal) => fetch(path, { signal }))
+      buildPath(
+        endpoint.route,
+        typeof routeParams === "undefined" ? {} : routeParams
       ),
-      Effect.mapError(fetchError),
-      Effect.flatMap(parseResponseForEndpoint(endpoint)),
-      (a) => a
+      Effect.bindTo("path"),
+      Effect.bind("queryParams", () =>
+        encodeQueryParams(
+          typeof queryParams === "undefined" ? {} : queryParams,
+          endpoint.query
+        )
+      ),
+      Effect.let("queryParamStr", ({ queryParams }) => {
+        const params = queryParams.toString();
+        return params === "" ? "" : `?${params}`;
+      }),
+      Effect.map(({ path, queryParamStr }) => path + queryParamStr)
     );
 
+export const fetchFromEndpoint: FetchFromEndpoint =
+  (endpoint) => (routeParams, queryParams) =>
+    pipe(
+      buildUrlForEndpointAndParams(endpoint)(routeParams, queryParams),
+      Effect.flatMap((url) => {
+        return Effect.tryPromise((signal) => fetch(url, { signal }));
+      }),
+      Effect.mapError(fetchError),
+      Effect.flatMap(parseResponseForEndpoint(endpoint))
+    );
+
+const encodeQueryParams = (
+  queryParams: Record<string, any>,
+  querySchemas: Record<string, S.Schema<any, string, never>>
+) => {
+  return pipe(
+    Object.entries(queryParams).map(([name, value]) => {
+      const schema = querySchemas[name];
+      return pipe(
+        S.encodeEither(schema)(value),
+        Either.map((v) => [name, v] as const)
+      );
+    }),
+    (a) => a,
+    Either.all,
+    Either.map((params) => {
+      const searchParams = new URLSearchParams();
+      params.forEach(([name, value]) => {
+        searchParams.set(name, value);
+      });
+      return searchParams;
+    })
+  );
+};
+
 export type FetchBodyFromEndpoint = <
+  R extends Route<any, any>,
+  Q extends Record<string, S.Schema<any, any, never>>,
+  RSchema extends S.Schema<any, any, never>,
+  Resp extends EndpointResponse<RSchema>,
   E extends Endpoint<
-    any,
+    R,
+    Q,
     "post" | "put" | "delete" | "patch" | "head" | "options",
-    any,
-    any,
+    RSchema,
+    Resp,
     any,
     any
   >
 >(
   endpoint: E
 ) => (
-  routeParams: RouteParametersForEndpoint<E>
+  ...params: EndpointFetchParametersFromEndpoint<E>
 ) => (
   body: BodyFromEndpoint<E>
 ) => Effect.Effect<
@@ -109,9 +193,9 @@ export type FetchBodyFromEndpoint = <
 >;
 
 export const fetchBodyFromEndpoint: FetchBodyFromEndpoint =
-  (endpoint) => (routeParams) => (body) =>
+  (endpoint) => (routeParams, queryParams) => (body) =>
     pipe(
-      buildPath(endpoint.route, routeParams),
+      buildUrlForEndpointAndParams(endpoint)(routeParams, queryParams),
       Effect.flatMap((path) =>
         Effect.tryPromise((signal) =>
           fetch(path, {
@@ -130,6 +214,7 @@ const parseResponseForEndpoint =
     RSchema extends S.Schema<any, any, never>,
     Resp extends EndpointResponse<RSchema>,
     E extends Endpoint<
+      any,
       any,
       "get" | "post" | "put" | "delete" | "patch" | "head" | "options",
       RSchema,

@@ -23,12 +23,16 @@ import {
   getAppsForUser,
 } from "../../model/entities/apps";
 import { parseParams } from "../../express/parseParams";
-import { App, Registration, getApps, stringToInteger } from "@yaltt/model";
+import {
+  App,
+  Registration,
+  appRoute,
+  getApps,
+  stringToInteger,
+} from "@yaltt/model";
 import { getRegistrationsForAppId } from "../../model/entities/registrations";
 import { getIconForApp } from "./appIcon";
-import { endpointHandler } from "../../express/endpointRequestHandler";
 
-const upload = multer.default();
 export const appRouter = express.Router();
 
 export const appIdIsForUser = pipe(
@@ -54,18 +58,17 @@ export const appIdParam = pipe(
 
 appRouter.get(
   "/apps",
-  endpointHandler(getApps)(pipe(authedRequest, Effect.flatMap(getAppsForUser)))
-  // effRequestHandler(
-  //   pipe(
-  //     authedRequest,
-  //     Effect.flatMap(getAppsForUser),
-  //     Effect.map(schemaResponse(200, S.array(App)))
-  //   )
-  // )
+  effRequestHandler(
+    pipe(
+      authedRequest,
+      Effect.flatMap(getAppsForUser),
+      Effect.map(schemaResponse(200, S.array(App)))
+    )
+  )
 );
 
 appRouter.get(
-  "/apps/:appId",
+  "/api/apps/:appId",
   effRequestHandler(
     pipe(
       appIdIsForUser,
@@ -94,7 +97,7 @@ appRouter.get(
 );
 
 appRouter.get(
-  "/apps/:appId/icon.svg",
+  "/api/apps/:appId/icon.svg",
   effRequestHandler(
     pipe(
       appIdParam,
@@ -108,7 +111,7 @@ appRouter.get(
 );
 
 appRouter.delete(
-  "/apps/:appId",
+  "/api/apps/:appId",
   effRequestHandler(
     pipe(
       appIdIsForUser,
@@ -119,7 +122,7 @@ appRouter.delete(
 );
 
 appRouter.post(
-  "/apps",
+  "/api/apps",
   effRequestHandler(
     pipe(
       Effect.succeed({}),

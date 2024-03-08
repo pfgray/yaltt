@@ -172,7 +172,7 @@ export const Apps = () => {
         </div>
       }
     >
-      <WithRequest eff={fetchApps({})}>
+      <WithRequest eff={fetchApps()}>
         {(apps, reloadApps) => (
           <AppsInner apps={apps} reloadApps={reloadApps} />
         )}

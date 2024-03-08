@@ -94,7 +94,13 @@ type EffServices =
 
 export type EffRequestHandler = (
   eff: Effect.Effect<Response, EffErrors, EffServices>
-) => express.RequestHandler<unknown, unknown, unknown, unknown, {}>;
+) => express.RequestHandler<
+  Record<string, string>,
+  unknown,
+  unknown,
+  unknown,
+  {}
+>;
 
 export const effRequestHandler: EffRequestHandler =
   (eff) => (request, response) => {

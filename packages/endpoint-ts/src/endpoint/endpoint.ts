@@ -1,5 +1,5 @@
 import * as S from "@effect/schema/Schema";
-import { RootPath, Route, RouteParametersForRoute } from "../route/route";
+import { RootPath, Route, RouteParametersForRoute, path } from "../route/route";
 import {
   EndpointResponse,
   ResponseTypeFromResponse,
@@ -7,41 +7,64 @@ import {
 } from "./endpointResponse";
 import { Body, BodyTypeFromBody, EndpointBody } from "./endpointBody";
 
+export type EndpointMethod =
+  | "get"
+  | "post"
+  | "put"
+  | "delete"
+  | "patch"
+  | "head"
+  | "options";
+
 export type Endpoint<
   R extends Route<any, any>,
-  M extends "get" | "post" | "put" | "delete" | "patch" | "head" | "options",
+  Query extends Record<string, S.Schema<any, string, never>>,
+  M extends EndpointMethod,
   RSchema extends S.Schema<any, any, never>,
   Resp extends EndpointResponse<RSchema> = EndpointResponse<RSchema>,
   BSchema extends S.Schema<any, any, never> = S.Schema<unknown, unknown, never>,
   Body extends EndpointBody<BSchema> = EndpointBody<BSchema>
 > = {
   route: R;
+  query: Query;
   method: M;
   body: Body;
   response: Resp;
 };
 
-export type BodyFromEndpoint<E extends Endpoint<any, any, any, any, any, any>> =
-  E extends Endpoint<any, any, any, any, infer BSchema, infer Body>
-    ? BodyTypeFromBody<BSchema, Body>
-    : never;
+export type BodyFromEndpoint<
+  E extends Endpoint<any, any, any, any, any, any, any>
+> = E extends Endpoint<any, any, any, any, any, infer BSchema, infer Body>
+  ? BodyTypeFromBody<BSchema, Body>
+  : never;
 
 export type ResponseFromEndpoint<
-  E extends Endpoint<any, any, any, any, any, any>
-> = E extends Endpoint<any, any, infer RSchema, infer Resp, any, any>
+  E extends Endpoint<any, any, any, any, any, any, any>
+> = E extends Endpoint<any, any, any, infer RSchema, infer Resp, any, any>
   ? ResponseTypeFromResponse<RSchema, Resp>
   : never;
 
 export type RouteFromEndpoint<
-  E extends Endpoint<any, any, any, any, any, any>
-> = E extends Endpoint<infer R, any, any, any, any, any> ? R : never;
+  E extends Endpoint<any, any, any, any, any, any, any>
+> = E extends Endpoint<infer R, any, any, any, any, any, any> ? R : never;
 
-export type RouteParametersForEndpoint<
-  E extends Endpoint<any, any, any, any, any, any>
+export type RouteParametersFromEndpoint<
+  E extends Endpoint<any, any, any, any, any, any, any>
 > = RouteParametersForRoute<RouteFromEndpoint<E>>;
+
+export type QueryFromEndpoint<
+  E extends Endpoint<any, any, any, any, any, any, any>
+> = E extends Endpoint<any, infer Q, any, any, any, any, any> ? Q : never;
+
+export type QueryParametersFromEndpoint<
+  E extends Endpoint<any, any, any, any, any, any, any>
+> = {
+  [key in keyof QueryFromEndpoint<E>]: S.Schema.To<QueryFromEndpoint<E>[key]>;
+}; // S.Schema.To<>;
 
 export function makeEndpoint<
   R extends Route<any, any>,
+  Q extends Record<string, S.Schema<any, any, never>>,
   M extends "get" | "post" | "put" | "delete" | "patch" | "head" | "options",
   RSchema extends S.Schema<any, any, never>,
   Resp extends EndpointResponse<RSchema> = EndpointResponse<RSchema>,
@@ -49,21 +72,13 @@ export function makeEndpoint<
   Body extends EndpointBody<BSchema> = EndpointBody<BSchema>
 >(params: {
   route: R;
+  query: Q;
   method: M;
   body: Body;
   response: Resp;
-}): Endpoint<R, M, RSchema, Resp, BSchema, Body> {
+}): Endpoint<R, Q, M, RSchema, Resp, BSchema, Body> {
   return params;
 }
-
-const hmm = makeEndpoint({
-  route: RootPath,
-  method: "get",
-  body: Body.empty,
-  response: Response.text,
-});
-
-type Foo = ResponseFromEndpoint<typeof hmm>;
 
 type SchemaFromResponse<R> = R extends EndpointResponse<infer RSchema>
   ? RSchema
@@ -76,11 +91,17 @@ export const Endpoint = {
    * @param response
    * @returns
    */
-  get: <R extends Route<any, any>, Resp extends EndpointResponse<any>>(
+  get: <
+    R extends Route<any, any>,
+    Resp extends EndpointResponse<any>,
+    Q extends Record<string, S.Schema<any, string, never>>
+  >(
     route: R,
+    query: Q,
     response: Resp
   ): Endpoint<
     R,
+    Q,
     "get",
     SchemaFromResponse<Resp>,
     Resp,
@@ -91,6 +112,7 @@ export const Endpoint = {
     method: "get",
     response,
     body: Body.empty,
+    query,
   }),
   /**
    * Defines an endpoint for the POST method
@@ -101,23 +123,40 @@ export const Endpoint = {
    */
   post: <
     R extends Route<any, any>,
+    Q extends Record<string, S.Schema<any, any, never>>,
     RSchema extends S.Schema<any, any, never>,
     Resp extends EndpointResponse<RSchema>,
     BSchema extends S.Schema<any, any, never>,
     Body extends EndpointBody<BSchema>
   >(
     route: R,
+    query: Q,
     response: Resp,
     body: Body
-  ): Endpoint<R, "post", RSchema, Resp, BSchema, Body> => ({
+  ): Endpoint<R, Q, "post", RSchema, Resp, BSchema, Body> => ({
     route,
     method: "post",
     body,
     response,
+    query,
+  }),
+  delete: <
+    R extends Route<any, any>,
+    Q extends Record<string, S.Schema<any, any, never>>,
+    RSchema extends S.Schema<any, any, never>,
+    Resp extends EndpointResponse<RSchema>,
+    BSchema extends S.Schema<any, any, never>,
+    Body extends EndpointBody<BSchema>
+  >(
+    route: R,
+    query: Q,
+    response: Resp,
+    body: Body
+  ): Endpoint<R, Q, "delete", RSchema, Resp, BSchema, Body> => ({
+    route,
+    method: "delete",
+    body,
+    response,
+    query,
   }),
 };
-
-const resp = Response.json(S.number);
-
-const test = Endpoint.get(RootPath, resp);
-type adfasfd = ResponseFromEndpoint<typeof test>;
