@@ -1,50 +1,78 @@
+import { Effect, pipe } from "effect";
 import * as express from "express";
-import * as passportBase from "passport";
-import { pipe, Effect, Option, Either, ReadonlyArray } from "effect";
 
-import * as multer from "multer";
-import { parseBody, withRequestBody } from "../../express/parseBody";
 import * as S from "@effect/schema/Schema";
-import { requireAuth } from "../../auth/auth";
 import {
   effRequestHandler,
-  schemaResponse,
   successResponse,
 } from "../../express/effRequestHandler";
 
 import {
+  AppId,
+  createApp,
+  deleteApp,
+  getApp,
+  getApps,
+  stringToInteger,
+} from "@yaltt/model";
+import {
   authedRequest,
   unauthorizedError,
 } from "../../auth/authedRequestHandler";
+import { bindEndpoint } from "../../express/endpointRequestHandler";
+import { parseParams } from "../../express/parseParams";
 import {
   createAppForUser,
   deleteAppForId,
   getAppForId,
   getAppsForUser,
 } from "../../model/entities/apps";
-import { parseParams } from "../../express/parseParams";
-import {
-  App,
-  Registration,
-  appRoute,
-  getApps,
-  stringToInteger,
-} from "@yaltt/model";
 import { getRegistrationsForAppId } from "../../model/entities/registrations";
 import { getIconForApp } from "./appIcon";
 
 export const appRouter = express.Router();
 
-export const appIdIsForUser = pipe(
-  Effect.succeed({}),
-  Effect.bind("user", () => authedRequest),
-  Effect.bind("appId", () => appIdParam),
-  Effect.bind("app", ({ appId }) => getAppForId(appId)),
-  Effect.filterOrFail(
-    ({ user, app }) => app.user_id === user.id,
-    () => unauthorizedError(`This app doesn't belong to you.`)
-  ),
-  Effect.map(({ app }) => app)
+export const appIdIsForUser = (appId: AppId) =>
+  pipe(
+    Effect.bindTo("user")(authedRequest),
+    Effect.bind("app", () => getAppForId(appId)),
+    Effect.filterOrFail(
+      ({ user, app }) => app.user_id === user.id,
+      () => unauthorizedError(`This app doesn't belong to you.`)
+    ),
+    Effect.map(({ app }) => app)
+  );
+
+const bindAppEndpoint = bindEndpoint(appRouter);
+
+bindAppEndpoint(getApps)(() =>
+  pipe(authedRequest, Effect.flatMap(getAppsForUser))
+);
+
+bindAppEndpoint(getApp)((params) =>
+  pipe(
+    appIdIsForUser(params.appId),
+    Effect.bindTo("app"),
+    Effect.bind("registrations", ({ app }) => getRegistrationsForAppId(app.id)),
+    Effect.map(({ app, registrations }) => ({
+      ...app,
+      registrations,
+    }))
+  )
+);
+
+bindAppEndpoint(deleteApp)(({ appId }) =>
+  pipe(
+    appIdIsForUser(appId),
+    Effect.flatMap((app) => deleteAppForId(app.id))
+  )
+);
+
+bindAppEndpoint(createApp)((_p, _q, body) =>
+  pipe(
+    authedRequest,
+    Effect.flatMap((user) => createAppForUser(body.name, user))
+  )
 );
 
 export const appIdParam = pipe(
@@ -57,46 +85,6 @@ export const appIdParam = pipe(
 );
 
 appRouter.get(
-  "/apps",
-  effRequestHandler(
-    pipe(
-      authedRequest,
-      Effect.flatMap(getAppsForUser),
-      Effect.map(schemaResponse(200, S.array(App)))
-    )
-  )
-);
-
-appRouter.get(
-  "/api/apps/:appId",
-  effRequestHandler(
-    pipe(
-      appIdIsForUser,
-      Effect.bindTo("app"),
-      Effect.bind("registrations", ({ app }) =>
-        getRegistrationsForAppId(app.id)
-      ),
-      Effect.map(({ app, registrations }) => ({
-        ...app,
-        registrations,
-      })),
-      Effect.map(
-        schemaResponse(
-          200,
-          App.pipe(
-            S.extend(
-              S.struct({
-                registrations: S.array(Registration),
-              })
-            )
-          )
-        )
-      )
-    )
-  )
-);
-
-appRouter.get(
   "/api/apps/:appId/icon.svg",
   effRequestHandler(
     pipe(
@@ -106,40 +94,6 @@ appRouter.get(
       Effect.map((icon) =>
         successResponse(icon, { "Content-Type": "image/svg+xml" }, true)
       )
-    )
-  )
-);
-
-appRouter.delete(
-  "/api/apps/:appId",
-  effRequestHandler(
-    pipe(
-      appIdIsForUser,
-      Effect.flatMap((app) => deleteAppForId(app.id)),
-      Effect.map(successResponse)
-    )
-  )
-);
-
-appRouter.post(
-  "/api/apps",
-  effRequestHandler(
-    pipe(
-      Effect.succeed({}),
-      Effect.bind("user", () => authedRequest),
-      Effect.bind("body", () =>
-        parseBody(
-          S.struct({
-            name: S.string,
-          })
-        )
-      ),
-      Effect.flatMap(({ user, body }) => createAppForUser(body.name, user)),
-      Effect.mapError((err) => {
-        console.log("Got err:", err);
-        return err;
-      }),
-      Effect.map(schemaResponse(200, App))
     )
   )
 );

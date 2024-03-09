@@ -130,7 +130,7 @@ export type EndpointHandler = {
   >;
 };
 
-type EndpointEffect<A> = Effect.Effect<A, EffErrors, EffServices>;
+export type EndpointEffect<A> = Effect.Effect<A, EffErrors, EffServices>;
 
 export const bindEndpoint =
   (router: express.Router) =>

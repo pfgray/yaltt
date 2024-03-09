@@ -114,20 +114,6 @@ const default_claims = [
   "locale",
 ] as const;
 
-const loginRedirect = pipe(
-  pipe(Effect.succeed(successResponse(null)), effRequestHandler)
-);
-
-registrationRouter.get(
-  `api/registrations/:registrationId/login`,
-  loginRedirect
-);
-
-registrationRouter.post(
-  `api/registrations/:registrationId/login`,
-  loginRedirect
-);
-
 registrationRouter.get(
   `/registrations/:registrationId/configuration`,
   pipe(

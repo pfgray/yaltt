@@ -25,6 +25,8 @@ export * from "./claims/Roles";
 export * from "./claims/RoleScopeMentor";
 export * from "./claims/TargetLinkUri";
 export * from "./claims/UserIdentity";
+export * from "./jwk/PublicJwk";
+export * from "./jwk/PublicJwkSet";
 export * from "./scopes/LtiScopes";
 export * from "./deepLinking/ContentItem";
 export * from "./deepLinking/FileContentItem";

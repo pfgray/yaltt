@@ -22,11 +22,9 @@ export const Response = {
   text: textResponse,
 };
 
-export type ResponseTypeFromResponse<
-  S extends S.Schema<any, any, never>,
-  B extends EndpointResponse<any>
-> = B extends { _tag: "text" }
-  ? string
-  : B extends { _tag: "json" }
-  ? S.Schema.To<S>
-  : never;
+export type ResponseTypeFromResponse<B extends EndpointResponse<any>> =
+  B extends { _tag: "text" }
+    ? string
+    : B extends { _tag: "json" }
+    ? S.Schema.To<B["schema"]>
+    : never;

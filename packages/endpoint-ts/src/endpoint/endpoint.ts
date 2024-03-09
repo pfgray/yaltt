@@ -34,14 +34,14 @@ export type Endpoint<
 
 export type BodyFromEndpoint<
   E extends Endpoint<any, any, any, any, any, any, any>
-> = E extends Endpoint<any, any, any, any, any, infer BSchema, infer Body>
-  ? BodyTypeFromBody<BSchema, Body>
+> = E extends Endpoint<any, any, any, any, any, any, infer Body>
+  ? BodyTypeFromBody<Body>
   : never;
 
 export type ResponseFromEndpoint<
   E extends Endpoint<any, any, any, any, any, any, any>
-> = E extends Endpoint<any, any, any, infer RSchema, infer Resp, any, any>
-  ? ResponseTypeFromResponse<RSchema, Resp>
+> = E extends Endpoint<any, any, any, any, infer Resp, any, any>
+  ? ResponseTypeFromResponse<Resp>
   : never;
 
 export type RouteFromEndpoint<

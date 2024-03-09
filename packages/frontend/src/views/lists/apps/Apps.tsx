@@ -21,13 +21,16 @@ import { YalttLayout } from "../../../YalttLayout";
 import { TrashIcon } from "@heroicons/react/24/outline";
 import { confirmWithLoading } from "../../../lib/confirmation/Confirm";
 import { NewEntityForm } from "../NewEntityForm";
-import { fetchApps } from "../../../lib/apps/apps";
+import { fetchApps, fetchCreateApp } from "../../../lib/apps/apps";
 import { FetchError } from "../../../lib/endpoint-ts/fetchFromEndpoint";
 
 export const newAppForm = F.mkForm({
   name: F.string("Name"),
 })((fields) =>
-  pipe(provideRequestService(post("/api/apps", jsonBody(fields))))
+  pipe(
+    fetchCreateApp()({ name: fields.name, icon_url: Option.none() }),
+    provideRequestService
+  )
 );
 
 // export const fetchApps = getDecode(S.array(App))("/api/apps");

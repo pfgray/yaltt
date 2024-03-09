@@ -1,9 +1,14 @@
 import * as S from "@effect/schema/Schema";
 import { PlatformConfiguration } from "lti-model";
 import { RegistrationType } from "./RegistrationType";
+import type * as B from "effect/Brand";
+
+export type RegistrationId = number & B.Brand<"RegistrationId">;
+
+export const RegistrationId = S.number.pipe(S.brand("RegistrationId"));
 
 export const Registration = S.struct({
-  id: S.number,
+  id: RegistrationId,
   type: RegistrationType,
   client_id: S.optionFromNullable(S.string),
   app_id: S.number,

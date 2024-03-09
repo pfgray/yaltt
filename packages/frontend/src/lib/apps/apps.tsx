@@ -1,4 +1,4 @@
-import { createApp, getApp, getApps } from "@yaltt/model";
+import { createApp, deleteApp, getApp, getApps } from "@yaltt/model";
 import {
   fetchBodyFromEndpoint,
   fetchFromEndpoint,
@@ -7,3 +7,4 @@ import {
 export const fetchApps = fetchFromEndpoint(getApps);
 export const fetchApp = fetchFromEndpoint(getApp);
 export const fetchCreateApp = fetchBodyFromEndpoint(createApp);
+export const fetchDeleteApp = fetchFromEndpoint(deleteApp);
