@@ -18,12 +18,12 @@ export interface ParseJwtError {
 export interface ParseQueryError {
   _tag: "parse_query_error";
   query: unknown;
-  error: ParseError;
+  error?: ParseError;
 }
 
 export const parseQueryError = (
   query: unknown,
-  error: ParseError
+  error?: ParseError
 ): ParseQueryError => ({
   _tag: "parse_query_error",
   query,

@@ -2,19 +2,22 @@
 import { Either, ReadonlyArray, pipe } from "effect";
 import * as S from "@effect/schema/Schema";
 
-export type QueryCodec<A> = S.Schema<A, string>;
+export type QuerySchema<A> = {
+  _tag: "Array" | "Single" | "Optional";
+  schema: S.Schema<A, string, never>;
+};
 
-type Query<Schemas extends Record<string, S.Schema<any, string, never>>> =
-  Schemas;
-
-export const query = <
-  Schemas extends Record<string, S.Schema<any, string, never>>
->(
-  schemas: Schemas
-) => schemas;
-
-query({
-  foo: S.string,
-  bar: S.NumberFromString,
-  baz: S.DateFromString,
-});
+export const QP = {
+  array: <A>(schema: S.Schema<A, string, never>) => ({
+    _tag: "Array" as const,
+    schema,
+  }),
+  single: <A>(schema: S.Schema<A, string, never>) => ({
+    _tag: "Single" as const,
+    schema,
+  }),
+  optional: <A>(schema: S.Schema<A, string, never>) => ({
+    _tag: "Optional" as const,
+    schema,
+  }),
+};

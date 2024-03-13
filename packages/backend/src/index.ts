@@ -71,7 +71,7 @@ app.listen(port, () => {
 
 app.use("/api", authRouter);
 app.use(appRouter);
-app.use("/api", registrationRouter);
+app.use(registrationRouter);
 app.use("/api", launchRouter);
 app.use("/api", adminRouter);
 

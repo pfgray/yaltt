@@ -98,7 +98,7 @@ export type EffRequestHandler = (
   Record<string, string>,
   unknown,
   unknown,
-  unknown,
+  Record<string, string | string[] | undefined>,
   {}
 >;
 
@@ -224,7 +224,9 @@ export const effRequestHandler: EffRequestHandler =
                     raw: e.query,
                     err: e.error,
                   },
-                  formatError(e.error)
+                  "error" in e && e.error
+                    ? formatError(e.error)
+                    : "unknown error"
                 );
               },
               key_error: (e) => {

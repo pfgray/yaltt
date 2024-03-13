@@ -1,5 +1,6 @@
 import { Effect, Context } from "effect";
 import * as jsonwebtoken from "jsonwebtoken";
+import { PublicJwk } from "lti-model";
 
 export interface KeyError {
   _tag: "key_error";
@@ -26,7 +27,7 @@ export type KeyServiceInterface = {
   ) => string | jsonwebtoken.JwtPayload;
   exportPublickKeyJWK: (
     b: Buffer
-  ) => Effect.Effect<Record<string, unknown>, KeyError, never>;
+  ) => Effect.Effect<Omit<PublicJwk, "kid">, KeyError, never>;
 };
 
 export class KeyService extends Context.Tag("KeyService")<

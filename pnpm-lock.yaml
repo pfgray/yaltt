@@ -315,6 +315,9 @@ importers:
       '@effect/schema':
         specifier: ^0.63.2
         version: 0.63.2(effect@2.4.1)(fast-check@3.14.0)
+      canvas-lti-model:
+        specifier: 0.0.0
+        version: link:../canvas-lti-model
       effect:
         specifier: ^2.4.1
         version: 2.4.1

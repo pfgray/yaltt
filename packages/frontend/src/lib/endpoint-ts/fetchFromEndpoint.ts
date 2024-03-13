@@ -12,8 +12,10 @@ import {
   Response,
   QueryFromEndpoint,
   QueryParametersFromEndpoint,
+  QuerySchema,
+  EndpointBody,
 } from "endpoint-ts";
-import { Effect, Either, pipe } from "effect";
+import { Effect, Either, Option, ReadonlyArray, pipe } from "effect";
 import * as S from "@effect/schema/Schema";
 import { ParseError } from "@effect/schema/ParseResult";
 
@@ -76,7 +78,7 @@ type HasKey<T extends {}> = keyof T extends never ? false : true;
 
 export type FetchFromEndpoint = <
   R extends Route<any, any>,
-  Q extends Record<string, S.Schema<any, any, never>>,
+  Q extends Record<string, QuerySchema<any>>,
   RSchema extends S.Schema<any, any, never>,
   Resp extends EndpointResponse<RSchema>,
   E extends Endpoint<
@@ -101,10 +103,12 @@ export type FetchFromEndpoint = <
 const buildUrlForEndpointAndParams =
   <
     R extends Route<any, any>,
-    Q extends Record<string, S.Schema<any, any, never>>,
+    Q extends Record<string, QuerySchema<any>>,
     RSchema extends S.Schema<any, any, never>,
     Resp extends EndpointResponse<RSchema>,
-    E extends Endpoint<R, Q, any, RSchema, Resp, never, { _tag: "empty" }>
+    BSchema extends S.Schema<any, any, never>,
+    Body extends EndpointBody<BSchema>,
+    E extends Endpoint<R, Q, any, RSchema, Resp, BSchema, Body>
   >(
     endpoint: E
   ) =>
@@ -144,23 +148,46 @@ export const fetchFromEndpoint: FetchFromEndpoint =
 
 const encodeQueryParams = (
   queryParams: Record<string, any>,
-  querySchemas: Record<string, S.Schema<any, string, never>>
+  querySchemas: Record<string, QuerySchema<any>>
 ) => {
   return pipe(
     Object.entries(queryParams).map(([name, value]) => {
       const schema = querySchemas[name];
-      return pipe(
-        S.encodeEither(schema)(value),
-        Either.map((v) => [name, v] as const)
-      );
+      if (schema._tag === "Array" && value instanceof Array) {
+        // assume value is an array also
+        return pipe(
+          value.map((v: any) => S.encodeEither(schema.schema)(v)),
+          Either.all,
+          Either.map((vs) => vs.map((v) => [name, v] as const))
+        );
+      } else if (schema._tag === "Optional") {
+        // assume value is an Option
+        return pipe(
+          value as Option.Option<any>,
+          Option.match({
+            onNone: () => Either.right([]),
+            onSome: (v) =>
+              pipe(
+                S.encodeEither(schema.schema)(v),
+                Either.map((v) => [[name, v] as const])
+              ),
+          })
+        );
+      } else {
+        return pipe(
+          S.encodeEither(schema.schema)(value),
+          Either.map((v) => [[name, v] as const])
+        );
+      }
     }),
-    (a) => a,
     Either.all,
     Either.map((params) => {
       const searchParams = new URLSearchParams();
-      params.forEach(([name, value]) => {
-        searchParams.set(name, value);
-      });
+      params
+        .flatMap((a) => a)
+        .forEach(([name, value]) => {
+          searchParams.append(name, value);
+        });
       return searchParams;
     })
   );
@@ -168,17 +195,19 @@ const encodeQueryParams = (
 
 export type FetchBodyFromEndpoint = <
   R extends Route<any, any>,
-  Q extends Record<string, S.Schema<any, any, never>>,
+  Q extends Record<string, QuerySchema<any>>,
   RSchema extends S.Schema<any, any, never>,
   Resp extends EndpointResponse<RSchema>,
+  BSchema extends S.Schema<any, any, never>,
+  Body extends EndpointBody<BSchema>,
   E extends Endpoint<
     R,
     Q,
     "post" | "put" | "delete" | "patch" | "head" | "options",
     RSchema,
     Resp,
-    any,
-    any
+    BSchema,
+    Body
   >
 >(
   endpoint: E
@@ -196,9 +225,24 @@ export const fetchBodyFromEndpoint: FetchBodyFromEndpoint =
   (endpoint) => (routeParams, queryParams) => (body) =>
     pipe(
       buildUrlForEndpointAndParams(endpoint)(routeParams, queryParams),
-      Effect.flatMap((path) =>
+      Effect.bindTo("path"),
+      Effect.bind("body", () => {
+        if (endpoint.body._tag === "empty") {
+          return Either.right(undefined);
+        } else {
+          return pipe(
+            body,
+            S.encode(endpoint.body.schema),
+            Effect.mapError((reason) => fetchParseError(body, reason))
+          );
+        }
+      }),
+      Effect.flatMap(({ path, body }) =>
         Effect.tryPromise((signal) =>
           fetch(path, {
+            headers: {
+              "Content-Type": "application/json",
+            },
             method: "POST",
             body: JSON.stringify(body),
             signal,

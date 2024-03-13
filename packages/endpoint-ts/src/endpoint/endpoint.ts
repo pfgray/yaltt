@@ -6,6 +6,8 @@ import {
   Response,
 } from "./endpointResponse";
 import { Body, BodyTypeFromBody, EndpointBody } from "./endpointBody";
+import { QuerySchema } from "../query/query";
+import { Option } from "effect";
 
 export type EndpointMethod =
   | "get"
@@ -18,7 +20,7 @@ export type EndpointMethod =
 
 export type Endpoint<
   R extends Route<any, any>,
-  Query extends Record<string, S.Schema<any, string, never>>,
+  Query extends Record<string, QuerySchema<any>>,
   M extends EndpointMethod,
   RSchema extends S.Schema<any, any, never>,
   Resp extends EndpointResponse<RSchema> = EndpointResponse<RSchema>,
@@ -59,12 +61,21 @@ export type QueryFromEndpoint<
 export type QueryParametersFromEndpoint<
   E extends Endpoint<any, any, any, any, any, any, any>
 > = {
-  [key in keyof QueryFromEndpoint<E>]: S.Schema.To<QueryFromEndpoint<E>[key]>;
-}; // S.Schema.To<>;
+  [key in keyof QueryFromEndpoint<E>]: ParameterTypeFromQuerySchema<
+    QueryFromEndpoint<E>[key]
+  >;
+};
+
+export type ParameterTypeFromQuerySchema<A extends QuerySchema<any>> =
+  A extends { _tag: "Array" }
+    ? ReadonlyArray<S.Schema.To<A["schema"]>>
+    : A extends { _tag: "Optional" }
+    ? Option.Option<S.Schema.To<A["schema"]>>
+    : S.Schema.To<A["schema"]>;
 
 export function makeEndpoint<
   R extends Route<any, any>,
-  Q extends Record<string, S.Schema<any, any, never>>,
+  Q extends Record<string, QuerySchema<any>>,
   M extends "get" | "post" | "put" | "delete" | "patch" | "head" | "options",
   RSchema extends S.Schema<any, any, never>,
   Resp extends EndpointResponse<RSchema> = EndpointResponse<RSchema>,
@@ -94,7 +105,7 @@ export const Endpoint = {
   get: <
     R extends Route<any, any>,
     Resp extends EndpointResponse<any>,
-    Q extends Record<string, S.Schema<any, string, never>>
+    Q extends Record<string, QuerySchema<any>>
   >(
     route: R,
     query: Q,
@@ -123,7 +134,7 @@ export const Endpoint = {
    */
   post: <
     R extends Route<any, any>,
-    Q extends Record<string, S.Schema<any, any, never>>,
+    Q extends Record<string, QuerySchema<any>>,
     RSchema extends S.Schema<any, any, never>,
     Resp extends EndpointResponse<RSchema>,
     BSchema extends S.Schema<any, any, never>,
@@ -142,7 +153,7 @@ export const Endpoint = {
   }),
   delete: <
     R extends Route<any, any>,
-    Q extends Record<string, S.Schema<any, any, never>>,
+    Q extends Record<string, QuerySchema<any>>,
     RSchema extends S.Schema<any, any, never>,
     Resp extends EndpointResponse<RSchema>,
     BSchema extends S.Schema<any, any, never>,

@@ -6,10 +6,8 @@ export type EndpointBody<S extends S.Schema<any, any, never>> = TagADT<{
   empty: {};
 }>;
 
-type EndpointBodyJson<S extends S.Schema<any, any, never>> = TagADTMember<
-  "json",
-  EndpointBody<S>
->;
+export type EndpointBodyJson<S extends S.Schema<any, any, never>> =
+  TagADTMember<"json", EndpointBody<S>>;
 
 export const Body = {
   json: <S extends S.Schema<any, any, never>>(

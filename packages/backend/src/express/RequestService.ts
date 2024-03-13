@@ -6,7 +6,7 @@ export interface ExpressRequest
     Record<string, string>,
     unknown,
     unknown,
-    unknown,
+    Record<string, string | string[] | undefined>,
     {}
   > {}
 

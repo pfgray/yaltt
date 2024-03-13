@@ -1,4 +1,5 @@
 export * from "./api/apps";
+export * from "./api/registrations";
 export * from "./app/App";
 export * from "./user/User";
 export * from "./lib/decode";
