@@ -1,9 +1,10 @@
 import * as crypto from "crypto";
 import { Effect } from "effect";
 import * as jsonwebtoken from "jsonwebtoken";
-import { KeyError, KeyService } from "./KeyService";
+import { KeyError, KeyService, KeyServiceInterface } from "./KeyService";
+import { PublicJwk } from "lti-model";
 
-const generateKeyPair: KeyService["generateKeyPair"] = () =>
+const generateKeyPair: KeyServiceInterface["generateKeyPair"] = () =>
   Effect.async((resume) => {
     crypto.generateKeyPair(
       "rsa",
@@ -20,7 +21,7 @@ const generateKeyPair: KeyService["generateKeyPair"] = () =>
       },
       (err, publicKey, privateKey) => {
         if (err) {
-          resume(Effect.fail({ tag: "key_error", error: err }));
+          resume(Effect.fail({ _tag: "key_error", error: err }));
         } else {
           resume(Effect.succeed({ publicKey, privateKey }));
         }
@@ -28,7 +29,7 @@ const generateKeyPair: KeyService["generateKeyPair"] = () =>
     );
   });
 
-const sign: KeyService["sign"] = (
+const sign: KeyServiceInterface["sign"] = (
   input: unknown,
   privateKey: Buffer,
   options?: jsonwebtoken.SignOptions
@@ -47,14 +48,17 @@ const sign: KeyService["sign"] = (
   );
 };
 
-const verify: KeyService["verify"] = (input: string, publicKey: Buffer) =>
+const verify: KeyServiceInterface["verify"] = (
+  input: string,
+  publicKey: Buffer
+) =>
   (jsonwebtoken as any).default.verify(input, publicKey, {
     algorithms: ["RS256"],
   });
 
 const exportPublickKeyJWK = (
   publicKey: Buffer
-): Effect.Effect<never, KeyError, Record<string, unknown>> =>
+): Effect.Effect<Omit<PublicJwk, "kid">, KeyError, never> =>
   Effect.try({
     try: () =>
       crypto
@@ -65,9 +69,9 @@ const exportPublickKeyJWK = (
         })
         .export({
           format: "jwk",
-        }),
+        }) as Omit<PublicJwk, "kid">,
     catch: (error) => ({
-      tag: "key_error",
+      _tag: "key_error",
       error,
     }),
   });

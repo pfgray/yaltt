@@ -2,13 +2,18 @@ import * as express from "express";
 import { Context } from "effect";
 
 export interface ExpressRequest
-  extends express.Request<unknown, unknown, unknown, unknown, {}> {}
+  extends express.Request<
+    Record<string, string>,
+    unknown,
+    unknown,
+    Record<string, string | string[] | undefined>,
+    {}
+  > {}
 
-export interface ExpressRequestService {
-  readonly request: ExpressRequest;
-  readonly response: express.Response<unknown, {}>;
-}
-
-export const ExpressRequestService = Context.Tag<ExpressRequestService>(
-  "yaltt/ExpressRequestService"
-);
+export class ExpressRequestService extends Context.Tag("ExpressRequestService")<
+  ExpressRequestService,
+  {
+    readonly request: ExpressRequest;
+    readonly response: express.Response<unknown, {}>;
+  }
+>() {}

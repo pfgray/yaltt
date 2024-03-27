@@ -17,7 +17,7 @@ const AppWithRegistrations = App.pipe(
   )
 );
 
-type AppWithRegistrations = S.To<typeof AppWithRegistrations>;
+type AppWithRegistrations = S.Schema.To<typeof AppWithRegistrations>;
 
 const fetchApp = (appId: number) =>
   getDecode(AppWithRegistrations)(`/api/apps/${appId}`);

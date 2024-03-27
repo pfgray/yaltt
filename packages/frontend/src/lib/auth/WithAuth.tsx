@@ -1,8 +1,6 @@
-import { pipe, Either, Option, ReadonlyArray, Effect } from "effect";
+import { pipe, Either, Option, ReadonlyArray, Effect, Exit } from "effect";
 import * as React from "react";
 import { getCurrentUser } from "./userApi";
-import * as Eff from "@effect/io/Effect";
-import * as Exit from "@effect/io/Exit";
 import { provideRequestService } from "../api/requestServiceImpl";
 import { useLocation, useNavigate } from "react-router-dom";
 import { User } from "@yaltt/model";
@@ -17,8 +15,7 @@ export const WithAuth = (props: WithAuthProps): JSX.Element => {
   const navigate = useNavigate();
 
   React.useEffect(() => {
-    Eff.runCallback(
-      provideRequestService(getCurrentUser),
+    Effect.runPromiseExit(provideRequestService(getCurrentUser)).then(
       Exit.match({
         onFailure: (err) => {
           const redirectUrl = `/login?redirectUrl=${encodeURIComponent(

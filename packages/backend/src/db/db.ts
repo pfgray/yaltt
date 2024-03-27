@@ -1,64 +1,68 @@
 import * as pg from "pg";
 
-import { pipe, Effect, ReadonlyArray, Option } from "effect";
 import * as S from "@effect/schema/Schema";
-import { PgService } from "./PgService";
-import { ParseError } from "@effect/schema/ParseResult";
+import { DecodeError, decode } from "@yaltt/model";
+import { Effect, Option, ReadonlyArray, pipe } from "effect";
 import { flow } from "effect/Function";
+import { Query } from "./QueryService";
 
 export const pool: pg.Pool = new ((pg as any).default as any).Pool();
 
 export interface PgError {
-  tag: "pg_error";
+  _tag: "pg_error";
   cause: Error;
   query: string;
 }
 
-export interface DecodeError {
-  tag: "decode_error";
+export const pgError = (cause: Error, query: string): PgError => ({
+  _tag: "pg_error",
+  cause,
+  query,
+});
+
+export interface DecodeQueryError {
+  _tag: "decode_query_error";
   query: string;
-  actual: unknown[];
-  error: ParseError;
+  error: DecodeError;
 }
 
-const query_ =
-  <T>(schema: S.Schema<any, T>) =>
-  (queryStr: string, queryParams: unknown[]) =>
-    PgService.pipe(
-      Effect.flatMap(({ query }) => query(queryStr, queryParams)),
-      Effect.map((result) => [queryStr, result] as const),
-      Effect.mapError(
-        (cause): PgError => ({ tag: "pg_error", cause, query: queryStr })
-      ),
-      Effect.flatMap(([query, { rows }]) =>
-        pipe(
-          rows,
-          S.parse(S.array(schema)),
-          Effect.mapError(
-            (error): DecodeError => ({
-              tag: "decode_error",
-              error,
-              actual: rows,
-              query,
-            })
-          ),
-          Effect.map((decoded) => [query, decoded] as const)
-        )
-      )
-    );
+export const decodeQueryError = (
+  error: DecodeError,
+  query: string
+): DecodeQueryError => ({
+  _tag: "decode_query_error",
+  error,
+  query,
+});
 
-export const query = <T>(schema: S.Schema<any, T>) =>
+const query_ =
+  <T>(schema: S.Schema<T, any>) =>
+  (queryStr: string, queryParams: unknown[]) => {
+    const arraySchema: S.Schema<readonly T[], any, never> = S.array(schema);
+    return pipe(
+      Query.query(queryStr, queryParams),
+      Effect.map((result) => result.rows),
+      Effect.mapError((cause) => pgError(cause, queryStr)),
+      decode(arraySchema),
+      Effect.catchTag("decode_error", (error) =>
+        Effect.fail(decodeQueryError(error, queryStr))
+      ),
+      Effect.map((result) => [queryStr, result] as const)
+    );
+  };
+
+export const query = <T>(schema: S.Schema<T, any>) =>
   flow(
     query_(schema),
     Effect.map(([, a]) => a)
   );
 
 export interface NoRecordFound {
-  tag: "no_record_found";
+  _tag: "no_record_found";
   query: string;
 }
 
-export const query1 = <T>(schema: S.Schema<any, T>) =>
+export const query1 = <T>(schema: S.Schema<T, any>) =>
   flow(
     query_(schema),
     Effect.flatMap(([query, rows]) =>
@@ -66,7 +70,7 @@ export const query1 = <T>(schema: S.Schema<any, T>) =>
         rows,
         ReadonlyArray.match({
           onEmpty: () =>
-            Effect.fail<NoRecordFound>({ tag: "no_record_found", query }),
+            Effect.fail<NoRecordFound>({ _tag: "no_record_found", query }),
           onNonEmpty: ([head]) => Effect.succeed(head),
         })
       )
@@ -79,19 +83,22 @@ export const query1 = <T>(schema: S.Schema<any, T>) =>
  * @param eff
  * @returns
  */
-export const toOption = <R, E extends { tag: string }, A>(
-  eff: Effect.Effect<R, E, A>
-) =>
+export const toOption = <A, E extends { _tag: string }, R>(
+  eff: Effect.Effect<A, E, R>
+): Effect.Effect<
+  Option.Option<A>,
+  Exclude<E, { _tag: "no_record_found" }>,
+  R
+> =>
   pipe(
     eff,
     Effect.map(Option.some),
-    Effect.catch("tag" as const, {
-      failure: "no_record_found" as const,
-      onFailure: () => Effect.succeed(Option.none<A>()),
-    })
-  );
+    Effect.catchTag("no_record_found" as any, () =>
+      Effect.succeed(Option.none<A>())
+    )
+  ) as any;
 
-export const queryOp1 = <T>(schema: S.Schema<any, T>) =>
+export const queryOp1 = <T>(schema: S.Schema<T, any>) =>
   flow(
     query_(schema),
     Effect.map(([query, rows]) =>

@@ -19,7 +19,7 @@ export const DeepLinkingSettingsClaim = S.struct({
   }),
 });
 
-export type DeepLinkingSettings = S.To<
+export type DeepLinkingSettings = S.Schema.To<
   typeof DeepLinkingSettingsClaim
 >[typeof DeepLinkingSettingsClaimKey];
 

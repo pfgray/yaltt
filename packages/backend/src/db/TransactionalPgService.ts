@@ -1,14 +1,12 @@
 import { pipe, Effect } from "effect";
 import * as pg from "pg";
-import { PgService } from "./PgService";
+import { QueryService } from "./QueryService";
 
-export const mkTransactionalPgService = (
-  pool: pg.Pool
-): {
-  rollback: () => void;
-  commit: () => void;
-  service: PgService;
-} => {
+export const provideTransactionalPgService = (pool: pg.Pool) => {
+  return;
+};
+
+export const mkTransactionalPgService = (pool: pg.Pool) => {
   let begun = false;
   return {
     commit: () => {
@@ -17,10 +15,10 @@ export const mkTransactionalPgService = (
     rollback: () => {
       pool.query("rollback");
     },
-    service: {
+    provide: Effect.provideService(QueryService, {
       query: (query, values) =>
         pipe(
-          Effect.async<never, Error, unknown>((resume) => {
+          Effect.async<unknown, Error, never>((resume) => {
             if (!begun) {
               begun = true;
               pool.query("begin", (err, res) => {
@@ -35,7 +33,7 @@ export const mkTransactionalPgService = (
             }
           }),
           Effect.flatMap(() =>
-            Effect.async<never, Error, pg.QueryResult<{}>>((resume) => {
+            Effect.async<pg.QueryResult<{}>, Error, never>((resume) => {
               pool.query(query, values, (err, res) => {
                 if (err) {
                   resume(Effect.fail(err));
@@ -46,6 +44,6 @@ export const mkTransactionalPgService = (
             })
           )
         ),
-    },
+    }),
   };
 };

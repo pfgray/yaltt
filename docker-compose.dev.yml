@@ -24,6 +24,7 @@ services:
       - /app/packages/lti-model/node_modules
       - /app/packages/lti-schema/node_modules
       - /app/packages/model/node_modules
+      - /app/result
     command:
       - bash
       - ./scripts/start-backend.sh
@@ -46,6 +47,7 @@ services:
       - /app/packages/lti-model/node_modules
       - /app/packages/lti-schema/node_modules
       - /app/packages/model/node_modules
+      - /app/result
     command:
       - bash
       - ./scripts/start-frontend.sh

@@ -1,7 +1,7 @@
 import { Effect, Context } from "effect";
 
 export interface ConfigError {
-  tag: "config_error";
+  _tag: "config_error";
   message: string;
 }
 
@@ -10,10 +10,11 @@ export interface YalttConfig {
   ssl: boolean;
 }
 
-export interface ConfigService {
-  config: YalttConfig;
-}
-
-export const ConfigService = Context.Tag<ConfigService>();
+export class ConfigService extends Context.Tag("ConfigService")<
+  ConfigService,
+  {
+    config: YalttConfig;
+  }
+>() {}
 
 export const getConfig = ConfigService.pipe(Effect.map(({ config }) => config));

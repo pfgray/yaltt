@@ -4,15 +4,16 @@ import { query, query1 } from "../../db/db";
 
 import { Effect } from "effect";
 import { createKeyForRegistrationId } from "./keys";
+import { AppId, RegistrationId } from "@yaltt/model";
 
 const RegistrationType = S.union(S.literal("manual"), S.literal("dynamic"));
 
 export const RegistrationRow = S.struct({
-  id: S.number,
+  id: RegistrationId,
   client_id: S.optionFromNullable(S.string),
   type: RegistrationType,
   created: S.ValidDateFromSelf,
-  app_id: S.number,
+  app_id: AppId,
   claims: S.array(S.string),
   scopes: S.array(S.string),
   custom_parameters: S.record(S.string, S.string),
@@ -20,7 +21,7 @@ export const RegistrationRow = S.struct({
   registration_config_url: S.optionFromNullable(S.string),
 });
 
-export interface RegistrationRow extends S.To<typeof RegistrationRow> {}
+export interface RegistrationRow extends S.Schema.To<typeof RegistrationRow> {}
 
 export const getRegistrationForId = (registrationId: number) =>
   query1(RegistrationRow)(
@@ -39,7 +40,7 @@ export const getRegistrationsForAppId = (appId: number) =>
 
 export const createRegistrationForAppId = (
   appId: number,
-  type: S.To<typeof RegistrationType>,
+  type: S.Schema.To<typeof RegistrationType>,
   platformConfiguration: PlatformConfiguration,
   claims: ReadonlyArray<string> = [],
   scopes: ReadonlyArray<string> = [],

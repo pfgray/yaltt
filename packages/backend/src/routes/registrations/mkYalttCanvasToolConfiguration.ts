@@ -1,10 +1,8 @@
-import { App, Registration, YalttClaim } from "@yaltt/model";
-import { LtiMessage, ToolConfiguration } from "lti-model";
-import { pipe, Effect, Option, Either } from "effect";
-import { getConfig, YalttConfig } from "../../config/ConfigService";
+import { App, YalttClaim } from "@yaltt/model";
 import { CanvasPlacement, CanvasToolConfiguration } from "canvas-lti-model";
-import { mkYalttUrl } from "./mkYalttToolConfiguration";
+import { YalttConfig } from "../../config/ConfigService";
 import { ExpressRequest } from "../../express/RequestService";
+import { mkYalttUrl } from "./mkYalttToolConfiguration";
 
 // export const pathForMessageType = () =>
 

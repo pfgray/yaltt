@@ -17,13 +17,12 @@
     }
   },
   "dependencies": {
-    "@effect/schema": "^0.33.2",
-    "effect": "2.0.0-next.24",
+    "@effect/schema": "^0.63.2",
+    "effect": "^2.4.1",
     "node-fetch": "^3.3.2",
     "ts-adt": "^2.1.2"
   },
   "devDependencies": {
-    "esbuild": "^0.17.4",
     "typescript": "^5.1"
   },
   "scripts": {

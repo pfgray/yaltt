@@ -3,20 +3,20 @@ import { pipe, Effect, Option, Either } from "effect";
 import { ExpressRequestService } from "../express/RequestService";
 
 export interface UnauthenticatedError {
-  tag: "unauthenticated_error";
+  _tag: "unauthenticated_error";
 }
 
 export const unauthenticatedError = (): UnauthenticatedError => ({
-  tag: "unauthenticated_error",
+  _tag: "unauthenticated_error",
 });
 
 export interface UnauthorizedError {
-  tag: "unauthorized_error";
+  _tag: "unauthorized_error";
   message: string;
 }
 
 export const unauthorizedError = (message: string): UnauthorizedError => ({
-  tag: "unauthorized_error",
+  _tag: "unauthorized_error",
   message,
 });
 

@@ -3,7 +3,7 @@ import * as crypto from "crypto";
 import { pipe, Effect, Option, Either } from "effect";
 
 export interface HashError {
-  tag: "hash_error";
+  _tag: "hash_error";
   cause: Error;
 }
 
@@ -15,7 +15,7 @@ export const pbkdf2_ = (
   digest: string
 ) =>
   pipe(
-    Effect.async<never, Error, Buffer>((resume) => {
+    Effect.async<Buffer, Error, never>((resume) => {
       crypto.pbkdf2(
         password,
         salt,
@@ -31,11 +31,11 @@ export const pbkdf2_ = (
         }
       );
     }),
-    Effect.mapError((cause): HashError => ({ tag: "hash_error", cause }))
+    Effect.mapError((cause): HashError => ({ _tag: "hash_error", cause }))
   );
 
 export interface InvalidPassword {
-  tag: "invalid_password";
+  _tag: "invalid_password";
 }
 
 /**
@@ -66,7 +66,7 @@ export const validatePassword = (
     hashPasswordWithSalt(password, salt),
     Effect.flatMap((hashedPassword) => {
       if (!crypto.timingSafeEqual(hashedPassword, hashed)) {
-        return Effect.fail<InvalidPassword>({ tag: "invalid_password" });
+        return Effect.fail<InvalidPassword>({ _tag: "invalid_password" });
       } else {
         return Effect.succeed({});
       }

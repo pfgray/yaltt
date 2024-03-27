@@ -1,7 +1,4 @@
-import * as AST from "@effect/schema/AST";
-import * as PR from "@effect/schema/ParseResult";
-import * as S from "@effect/schema/Schema";
-import { pipe, Either, Option, ReadonlyArray, Effect } from "effect";
+import { Option, pipe } from "effect";
 
 export type RawJwt = {
   header: object;
@@ -60,49 +57,4 @@ export const parseJwt = (s: string) => {
       signature,
     }))
   );
-};
-
-const decodeJwt =
-  <A>(bodySchema: S.Schema<any, A>) =>
-  (s: string, parseOptions?: AST.ParseOptions): PR.ParseResult<Jwt<A>> =>
-    pipe(
-      parseJwt(s),
-      Effect.mapError((nse) =>
-        PR.parseError(ReadonlyArray.make(PR.type(AST.stringKeyword, s)))
-      ),
-      Effect.flatMap((jwt) =>
-        pipe(
-          S.parse(bodySchema)(jwt.payload, parseOptions),
-          Effect.map((payload) => ({
-            header: jwt.header,
-            payload,
-            signature: jwt.signature,
-          }))
-        )
-      ),
-      (a) => {
-        console.log(
-          `Preliminary result`,
-          JSON.stringify(a),
-          "with parse options",
-          JSON.stringify(parseOptions)
-        );
-        return a;
-      }
-    );
-
-const encodeJwt = (s: Jwt<any>): PR.ParseResult<string> =>
-  PR.success(`${s.header}.${s.payload?.toString()}.${s.signature}`);
-
-const pair = <A>(schema: S.Schema<A>): S.Schema<readonly [A, A]> => {
-  const element = AST.createElement(
-    schema.ast, // <= the element type
-    false // <= is optional?
-  );
-  const tuple = AST.createTuple(
-    [element, element], // <= elements definitions
-    Option.none(), // <= rest element
-    true // <= is readonly?
-  );
-  return S.make(AST.stringKeyword); // <= wrap the AST value in a Schema
 };

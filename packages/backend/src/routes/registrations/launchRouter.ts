@@ -14,6 +14,7 @@ import {
 import { App, Registration, parseJwt, stringToInteger } from "@yaltt/model";
 import {
   parseBodyOrParams,
+  parseJwtError,
   parseParams,
   parseParamsError,
   parseQuery,
@@ -156,6 +157,8 @@ const LaunchIdToken = UserIdentityClaim.pipe(
   S.extend(TargetLinkUriClaim)
 );
 
+export interface LaunchIdToken extends S.Schema.To<typeof LaunchIdToken> {}
+
 const parseIdToken = pipe(
   parseBodyOrParams(
     S.struct({
@@ -166,18 +169,13 @@ const parseIdToken = pipe(
   Effect.flatMap((s) =>
     pipe(
       parseJwt(s.id_token),
-      Effect.mapError(() =>
-        parseParamsError(
-          { id_token: s },
-          PR.parseError(ReadonlyArray.make(PR.type(AST.stringKeyword, s)))
-        )
-      )
+      Effect.mapError((err) => parseJwtError(s.id_token))
     )
   ),
   Effect.map((rawIdToken) => ({ rawIdToken })),
   Effect.bind("parsedIdToken", ({ rawIdToken }) =>
     pipe(
-      S.parse(LaunchIdToken)(rawIdToken.payload, {
+      S.decode<LaunchIdToken, any, never>(LaunchIdToken)(rawIdToken.payload, {
         onExcessProperty: "ignore",
       }),
       Effect.mapError((error) => parseParamsError(rawIdToken.payload, error))
@@ -187,7 +185,7 @@ const parseIdToken = pipe(
 
 const savePerson = (
   registrationId: number,
-  idToken: S.To<typeof LaunchIdToken>
+  idToken: S.Schema.To<typeof LaunchIdToken>
 ) => {
   if (typeof idToken.sub !== "undefined") {
     idToken;
@@ -211,7 +209,7 @@ const savePerson = (
 
 const saveContext = (
   registrationId: number,
-  idToken: S.To<typeof LaunchIdToken>
+  idToken: S.Schema.To<typeof LaunchIdToken>
 ) => {
   const context = idToken["https://purl.imsglobal.org/spec/lti/claim/context"];
   if (typeof context !== "undefined") {
@@ -232,7 +230,7 @@ const saveContext = (
 const saveEnrollment = (
   person: Option.Option<number>,
   context: Option.Option<number>,
-  idToken: S.To<typeof LaunchIdToken>
+  idToken: S.Schema.To<typeof LaunchIdToken>
 ) =>
   pipe(
     idToken["https://purl.imsglobal.org/spec/lti/claim/roles"],
@@ -249,7 +247,7 @@ const saveEnrollment = (
 
 const saveLaunch = (
   registrationId: number,
-  idToken: S.To<typeof LaunchIdToken>,
+  idToken: S.Schema.To<typeof LaunchIdToken>,
   rawIdToken: unknown
 ) =>
   pipe(

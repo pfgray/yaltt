@@ -1,16 +1,10 @@
-import { Launch } from "./Launch";
-import { Either, Option, pipe } from "effect";
-import { useParsedParamsQuery } from "../../lib/react-router/useParsedParamsQuery";
-import * as S from "@effect/schema/Schema";
-import { WithRequest } from "../../lib/api/WithRequest";
-import { getDecode } from "../../lib/api/request";
+import { Option, pipe } from "effect";
 import {
   extractDeepLinkingSettingsClaim,
   extractDeploymentIdClaim,
 } from "lti-model";
 import { DeepLinkingForm } from "./DeepLinkingForm";
-import { TokenFetcher } from "./TokenFetcher";
-import { RawLaunch } from "./RawLaunch";
+import { Launch } from "./Launch";
 import { LaunchCollapsible } from "./LaunchCollapsible";
 
 type DeepLinkingFormProps = {
@@ -28,9 +22,9 @@ export const DeepLinkingView = ({ launch }: DeepLinkingFormProps) =>
       <LaunchCollapsible title="Deep Linking" initialOpen={true}>
         <DeepLinkingForm
           deepLinkingSettings={dl}
-          registrationId={launch.registration_id}
+          registrationId={launch.registration.id}
           deploymentId={deploymentId}
-          appId={launch.appId}
+          appId={launch.app.id}
         />
       </LaunchCollapsible>
     )),

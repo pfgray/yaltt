@@ -1,7 +1,7 @@
 import * as React from "react";
 import * as F from "../../lib/forms/form";
 
-import * as Eff from "@effect/io/Effect";
+import { Effect } from "effect";
 import { WithRequest } from "../../lib/api/WithRequest";
 import { RequestError, RequestService } from "../../lib/api/request";
 import { NewEntityForm } from "./NewEntityForm";
@@ -16,7 +16,7 @@ type ListProps<
   entityName: string;
   newForm: F.Form<K, R>;
   editForm: F.Form<K2, R2>;
-  fetchValues: Eff.Effect<RequestService, RequestError, readonly A[]>;
+  fetchValues: Effect.Effect<RequestService, RequestError, readonly A[]>;
   columns: string[];
   renderRow: (a: A) => Array<JSX.Element | string | number>;
   width?: string | number;

@@ -34,4 +34,5 @@ export const ToolConfiguration = pipe(
   S.extend(LocalizedKey("policy_uri"))
 );
 
-export interface ToolConfiguration extends S.To<typeof ToolConfiguration> {}
+export interface ToolConfiguration
+  extends S.Schema.To<typeof ToolConfiguration> {}

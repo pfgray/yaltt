@@ -1,4 +1,4 @@
-FROM node:18 AS base
+FROM node:18.18.2 AS base
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
 RUN corepack enable

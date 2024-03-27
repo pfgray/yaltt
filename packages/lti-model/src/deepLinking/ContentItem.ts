@@ -13,4 +13,4 @@ export const ContentItem = S.union(
   LtiResourceLinkContentItem
 );
 
-export type ContentItem = S.To<typeof ContentItem>;
+export type ContentItem = S.Schema.To<typeof ContentItem>;

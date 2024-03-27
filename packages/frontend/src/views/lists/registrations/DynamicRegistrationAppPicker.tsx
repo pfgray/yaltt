@@ -4,12 +4,13 @@ import * as S from "@effect/schema/Schema";
 import { WithAuth } from "../../../lib/auth/WithAuth";
 import { WithRequest } from "../../../lib/api/WithRequest";
 import { Effect, Either, pipe } from "effect";
-import { formatErrors } from "@effect/schema/TreeFormatter";
-import { fetchApps, newAppForm } from "../apps/Apps";
+import { formatError } from "@effect/schema/TreeFormatter";
+import { newAppForm } from "../apps/Apps";
 import { getGradientForString } from "../../../lib/ui/gradients";
 import { format } from "timeago.js";
 import { Link } from "react-router-dom";
 import { NewEntityForm } from "../NewEntityForm";
+import { fetchApps } from "../../../lib/apps/apps";
 
 export const DynamicRegistrationAppPicker = () => {
   const query = useParsedQuery(
@@ -28,7 +29,7 @@ export const DynamicRegistrationAppPicker = () => {
           query,
           Either.match({
             onRight: (query) => (
-              <WithRequest eff={fetchApps}>
+              <WithRequest eff={fetchApps()}>
                 {(apps, reloadApps) => (
                   <div className="container my-12 mx-auto px-4 md:px-12">
                     <dialog ref={dialogRef} className="modal">
@@ -119,7 +120,7 @@ export const DynamicRegistrationAppPicker = () => {
               return (
                 <div>
                   error
-                  <pre>{formatErrors(err.errors)}</pre>{" "}
+                  <pre>{formatError(err)}</pre>{" "}
                 </div>
               );
             },

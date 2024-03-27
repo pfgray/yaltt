@@ -21,14 +21,19 @@ import { YalttLayout } from "../../../YalttLayout";
 import { TrashIcon } from "@heroicons/react/24/outline";
 import { confirmWithLoading } from "../../../lib/confirmation/Confirm";
 import { NewEntityForm } from "../NewEntityForm";
+import { fetchApps, fetchCreateApp } from "../../../lib/apps/apps";
+import { FetchError } from "../../../lib/endpoint-ts/fetchFromEndpoint";
 
 export const newAppForm = F.mkForm({
   name: F.string("Name"),
 })((fields) =>
-  pipe(provideRequestService(post("/api/apps", jsonBody(fields))))
+  pipe(
+    fetchCreateApp()({ name: fields.name, icon_url: Option.none() }),
+    provideRequestService
+  )
 );
 
-export const fetchApps = getDecode(S.array(App))("/api/apps");
+// export const fetchApps = getDecode(S.array(App))("/api/apps");
 
 type SubViewProps = {
   app: App;
@@ -36,27 +41,16 @@ type SubViewProps = {
   reloadApps: Effect.Effect<never, RequestError, ReadonlyArray<App>>;
 };
 
-{
-  /* <dialog ref={dialogRef} className="modal">
-  <div className="modal-box">
-    <NewEntityForm
-      close={() => {
-        dialogRef.current?.close();
-      }}
-      form={newAppForm}
-      entityName={"App"}
-      afterSubmit={}
-    />
-  </div>
-</dialog> */
-}
-
 const deleteApp = (options: { appId: number }) =>
   delete_(`/api/apps/${options.appId}`);
 
 const AppsInner = (props: {
   apps: ReadonlyArray<App>;
-  reloadApps: Effect.Effect<never, RequestError, ReadonlyArray<App>>;
+  reloadApps: Effect.Effect<
+    ReadonlyArray<App>,
+    RequestError | FetchError,
+    never
+  >;
 }) => {
   const { apps, reloadApps } = props;
   const dialogRef = React.useRef<HTMLDialogElement>(null);
@@ -181,7 +175,7 @@ export const Apps = () => {
         </div>
       }
     >
-      <WithRequest eff={fetchApps}>
+      <WithRequest eff={fetchApps()}>
         {(apps, reloadApps) => (
           <AppsInner apps={apps} reloadApps={reloadApps} />
         )}

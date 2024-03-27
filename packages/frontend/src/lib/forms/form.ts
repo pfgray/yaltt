@@ -1,20 +1,19 @@
-import * as Eff from "@effect/io/Effect";
-import { Either } from "effect";
+import { Effect, Either } from "effect";
 
 export interface ValidationError {}
 
 export interface FormField<T, A> {
-  tag: "string" | "password" | "textarea";
+  _tag: "string" | "password" | "textarea";
   initialValue: T;
   label: string;
-  validate: (t: T) => Either.Either<ValidationError, A>;
+  validate: (t: T) => Either.Either<A, ValidationError>;
 }
 
 export const string = (
   label: string,
   initialValue?: string
 ): FormField<string, string> => ({
-  tag: "string",
+  _tag: "string",
   initialValue: initialValue || "",
   label,
   validate: Either.right,
@@ -24,7 +23,7 @@ export const password = (
   label: string,
   initialValue?: string
 ): FormField<string, string> => ({
-  tag: "password",
+  _tag: "password",
   label,
   initialValue: initialValue || "",
   validate: Either.right,
@@ -34,7 +33,7 @@ export const textarea = (
   label: string,
   initialValue: string
 ): FormField<string, string> => ({
-  tag: "textarea",
+  _tag: "textarea",
   label,
   initialValue: initialValue,
   validate: Either.right,
@@ -44,7 +43,7 @@ export const checkbox = (
   label: string,
   initialValue: boolean
 ): FormField<boolean, boolean> => ({
-  tag: "textarea",
+  _tag: "textarea",
   label,
   initialValue: initialValue,
   validate: Either.right,
@@ -54,7 +53,7 @@ export const json = (
   label: string,
   initialValue?: string
 ): FormField<string, {}> => ({
-  tag: "textarea",
+  _tag: "textarea",
   label,
   initialValue: initialValue || "",
   validate: (v) => Either.right(JSON.parse(v)), // todo: actually validate
@@ -62,7 +61,9 @@ export const json = (
 
 export type Form<K extends string, R extends Record<K, FormField<any, any>>> = {
   fields: R;
-  onSubmit: (fields: ValidatedFields<K, R>) => Eff.Effect<never, unknown, any>;
+  onSubmit: (
+    fields: ValidatedFields<K, R>
+  ) => Effect.Effect<any, unknown, never>;
 };
 
 export type ValidatedField<T> = T extends FormField<any, infer Z> ? Z : never;
@@ -79,7 +80,7 @@ export const mkForm =
   (
     onSubmit: (
       fields: ValidatedFields<KeyOf<keyof R>, R>
-    ) => Eff.Effect<never, unknown, any>
+    ) => Effect.Effect<any, unknown, never>
   ): Form<KeyOf<keyof R>, R> => ({
     fields,
     onSubmit,

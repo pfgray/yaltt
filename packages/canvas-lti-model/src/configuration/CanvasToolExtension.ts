@@ -11,4 +11,5 @@ export const CanvasToolExtension = S.struct({
   privacy_level: S.optional(S.literal(...Object.values(CanvasPrivacyLevels))),
 });
 
-export interface CanvasToolExtension extends S.To<typeof CanvasToolExtension> {}
+export interface CanvasToolExtension
+  extends S.Schema.To<typeof CanvasToolExtension> {}

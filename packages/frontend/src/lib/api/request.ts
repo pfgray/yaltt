@@ -4,14 +4,20 @@ import * as S from "@effect/schema/Schema";
 import * as P from "@effect/schema/Parser";
 import { match } from "@yaltt/model";
 import { flow } from "effect/Function";
+import {
+  FetchException,
+  FetchParseError,
+  FetchParseJsonError,
+} from "../endpoint-ts/fetchFromEndpoint";
 
-export interface RequestService {
-  config: {
-    baseUrl: string;
-  };
-}
-
-export const RequestService = Context.Tag<RequestService>();
+export class RequestService extends Context.Tag("Request")<
+  RequestService,
+  {
+    config: {
+      baseUrl: string;
+    };
+  }
+>() {}
 
 interface Response {
   status: number;
@@ -23,21 +29,21 @@ type Method = "POST" | "GET" | "PUT" | "PATCH" | "DELETE";
 export type PostData = FormPostData | JsonPostData;
 
 export interface FormPostData {
-  tag: "form_post_data";
+  _tag: "form_post_data";
   body: FormData;
 }
 
 export const formBody = (body: FormData): FormPostData => ({
-  tag: "form_post_data",
+  _tag: "form_post_data",
   body,
 });
 
 export interface JsonPostData {
-  tag: "json_post_data";
+  _tag: "json_post_data";
   body: unknown;
 }
 export const jsonBody = (body: unknown): JsonPostData => ({
-  tag: "json_post_data",
+  _tag: "json_post_data",
   body,
 });
 
@@ -51,7 +57,7 @@ const request_ = (
   pipe(
     RequestService.pipe(
       Effect.flatMap(({ config }) =>
-        Effect.async<never, never, Response>((resume) => {
+        Effect.async<Response, never, never>((resume) => {
           const req = new XMLHttpRequest();
           req.addEventListener("load", () => {
             resume(
@@ -111,7 +117,7 @@ const request_ = (
  * Represents 4xx errors
  */
 export interface ClientError {
-  tag: "req_client_error";
+  _tag: "req_client_error";
   status: number;
   body: unknown;
 }
@@ -120,50 +126,51 @@ export interface ClientError {
  * Represents 5xx errors
  */
 export interface ServerError {
-  tag: "req_server_error";
+  _tag: "req_server_error";
   status: number;
   body: unknown;
 }
 
 export type RequestError = ClientError | ServerError | DecodeError;
 
-const handleErrorStatus = Effect.flatMap<
-  Response,
-  never,
-  ClientError | ServerError,
-  Response
->((resp) => {
-  if (resp.status >= 400 && resp.status < 500) {
-    return Effect.fail({ tag: "req_client_error", ...resp } as const);
-  } else if (resp.status >= 500) {
-    return Effect.fail({ tag: "req_server_error", ...resp } as const);
-  } else {
-    return Effect.succeed(resp);
+const handleErrorStatus = Effect.flatMap(
+  (
+    resp: Response
+  ): Effect.Effect<Response, ClientError | ServerError, never> => {
+    if (resp.status >= 400 && resp.status < 500) {
+      return Effect.fail({ _tag: "req_client_error", ...resp } as const);
+    } else if (resp.status >= 500) {
+      return Effect.fail({ _tag: "req_server_error", ...resp } as const);
+    } else {
+      return Effect.succeed(resp);
+    }
   }
-});
+);
 
 /**
  * Represents a resp body that doesn't match a schema
  */
 export interface DecodeError {
-  tag: "decode_error";
+  _tag: "decode_error";
   errors: PE.ParseError;
   actual: unknown;
 }
 
-const decodeRespBody = <A>(schema: S.Schema<any, A>) =>
-  Effect.flatMap<Response, never, DecodeError, A>((resp) =>
-    pipe(
-      resp.body,
-      P.parse(schema),
-      Effect.mapError(
-        (errors): DecodeError => ({
-          tag: "decode_error",
-          errors,
-          actual: resp.body,
-        })
+const decodeRespBody = <A>(schema: S.Schema<A, any>) =>
+  Effect.flatMap(
+    (resp: Response): Effect.Effect<A, DecodeError, never> =>
+      pipe(
+        resp.body,
+        S.decode(schema),
+        (a) => a,
+        Effect.mapError(
+          (errors): DecodeError => ({
+            _tag: "decode_error",
+            errors,
+            actual: resp.body,
+          })
+        )
       )
-    )
   );
 
 export const get = (url: string | URL) =>

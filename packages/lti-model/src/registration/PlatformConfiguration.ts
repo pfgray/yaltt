@@ -22,4 +22,4 @@ export const PlatformConfiguration = S.struct({
 });
 
 export interface PlatformConfiguration
-  extends S.To<typeof PlatformConfiguration> {}
+  extends S.Schema.To<typeof PlatformConfiguration> {}

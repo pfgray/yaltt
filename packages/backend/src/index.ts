@@ -7,7 +7,7 @@ import * as passport from "passport";
 import { createClient } from "redis";
 import { adminRouter } from "./admin/adminRouter";
 import { authRouter } from "./auth/authRouter";
-import { PgService } from "./db/PgService";
+import { QueryService } from "./db/QueryService";
 import { mkTransactionalPgService } from "./db/TransactionalPgService";
 import { pool } from "./db/db";
 import { addOrUpdateUserWithLocalPassword } from "./model/users";
@@ -70,8 +70,8 @@ app.listen(port, () => {
 });
 
 app.use("/api", authRouter);
-app.use("/api", appRouter);
-app.use("/api", registrationRouter);
+app.use(appRouter);
+app.use(registrationRouter);
 app.use("/api", launchRouter);
 app.use("/api", adminRouter);
 
@@ -85,7 +85,7 @@ if (process.env.ADMIN_USER && process.env.ADMIN_PASSWORD) {
         process.env.ADMIN_PASSWORD,
         "admin"
       ),
-      Effect.provideService(PgService, pgService.service),
+      pgService.provide,
       Effect.runPromiseExit
     ).then((exit) => {
       if (exit._tag === "Failure") {

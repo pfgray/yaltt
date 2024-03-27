@@ -15,4 +15,4 @@ export const CanvasToolConfiguration = S.struct({
 });
 
 export interface CanvasToolConfiguration
-  extends S.To<typeof CanvasToolConfiguration> {}
+  extends S.Schema.To<typeof CanvasToolConfiguration> {}

@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
 
-pnpm install --frozen-lockfile
-pnpm build "@yaltt/backend"
+echo "starting backend"
 pnpm run --filter "@yaltt/backend" start

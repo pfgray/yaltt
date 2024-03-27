@@ -12,7 +12,7 @@ export const AgsEndpointClaim = S.struct({
   }),
 });
 
-export type AgsEndpointClaim = S.To<
+export type AgsEndpointClaim = S.Schema.To<
   typeof AgsEndpointClaim
 >[typeof AgsEndpointClaimKey];
 

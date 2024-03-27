@@ -4,7 +4,7 @@ import { Effect, pipe } from "effect";
 import { parseBodyError } from "./express/parseBody";
 
 export interface ParserError {
-  tag: "parser_error";
+  _tag: "parser_error";
   body: unknown;
   error: ParseError;
 }
@@ -12,15 +12,15 @@ export interface ParserError {
 export const parserError =
   (body: unknown) =>
   (error: ParseError): ParserError => ({
-    tag: "parser_error",
+    _tag: "parser_error",
     body,
     error,
   });
 
 export const schemaParse =
-  <A>(schema: S.Schema<any, A>) =>
+  <A>(schema: S.Schema<A, any>) =>
   (input: unknown) =>
     pipe(
-      S.parse(schema)(input, { onExcessProperty: "ignore" }),
+      S.decode(schema)(input, { onExcessProperty: "ignore" }),
       Effect.mapError((error) => parseBodyError(input, error))
     );

@@ -12,16 +12,17 @@
     "packages/lti-model",
     "packages/lti-schema",
     "packages/canvas-lti-model",
-    "packages/docs"
+    "packages/docs",
+    "packages/endpoint-ts"
   ],
   "engines": {
     "node": ">=10",
     "pnpm": ">=3"
   },
-  "dependencies": {
-    "gbt": "^0.0.5"
-  },
   "scripts": {
     "build": "gbt build"
+  },
+  "dependencies": {
+    "gbt": "0.0.7"
   }
 }

@@ -11,7 +11,7 @@ export const NamesRolesServiceClaim = S.struct({
   }),
 });
 
-export type NamesRolesServiceClaim = S.To<
+export type NamesRolesServiceClaim = S.Schema.To<
   typeof NamesRolesServiceClaim
 >[typeof NamesRolesServiceClaimKey];
 

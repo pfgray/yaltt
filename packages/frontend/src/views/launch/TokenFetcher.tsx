@@ -27,6 +27,7 @@ export const TokenFetcher = (props: TokenFetcherProps) => {
 
   const token = useRemoteState(fetchToken);
 
+  // todo: get the scopes from the registration
   const scopesSupported =
     props.launch.registration.platform_configuration.scopes_supported;
 
@@ -60,12 +61,12 @@ export const TokenFetcher = (props: TokenFetcherProps) => {
         </Form>
         <button
           className="btn btn-neutral"
-          disabled={token.data.tag === "loading"}
+          disabled={token.data._tag === "loading"}
           onClick={() =>
             token.fetch(launch.app.id, launch.registration_id, selectedScopes)
           }
         >
-          {token.data.tag === "loading" ? (
+          {token.data._tag === "loading" ? (
             <span className="loading loading-dots loading-xs"></span>
           ) : null}
           Fetch API Token
@@ -76,9 +77,11 @@ export const TokenFetcher = (props: TokenFetcherProps) => {
             initial: () => <></>,
             loading: () => <></>,
             error: (e) => (
-              <div>
+              <div className="max-w-lg w-max">
                 <h6 className="mt-2">Error:</h6>
-                <pre>{JSON.stringify(e.error, null, 2)}</pre>
+                <pre className="max-w-full">
+                  {JSON.stringify(e.error, null, 2)}
+                </pre>
               </div>
             ),
             loaded: (t) => {

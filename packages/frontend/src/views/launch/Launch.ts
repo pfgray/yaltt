@@ -12,4 +12,4 @@ export const Launch = S.struct({
   registration: Registration,
 });
 
-export interface Launch extends S.To<typeof Launch> {}
+export interface Launch extends S.Schema.To<typeof Launch> {}
