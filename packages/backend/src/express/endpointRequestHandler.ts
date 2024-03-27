@@ -1,7 +1,13 @@
 import { Effect, Either, Option, ReadonlyArray, pipe } from "effect";
 
 import * as S from "@effect/schema/Schema";
-import { DecodeError, decodeError } from "@yaltt/model";
+import {
+  DecodeError,
+  EncodeError,
+  decodeError,
+  encode,
+  encodeError,
+} from "@yaltt/model";
 import {
   BodyFromEndpoint,
   Endpoint,
@@ -33,7 +39,7 @@ import {
   FetchStatusError,
 } from "../fetch/FetchService";
 import { ExpressRequestService } from "./RequestService";
-import { effRequestHandler } from "./effRequestHandler";
+import { EffErrors, EffServices, effRequestHandler } from "./effRequestHandler";
 import { ParseBodyError } from "./parseBody";
 import {
   ParseJwtError,
@@ -75,40 +81,6 @@ export const redirectResponse = (location: string) =>
   response(302)(undefined, {
     Location: location,
   });
-
-type EffErrors =
-  | PgError
-  | DecodeQueryError
-  | DecodeError
-  | NoRecordFound
-  | HashError
-  | UnauthenticatedError
-  | UnauthorizedError
-  | ParseBodyError
-  | ParseParamsError
-  | ParseQueryError
-  | FetchError
-  | FetchJsonParseError
-  | FetchStatusError
-  | KeyError
-  | ParseJwtError;
-
-type EffServices =
-  | ExpressRequestService
-  | QueryService
-  | KeyService
-  | ConfigService
-  | FetchService;
-
-export type EffRequestHandler = (
-  eff: Effect.Effect<Response, EffErrors, EffServices>
-) => express.RequestHandler<
-  unknown,
-  unknown,
-  unknown,
-  Record<string, string | string[] | undefined>,
-  {}
->;
 
 export type EndpointHandler = {
   <
@@ -179,15 +151,18 @@ export const endpointHandler: EndpointHandler = (endpoint) => (eff) =>
     Effect.flatMap(({ routeParams, queryParams, body }) =>
       eff(routeParams, queryParams, body)
     ),
-    Effect.flatMap((respBody): Either.Either<Response, DecodeError> => {
+    (a) => a,
+    Effect.flatMap((respBody): Either.Either<Response, EncodeError> => {
       const responseMeta = endpoint.response;
       if (responseMeta._tag === "json") {
         return pipe(
           S.encodeEither(responseMeta.schema)(respBody),
           Either.map(response(200)),
+          (a) => a,
           Either.mapLeft((a) => ({
-            ...decodeError(respBody)(a),
-          }))
+            ...encodeError(respBody)(a),
+          })),
+          (a) => a
         );
       } else {
         return Either.right(response(200)(respBody));

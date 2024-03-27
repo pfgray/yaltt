@@ -1,35 +1,32 @@
-import { Effect, Either, Option, ReadonlyArray, pipe } from "effect";
-import { useParsedParamsQuery } from "../../lib/react-router/useParsedParamsQuery";
-import * as S from "@effect/schema/Schema";
-import { WithRequest } from "../../lib/api/WithRequest";
-import { getDecode, postDecode } from "../../lib/api/request";
 import {
-  ContentItem,
-  DeepLinkingSettings,
-  DeepLinkingSettingsClaim,
-  extractDeepLinkingSettingsClaim,
-} from "lti-model";
+  AppId,
+  RegistrationId,
+  isContentItemType,
+  match,
+  signDeepLinkingContentItems,
+} from "@yaltt/model";
+import { Effect, Either, Option, ReadonlyArray, pipe } from "effect";
+import { ContentItem, DeepLinkingSettings } from "lti-model";
 import React from "react";
 import { makeMatchers } from "ts-adt/MakeADT";
 import { provideRequestService } from "../../lib/api/requestServiceImpl";
-import { isContentItemType, match } from "@yaltt/model";
-import { formatError } from "@effect/schema/TreeFormatter";
+import { fetchBodyFromEndpoint } from "../../lib/endpoint-ts/fetchFromEndpoint";
 
 const sendContentItems = (
   contentItems: ContentItem[],
-  appId: number,
-  registrationId: number,
+  appId: AppId,
+  registrationId: RegistrationId,
   deploymentId: string,
   deepLinkReturnUrl: string
 ) =>
   pipe(
-    postDecode(S.struct({ signedJwt: S.string }))(
-      `/api/apps/${appId}/registrations/${registrationId}/signDeepLinkingContentItems`,
-      {
-        body: { contentItems, deploymentId },
-        _tag: "json_post_data",
-      }
-    ),
+    fetchBodyFromEndpoint(signDeepLinkingContentItems)({
+      appId,
+      registrationId,
+    })({
+      contentItems,
+      deploymentId,
+    }),
     Effect.tap(({ signedJwt }) =>
       Effect.sync(() => {
         submitDeepLinking(signedJwt, deepLinkReturnUrl);
@@ -52,8 +49,8 @@ const submitDeepLinking = (signedJwt: string, deepLinkReturnUrl: string) => {
 
 type DeepLinkingFormProps = {
   deepLinkingSettings: DeepLinkingSettings;
-  appId: number;
-  registrationId: number;
+  appId: AppId;
+  registrationId: RegistrationId;
   deploymentId: string;
 };
 
@@ -108,14 +105,13 @@ export const DeepLinkingForm = (props: DeepLinkingFormProps) => {
             ).then(
               Either.match({
                 onLeft: match({
-                  decode_error: (err) => {
-                    console.error(
-                      "error decoding response:",
-                      formatError(err.errors)
-                    );
+                  fetch_exception: (e) => console.error("fetch exception", e),
+                  fetch_parse_error: (err) => {
+                    console.error("error parsing response:", err);
                   },
-                  req_client_error: (err) => console.log(err),
-                  req_server_error: (err) => console.log(err),
+                  fetch_parse_json_error: (err) => {
+                    console.error("error parsing json response:", err);
+                  },
                 }),
                 onRight: (res) => console.log(JSON.stringify(res)),
               })
@@ -138,6 +134,7 @@ type ContentItemFormProps = {
 const [matchType] = makeMatchers("type");
 
 const ContentItemForm = (props: ContentItemFormProps) => {
+  const [includeLineItem, setIncludeLineItem] = React.useState(false);
   const updateField =
     (key: string) =>
     (
@@ -147,8 +144,21 @@ const ContentItemForm = (props: ContentItemFormProps) => {
     ) => {
       props.update({ ...props.contentItem, [key]: e.currentTarget.value });
     };
+  const updateLineItemField =
+    (key: string) =>
+    (e: { currentTarget: { value: string | number | boolean } }) => {
+      const lineItem =
+        "lineItem" in props.contentItem &&
+        typeof props.contentItem.lineItem !== "undefined"
+          ? props.contentItem.lineItem
+          : { scoreMaximum: 100 };
+      props.update({
+        ...props.contentItem,
+        ...{ lineItem: { ...lineItem, [key]: e.currentTarget.value } },
+      });
+    };
   return (
-    <div className="flex flex-col gap-4 w-full">
+    <div className="flex flex-col gap-4 max-w-xs">
       <h4>Content Item to Return</h4>
       <label className="form-control w-full max-w-xs">
         <div className="label">
@@ -272,6 +282,68 @@ const ContentItemForm = (props: ContentItemFormProps) => {
                 value={item.text}
                 onChange={updateField("text")}
               />
+              <div className="form-control">
+                <label className="label cursor-pointer">
+                  <span className="label-text">Include Lineitem</span>
+                  <input
+                    type="checkbox"
+                    className="checkbox"
+                    onChange={() => setIncludeLineItem(!includeLineItem)}
+                    checked={includeLineItem}
+                  />
+                </label>
+              </div>
+              {includeLineItem && (
+                <>
+                  <input
+                    type="text"
+                    placeholder="Label"
+                    className="input input-bordered w-full"
+                    value={item.lineItem?.label}
+                    onChange={updateLineItemField("label")}
+                  />
+                  <div className="label">
+                    <span className="label-text">Maximum Score</span>
+                  </div>
+                  <input
+                    type="number"
+                    className="input input-bordered w-full"
+                    value={item.lineItem?.scoreMaximum}
+                    onChange={updateLineItemField("scoreMaximum")}
+                  />
+                  <input
+                    type="number"
+                    placeholder="Resource Id"
+                    className="input input-bordered w-full"
+                    value={item.lineItem?.resourceId}
+                    onChange={updateLineItemField("resourceId")}
+                  />
+                  <div className="form-control">
+                    <label className="label cursor-pointer">
+                      <span className="label-text">Grades Released</span>
+                      <input
+                        type="checkbox"
+                        className="checkbox"
+                        onChange={() =>
+                          updateLineItemField("gradesReleased")({
+                            currentTarget: {
+                              value: !item.lineItem?.gradesReleased,
+                            },
+                          })
+                        }
+                        checked={!item.lineItem?.gradesReleased}
+                      />
+                    </label>
+                  </div>
+                  {/* S.struct({
+      label: S.optional(S.string),
+      scoreMaximum: S.number,
+      resourceId: S.optional(S.string),
+      _tag: S.optional(S.string),
+      gradesReleased: S.optional(S.boolean),
+    }) */}
+                </>
+              )}
             </>
           ),
           image: (item) => (

@@ -3,6 +3,7 @@ export * from "./api/registrations";
 export * from "./app/App";
 export * from "./user/User";
 export * from "./lib/decode";
+export * from "./lib/encode";
 export * from "./matchers/match";
 export * from "./registration/Registration";
 export * from "./schemas/stringInteger";

@@ -132,7 +132,7 @@ const buildUrlForEndpointAndParams =
         const params = queryParams.toString();
         return params === "" ? "" : `?${params}`;
       }),
-      Effect.map(({ path, queryParamStr }) => path + queryParamStr)
+      Effect.map(({ path, queryParamStr }) => "/" + path + queryParamStr)
     );
 
 export const fetchFromEndpoint: FetchFromEndpoint =

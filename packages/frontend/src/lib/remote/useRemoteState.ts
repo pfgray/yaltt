@@ -20,15 +20,15 @@ export type RemoteState<E, A> =
     };
 
 type EffectData<T> = T extends Effect.Effect<
-  RequestService,
+  infer A,
   RequestError,
-  infer A
+  RequestService
 >
   ? A
   : unknown;
 
 export const useRemoteState = <
-  F extends (...a: any[]) => Effect.Effect<RequestService, RequestError, any>
+  F extends (...a: any[]) => Effect.Effect<any, RequestError, RequestService>
 >(
   eff: F
 ): {

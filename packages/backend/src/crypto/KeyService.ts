@@ -39,7 +39,7 @@ export const generateKeyPair = KeyService.pipe(
   Effect.flatMap(({ generateKeyPair }) => generateKeyPair())
 );
 
-export const exportPublickKeyJWK = (b: Buffer) =>
+export const exportPublicKeyJWK = (b: Buffer) =>
   KeyService.pipe(
     Effect.flatMap(({ exportPublickKeyJWK }) => exportPublickKeyJWK(b))
   );

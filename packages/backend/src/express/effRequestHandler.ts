@@ -8,7 +8,7 @@ import {
   UnauthenticatedError,
   UnauthorizedError,
 } from "../auth/authedRequestHandler";
-import { DecodeError, match } from "@yaltt/model";
+import { DecodeError, EncodeError, match } from "@yaltt/model";
 import { ParseBodyError } from "./parseBody";
 import {
   ParseJwtError,
@@ -68,10 +68,11 @@ export const redirectResponse = (location: string) =>
     Location: location,
   });
 
-type EffErrors =
+export type EffErrors =
   | PgError
   | DecodeQueryError
   | DecodeError
+  | EncodeError
   | NoRecordFound
   | HashError
   | UnauthenticatedError
@@ -85,7 +86,7 @@ type EffErrors =
   | KeyError
   | ParseJwtError;
 
-type EffServices =
+export type EffServices =
   | ExpressRequestService
   | QueryService
   | KeyService
@@ -131,6 +132,12 @@ export const effRequestHandler: EffRequestHandler =
             onFail: match({
               decode_error: (e) => {
                 console.error("Decode Error", e);
+                handleErrorResponse(request, response)(500, {
+                  failure: "An error ocurred.",
+                });
+              },
+              encode_error: (e) => {
+                console.error("Encode Error", formatError(e.error));
                 handleErrorResponse(request, response)(500, {
                   failure: "An error ocurred.",
                 });

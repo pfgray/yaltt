@@ -23,11 +23,12 @@ import {
   LtiMessageTypes,
   LtiVersionClaimKey,
   MessageTypeClaimKey,
+  PublicJwk,
   ToolConfiguration,
 } from "lti-model";
 import { unauthorizedError } from "../../auth/authedRequestHandler";
 import { getConfig } from "../../config/ConfigService";
-import { exportPublickKeyJWK } from "../../crypto/KeyService";
+import { exportPublicKeyJWK } from "../../crypto/KeyService";
 import { ExpressRequestService } from "../../express/RequestService";
 import { bindEndpoint } from "../../express/endpointRequestHandler";
 import { Fetch } from "../../fetch/FetchService";
@@ -50,6 +51,7 @@ import {
 } from "./mkYalttToolConfiguration";
 
 import { deleteRegistration } from "@yaltt/model";
+import { getRouteString } from "endpoint-ts";
 
 export const registrationRouter = express.Router();
 const bindRegistrationEndpoint = bindEndpoint(registrationRouter);
@@ -190,7 +192,7 @@ bindRegistrationEndpoint(getPublicJwkSet)(({ registrationId }) =>
     getKeysWithoutPrivateKeyForRegistrationId(registrationId),
     Effect.flatMap((keys) =>
       Effect.forEach(keys, (key) =>
-        Effect.map(exportPublickKeyJWK(key.public_key), (jwk) => ({
+        Effect.map(exportPublicKeyJWK(key.public_key), (jwk) => ({
           ...jwk,
           kid: key.id.toString(),
         }))

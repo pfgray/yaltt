@@ -12,6 +12,7 @@ import { TokenFetcher } from "./TokenFetcher";
 import { Launch } from "./Launch";
 import { RawLaunch } from "./RawLaunch";
 import { DeepLinkingView } from "./DeepLinkingView";
+import { AgsView } from "./AgsView";
 
 const fetchLaunch = (launchId: number) =>
   getDecode(Launch)(`/api/launch/${launchId}`);
@@ -35,6 +36,7 @@ export const LaunchView = () => {
           {(launch) => (
             <div className="p-4">
               <div className="flex flex-col gap-2">
+                {/* <AgsView launch={launch} /> */}
                 <DeepLinkingView launch={launch} />
                 <RawLaunch launch={launch} />
                 <TokenFetcher launch={launch} />
