@@ -221,28 +221,31 @@ export const DynamicRegistration = () => {
                                       messages: Object.entries(placements)
                                         .filter(([, p]) => p.enabled)
                                         .map(
-                                          ([key, p]): LtiMessage => ({
-                                            type: p.message_type,
-                                            custom_parameters:
-                                              p.custom_parameters
-                                                .split("\n")
-                                                .map((s) => s.split("="))
-                                                .reduce(
-                                                  (acc, [key, value]) => ({
-                                                    ...acc,
-                                                    [key]: value,
-                                                  }),
-                                                  {}
-                                                ),
-                                            label: p.label,
-                                            icon_uri: p.icon_uri,
-                                            roles: p.roles
-                                              .split(",")
-                                              .map((s) => s.trim())
-                                              .filter((s) => s !== ""),
-                                            placements: [key],
-                                            // target_link_uri: `${window.location.origin}/api/apps/${params.appId}/launch?placement=${key}`,
-                                          })
+                                          ([key, p]): LtiMessage =>
+                                            ({
+                                              type: p.message_type,
+                                              custom_parameters:
+                                                p.custom_parameters
+                                                  .split("\n")
+                                                  .map((s) => s.split("="))
+                                                  .reduce(
+                                                    (acc, [key, value]) => ({
+                                                      ...acc,
+                                                      [key]: value,
+                                                    }),
+                                                    {}
+                                                  ),
+                                              label: p.label,
+                                              icon_uri: p.icon_uri,
+                                              roles: p.roles
+                                                .split(",")
+                                                .map((s) => s.trim())
+                                                .filter((s) => s !== ""),
+                                              placements: [key],
+                                              "http://canvas.instructure.com/lti/course_navigation/default_disabled":
+                                                true,
+                                              // target_link_uri: `${window.location.origin}/api/apps/${params.appId}/launch?placement=${key}`,
+                                            } as any)
                                         ),
                                     }),
                                     installTool,

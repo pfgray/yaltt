@@ -12,6 +12,7 @@ export const LtiMessage = pipe(
     icon_uri: S.optional(S.string),
     placements: S.optional(S.array(S.string)),
     roles: S.optional(S.array(S.string)),
+    "http://canvas.instructure.com/lti/course_navigation/default_disabled": S.optional(S.boolean)
   }),
   S.extend(LocalizedKey("label"))
 );
