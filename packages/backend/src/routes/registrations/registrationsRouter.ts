@@ -242,11 +242,14 @@ bindRegistrationEndpoint(createToolInstallation)(({ appId }, _, body) =>
         },
         messages: body.messages.map((m) => ({
           ...m,
-          target_link_uri: `http://${
-            config.primaryHostname
-          }/api/registrations/${registration.id}/launch${
-            m.placements ? `?placement=${m.placements.join(",")}` : ""
-          }`,
+          target_link_uri: mkYalttUrl(
+            config,
+            request.request
+          )(
+            `/api/registrations/${registration.id}/launch${
+              m.placements ? `?placement=${m.placements.join(",")}` : ""
+            }`
+          ),
         })),
         scopes: registration.scopes,
         claims: registration.claims,
