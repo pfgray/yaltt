@@ -243,7 +243,7 @@ export const DynamicRegistration = () => {
                                                 .filter((s) => s !== ""),
                                               placements: [key],
                                               "http://canvas.instructure.com/lti/course_navigation/default_disabled":
-                                                true,
+                                                false,
                                               // target_link_uri: `${window.location.origin}/api/apps/${params.appId}/launch?placement=${key}`,
                                             } as any)
                                         ),
