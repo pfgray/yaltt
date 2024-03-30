@@ -20,6 +20,7 @@ const registrationsRoute = pipe(
   param("appId", S.compose(S.NumberFromString, AppId)),
   path("registrations")
 );
+
 const registrationRoute = pipe(
   basePath,
   path("registrations"),
@@ -107,14 +108,17 @@ export const getApiTokenForRegistration = Endpoint.get(
 );
 
 export const signDeepLinkingContentItems = Endpoint.post(
-  pipe(
-    registrationsRoute,
-    param("registrationId", S.compose(S.NumberFromString, RegistrationId)),
-    path("signDeepLinkingContentItems")
-  ),
+  pipe(registrationRoute, path("signDeepLinkingContentItems")),
   {},
   Response.json(S.struct({ signedJwt: S.string })),
   Body.json(
     S.struct({ contentItems: S.array(ContentItem), deploymentId: S.string })
   )
+);
+
+export const createScoreForUser = Endpoint.post(
+  pipe(registrationRoute, path("createScore")),
+  {},
+  Response.json(LtiToken),
+  Body.json(S.struct({}))
 );
