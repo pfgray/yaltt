@@ -6,9 +6,9 @@ import { Submission } from "./Submission";
 
 export const Score = S.struct({
   timestamp: S.DateFromString,
-  scoreGiven: S.number,
-  scoreMaximum: S.number,
-  comment: S.string,
+  scoreGiven: S.optional(S.number),
+  scoreMaximum: S.optional(S.number),
+  comment: S.optional(S.string),
   activityProgress: S.enums(ActivityProgress),
   gradingProgress: S.enums(GradingProgress),
   userId: UserId,

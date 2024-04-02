@@ -1,9 +1,9 @@
 import * as crypto from "crypto";
 import { Effect, Option, pipe } from "effect";
 
-import { signJwt } from "../../crypto/KeyService";
-import { getKeyForRegistrationId } from "../../model/entities/keys";
-import { RegistrationRow } from "../../model/entities/registrations";
+import { signJwt } from "../crypto/KeyService";
+import { getKeyForRegistrationId } from "../model/entities/keys";
+import { RegistrationRow } from "../model/entities/registrations";
 
 export const signJwtPayloadForRegistration =
   (registration: RegistrationRow) => (payload: {}) =>

@@ -1,3 +1,7 @@
+export * from "./ags/Score";
+export * from "./ags/Submission";
+export * from "./ags/ActivityProgress";
+export * from "./ags/GradingProgress";
 export * from "./claims/AgsEndpoint";
 export * from "./claims/ContentItems";
 export * from "./claims/Context";
@@ -36,3 +40,4 @@ export * from "./registration/LtiToolConfiguration";
 export * from "./registration/PlatformConfiguration";
 export * from "./registration/ToolConfiguration";
 export * from "./registration/Url";
+export * from "./user/UserId";

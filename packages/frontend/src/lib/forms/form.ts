@@ -1,13 +1,21 @@
-import { Effect, Either } from "effect";
+import { Effect, Either, Option } from "effect";
 
 export interface ValidationError {}
 
-export interface FormField<T, A> {
-  _tag: "string" | "password" | "textarea";
-  initialValue: T;
-  label: string;
-  validate: (t: T) => Either.Either<A, ValidationError>;
-}
+export type FormField<T, A> =
+  | {
+      _tag: "string" | "password" | "textarea" | "number";
+      initialValue: T;
+      label: string;
+      validate: (t: T) => Either.Either<A, ValidationError>;
+    }
+  | {
+      _tag: "select";
+      initialValue: T;
+      label: string;
+      options: readonly T[];
+      validate: (t: T) => Either.Either<A, ValidationError>;
+    };
 
 export const string = (
   label: string,
@@ -29,6 +37,19 @@ export const password = (
   validate: Either.right,
 });
 
+export const number = (
+  label: string,
+  initialValue?: string,
+  validate?: (
+    num: string
+  ) => Either.Either<Option.Option<number>, ValidationError>
+): FormField<string, Option.Option<number>> => ({
+  _tag: "password",
+  label,
+  initialValue: initialValue || "",
+  validate: validate || (() => Either.right(Option.none())),
+});
+
 export const textarea = (
   label: string,
   initialValue: string
@@ -46,6 +67,18 @@ export const checkbox = (
   _tag: "textarea",
   label,
   initialValue: initialValue,
+  validate: Either.right,
+});
+
+export const select = <K extends string>(
+  label: string,
+  options: readonly K[],
+  initialValue?: K
+): FormField<K, K> => ({
+  _tag: "select",
+  label,
+  options,
+  initialValue: initialValue || options[0],
   validate: Either.right,
 });
 

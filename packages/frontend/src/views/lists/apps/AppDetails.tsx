@@ -2,9 +2,12 @@ import * as S from "@effect/schema/Schema";
 import { EllipsisVerticalIcon } from "@heroicons/react/24/outline";
 import {
   App,
+  AppId,
   CanvasPlatformConfiguration,
   Registration,
+  getApp,
   stringToInteger,
+  AppWithRegistrations,
 } from "@yaltt/model";
 import { Effect, Either, Option, pipe } from "effect";
 import React from "react";
@@ -24,27 +27,19 @@ import { confirmWithLoading } from "../../../lib/confirmation/Confirm";
 import * as F from "../../../lib/forms/form";
 import { useParsedParams } from "../../../lib/react-router/useSchemaParams";
 import { NewEntityForm } from "../NewEntityForm";
+import {
+  FetchError,
+  fetchFromEndpoint,
+} from "../../../lib/endpoint-ts/fetchFromEndpoint";
+import { fetchApp } from "../../../lib/apps/apps";
 
-const paramSchema = S.struct({ appId: stringToInteger });
-
-const AppWithRegistrations = App.pipe(
-  S.extend(
-    S.struct({
-      registrations: S.array(Registration),
-    })
-  )
-);
+const paramSchema = S.struct({ appId: AppId });
 
 const deleteRegistration = (options: {
   appId: number;
   registrationId: number;
 }) =>
   delete_(`/api/apps/${options.appId}/registrations/${options.registrationId}`);
-
-export type AppWithRegistrations = S.Schema.To<typeof AppWithRegistrations>;
-
-export const fetchApp = (appId: number) =>
-  getDecode(AppWithRegistrations)(`/api/apps/${appId}`);
 
 export const AppDetails = () => {
   const params = useParsedParams(paramSchema);
@@ -63,7 +58,8 @@ export const AppDetails = () => {
       ),
       onRight: ({ appId }) => (
         <>
-          <WithRequest eff={fetchApp(appId)}>
+          <pre>hmm, {JSON.stringify({ appId })}</pre>
+          <WithRequest eff={fetchApp({ appId })}>
             {(app, reloadApps) => (
               <YalttLayout
                 header={
@@ -175,7 +171,11 @@ type SubViewProps = {
   app: AppWithRegistrations;
   dynamicRegDialogRef: React.RefObject<HTMLDialogElement>;
   manualDialogRef: React.RefObject<HTMLDialogElement>;
-  reloadApps: Effect.Effect<never, RequestError, AppWithRegistrations>;
+  reloadApps: Effect.Effect<
+    AppWithRegistrations,
+    RequestError | FetchError,
+    never
+  >;
 };
 
 const EmptyRegistrationsView = (props: SubViewProps) => {

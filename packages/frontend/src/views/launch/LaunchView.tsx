@@ -36,7 +36,7 @@ export const LaunchView = () => {
           {(launch) => (
             <div className="p-4">
               <div className="flex flex-col gap-2">
-                {/* <AgsView launch={launch} /> */}
+                <AgsView launch={launch} />
                 <DeepLinkingView launch={launch} />
                 <RawLaunch launch={launch} />
                 <TokenFetcher launch={launch} />

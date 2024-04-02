@@ -47,6 +47,7 @@ export const TokenFetcher = (props: TokenFetcherProps) => {
         <Form className="shadow bg-base-200 rounded-lg p-4">
           {scopesSupported.map((scope, i) => (
             <Form.Label
+              key={scope}
               title={scope}
               className={(i === 0 ? "" : "border-t-2 ") + "border-neutral"}
             >

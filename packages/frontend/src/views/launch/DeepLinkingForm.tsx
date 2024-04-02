@@ -64,9 +64,9 @@ export const DeepLinkingForm = (props: DeepLinkingFormProps) => {
   const [contentItems, setContentItems] = React.useState<ContentItem[]>([
     {
       type: firstType,
-      url: "",
-      title: "",
-      text: "",
+      url: `${window.location.protocol}//${window.location.host}/api/registrations/${props.registrationId}/launch`,
+      title: "Yaltt Resource",
+      text: "This is a resource from Yaltt",
     } as ContentItem,
   ]);
   return (
@@ -284,7 +284,9 @@ const ContentItemForm = (props: ContentItemFormProps) => {
               />
               <div className="form-control">
                 <label className="label cursor-pointer">
-                  <span className="label-text">Include Lineitem</span>
+                  <span className="label-text">
+                    Include Lineitem (Gradebook Column)
+                  </span>
                   <input
                     type="checkbox"
                     className="checkbox"

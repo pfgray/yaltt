@@ -15,25 +15,30 @@ import {
 import { CanvasToolConfiguration } from "canvas-lti-model";
 import { AppId } from "../app/App";
 
-const registrationsRoute = pipe(
+export const appRegistrationsRoute = pipe(
   appsRoute,
   param("appId", S.compose(S.NumberFromString, AppId)),
   path("registrations")
 );
 
-const registrationRoute = pipe(
+export const appRegistrationsRegistrationRoute = pipe(
+  appRegistrationsRoute,
+  param("registrationId", S.compose(S.NumberFromString, RegistrationId))
+);
+
+export const registrationRoute = pipe(
   basePath,
   path("registrations"),
   param("registrationId", S.compose(S.NumberFromString, RegistrationId))
 );
 
 export const getRegistrations = Endpoint.get(
-  registrationsRoute,
+  appRegistrationsRoute,
   {},
   Response.json(S.array(Registration))
 );
 export const createRegistration = Endpoint.post(
-  registrationsRoute,
+  appRegistrationsRoute,
   {},
   Response.json(Registration),
   Body.json(
@@ -87,7 +92,7 @@ export const getOpenidConfig = Endpoint.get(
 
 export const deleteRegistration = Endpoint.delete(
   pipe(
-    registrationsRoute,
+    appRegistrationsRoute,
     param("registrationId", S.compose(S.NumberFromString, RegistrationId))
   ),
   {},
@@ -97,7 +102,7 @@ export const deleteRegistration = Endpoint.delete(
 
 export const getApiTokenForRegistration = Endpoint.get(
   pipe(
-    registrationsRoute,
+    appRegistrationsRoute,
     param("registrationId", S.compose(S.NumberFromString, RegistrationId)),
     path("token")
   ),
@@ -108,17 +113,10 @@ export const getApiTokenForRegistration = Endpoint.get(
 );
 
 export const signDeepLinkingContentItems = Endpoint.post(
-  pipe(registrationRoute, path("signDeepLinkingContentItems")),
+  pipe(appRegistrationsRegistrationRoute, path("signDeepLinkingContentItems")),
   {},
   Response.json(S.struct({ signedJwt: S.string })),
   Body.json(
     S.struct({ contentItems: S.array(ContentItem), deploymentId: S.string })
   )
-);
-
-export const createScoreForUser = Endpoint.post(
-  pipe(registrationRoute, path("createScore")),
-  {},
-  Response.json(LtiToken),
-  Body.json(S.struct({}))
 );

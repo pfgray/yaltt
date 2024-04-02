@@ -21,6 +21,7 @@ import {
 import { getIconForApp } from "./routes/apps/appIcon";
 
 const app = express.default();
+
 const port = 3000;
 
 const redisClient = createClient({

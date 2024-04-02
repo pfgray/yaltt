@@ -43,7 +43,7 @@ import {
 import { schemaParse } from "../../schemaParse";
 import { fetchToken } from "../../tokens/tokens";
 import { appIdIsForUser } from "../apps/appRouter";
-import { signJwtPayloadForRegistration } from "./jwtSign";
+import { signJwtPayloadForRegistration } from "../../tokens/jwtSign";
 import { mkYalttCanvasToolConfiguration } from "./mkYalttCanvasToolConfiguration";
 import {
   mkYalttToolConfiguration,

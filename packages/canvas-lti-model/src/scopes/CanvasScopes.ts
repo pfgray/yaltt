@@ -1,4 +1,4 @@
-import { LtiScopes } from "lti-model";
+import { LtiScope } from "lti-model";
 
 /**
  * Lti Scopes specific to Canvas
@@ -45,7 +45,7 @@ export const CanvasScopes = {
     "https://canvas.instructure.com/lti/account_external_tools/scope/show",
   LTI_UPDATE_ACCOUNT_EXTERNAL_TOOLS_SCOPE:
     "https://canvas.instructure.com/lti/account_external_tools/scope/update",
-  ...LtiScopes,
+  ...LtiScope,
 } as const;
 
-export type CanvasScope = typeof CanvasScopes[keyof typeof CanvasScopes];
+export type CanvasScope = (typeof CanvasScopes)[keyof typeof CanvasScopes];

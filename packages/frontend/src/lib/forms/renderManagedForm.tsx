@@ -132,6 +132,46 @@ export const renderManagedForm = <
                 onChange={(e) => setFields(HashMap.set(key, e.target.value))}
               ></textarea>
             );
+          } else if (value._tag === "select") {
+            return (
+              <select
+                name={key}
+                key={key}
+                className="select select-bordered w-full"
+                value={pipe(
+                  fields,
+                  HashMap.get(key),
+                  Option.getOrElse(() => "")
+                )}
+                onChange={(e) => setFields(HashMap.set(key, e.target.value))}
+              >
+                {pipe(
+                  value.options,
+                  ReadonlyArray.map((option) => (
+                    <option key={option} value={option}>
+                      {option}
+                    </option>
+                  ))
+                )}
+              </select>
+            );
+          } else if (value._tag === "number") {
+            return (
+              <div className="form-control w-full" key={key}>
+                <input
+                  type="number"
+                  name={key}
+                  className="input input-bordered w-full"
+                  placeholder={capitalizeWords(value.label)}
+                  value={pipe(
+                    fields,
+                    HashMap.get(key),
+                    Option.getOrElse(() => "")
+                  )}
+                  onChange={(e) => setFields(HashMap.set(key, e.target.value))}
+                />
+              </div>
+            );
           } else {
             return <></>;
           }

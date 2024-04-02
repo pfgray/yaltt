@@ -20,11 +20,11 @@ import {
   ChevronUpIcon,
 } from "@heroicons/react/24/outline";
 import { provideRequestService } from "../../../lib/api/requestServiceImpl";
-import { AppWithRegistrations, fetchApp } from "../apps/AppDetails";
 import { create } from "zustand";
 import { ADT } from "ts-adt";
 import { AppId, TagADT, match } from "@yaltt/model";
 import { useParsedParamsQuery } from "../../../lib/react-router/useParsedParamsQuery";
+import { fetchApp } from "../../../lib/apps/apps";
 
 type SelectedScopeState = {
   scopes: ReadonlyArray<string>;
@@ -116,14 +116,14 @@ const fetchOpenIdConfig = (params: {
   );
 
 const fetchDynRegData = (params: {
-  appId: number;
+  appId: AppId;
   openid_configuration: string;
   registration_token?: string;
 }) =>
   pipe(
     fetchOpenIdConfig(params),
     Effect.bindTo("openidConfig"),
-    Effect.bind("app", () => fetchApp(params.appId))
+    Effect.bind("app", () => fetchApp({ appId: params.appId }))
   );
 
 const installToolReq = (

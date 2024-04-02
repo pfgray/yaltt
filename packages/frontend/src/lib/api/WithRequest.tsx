@@ -22,7 +22,7 @@ type WithRequestProps<A> = {
 
 export const WithRequest = <A,>(props: WithRequestProps<A>): JSX.Element => {
   const [value, setValue] = React.useState<
-    Option.Option<Either.Either<RequestError | FetchError, A>>
+    Option.Option<Either.Either<A, RequestError | FetchError>>
   >(Option.none);
   props.eff;
   provideRequestService<A, RequestError | FetchError, RequestService>(

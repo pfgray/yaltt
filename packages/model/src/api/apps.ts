@@ -14,18 +14,20 @@ export const appRoute = pipe(
 
 export const getApps = Endpoint.get(appsRoute, {}, Response.json(S.array(App)));
 
+export const AppWithRegistrations = App.pipe(
+  S.extend(
+    S.struct({
+      registrations: S.array(Registration),
+    })
+  )
+);
+
+export type AppWithRegistrations = S.Schema.To<typeof AppWithRegistrations>;
+
 export const getApp = Endpoint.get(
   appRoute,
   {},
-  Response.json(
-    App.pipe(
-      S.extend(
-        S.struct({
-          registrations: S.array(Registration),
-        })
-      )
-    )
-  )
+  Response.json(AppWithRegistrations)
 );
 
 export const deleteApp = Endpoint.delete(

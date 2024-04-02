@@ -14,22 +14,28 @@ import {
   QueryParametersFromEndpoint,
   QuerySchema,
   EndpointBody,
+  getRouteString,
 } from "endpoint-ts";
 import { Effect, Either, Option, ReadonlyArray, pipe } from "effect";
 import * as S from "@effect/schema/Schema";
 import { ParseError } from "@effect/schema/ParseResult";
+import { EncodeError, encodeEither, encodeError } from "@yaltt/model";
 
 export type FetchError = FetchException | FetchParseJsonError | FetchParseError;
 
 export type FetchException = {
   _tag: "fetch_exception";
+  url?: string;
   reason: unknown;
 };
 
-const fetchError = (reason: unknown): FetchException => ({
-  _tag: "fetch_exception",
-  reason,
-});
+const fetchError =
+  (url?: string) =>
+  (reason: unknown): FetchException => ({
+    _tag: "fetch_exception",
+    url,
+    reason,
+  });
 
 export type FetchParseJsonError = {
   _tag: "fetch_parse_json_error";
@@ -121,6 +127,7 @@ const buildUrlForEndpointAndParams =
         endpoint.route,
         typeof routeParams === "undefined" ? {} : routeParams
       ),
+      Effect.mapError(encodeError(null)),
       Effect.bindTo("path"),
       Effect.bind("queryParams", () =>
         encodeQueryParams(
@@ -139,11 +146,24 @@ export const fetchFromEndpoint: FetchFromEndpoint =
   (endpoint) => (routeParams, queryParams) =>
     pipe(
       buildUrlForEndpointAndParams(endpoint)(routeParams, queryParams),
-      Effect.flatMap((url) => {
-        return Effect.tryPromise((signal) => fetch(url, { signal }));
+      Effect.mapError(fetchError(getRouteString(endpoint.route) + "huhuhuu")),
+      Effect.bindTo("url"),
+      (a) => a,
+      Effect.bind("resp", ({ url }) => {
+        return pipe(
+          Effect.tryPromise((signal) => fetch(url, { signal })),
+          Effect.mapError(fetchError(url))
+        );
       }),
-      Effect.mapError(fetchError),
-      Effect.flatMap(parseResponseForEndpoint(endpoint))
+      (a) => a,
+      Effect.flatMap(({ resp, url }) =>
+        pipe(
+          resp,
+          parseResponseForEndpoint(endpoint, url),
+          Effect.mapError(fetchError(url))
+        )
+      ),
+      (a) => a
     );
 
 const encodeQueryParams = (
@@ -156,7 +176,7 @@ const encodeQueryParams = (
       if (schema._tag === "Array" && value instanceof Array) {
         // assume value is an array also
         return pipe(
-          value.map((v: any) => S.encodeEither(schema.schema)(v)),
+          value.map(encodeEither(schema.schema)),
           Either.all,
           Either.map((vs) => vs.map((v) => [name, v] as const))
         );
@@ -168,14 +188,14 @@ const encodeQueryParams = (
             onNone: () => Either.right([]),
             onSome: (v) =>
               pipe(
-                S.encodeEither(schema.schema)(v),
+                encodeEither(schema.schema)(v),
                 Either.map((v) => [[name, v] as const])
               ),
           })
         );
       } else {
         return pipe(
-          S.encodeEither(schema.schema)(value),
+          encodeEither(schema.schema)(value),
           Either.map((v) => [[name, v] as const])
         );
       }
@@ -249,7 +269,7 @@ export const fetchBodyFromEndpoint: FetchBodyFromEndpoint =
           })
         )
       ),
-      Effect.mapError(fetchError),
+      Effect.mapError(fetchError()),
       Effect.flatMap(parseResponseForEndpoint(endpoint))
     );
 
@@ -267,12 +287,13 @@ const parseResponseForEndpoint =
       any
     >
   >(
-    endpoint: E
+    endpoint: E,
+    url?: string
   ) =>
   (response: Response) =>
     pipe(
       Effect.tryPromise(() => response.text()),
-      Effect.mapError(fetchError),
+      Effect.mapError(fetchError(url)),
       Effect.flatMap((responseBody) => {
         const resp = endpoint.response;
         switch (resp._tag) {
