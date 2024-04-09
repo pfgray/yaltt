@@ -33,7 +33,7 @@ import {
 } from "../../../lib/endpoint-ts/fetchFromEndpoint";
 import { fetchApp } from "../../../lib/apps/apps";
 
-const paramSchema = S.struct({ appId: AppId });
+const paramSchema = S.struct({ appId: S.compose(S.NumberFromString, AppId) });
 
 const deleteRegistration = (options: {
   appId: number;
