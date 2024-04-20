@@ -106,6 +106,7 @@ bindRegistrationEndpoint(createRegistration)(({ appId }, _, body) =>
   )
 );
 
+// Yaltt's requested claims
 const default_claims = [
   "sub",
   "iss",
@@ -115,6 +116,7 @@ const default_claims = [
   "nickname",
   "picture",
   "email",
+  "https://purl.imsglobal.org/spec/lti/claim/lis",
   "locale",
 ] as const;
 
