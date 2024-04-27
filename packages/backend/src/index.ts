@@ -12,6 +12,7 @@ import { mkTransactionalPgService } from "./db/TransactionalPgService";
 import { pool } from "./db/db";
 import { addOrUpdateUserWithLocalPassword } from "./model/users";
 import { appRouter } from "./routes/apps/appRouter";
+import { agsRouter } from "./routes/ags/agsRouter";
 import { launchRouter } from "./routes/registrations/launchRouter";
 import { registrationRouter } from "./routes/registrations/registrationsRouter";
 import {
@@ -73,6 +74,7 @@ app.listen(port, () => {
 app.use("/api", authRouter);
 app.use(appRouter);
 app.use(registrationRouter);
+app.use(agsRouter);
 app.use("/api", launchRouter);
 app.use("/api", adminRouter);
 

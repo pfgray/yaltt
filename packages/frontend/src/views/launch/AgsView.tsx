@@ -34,10 +34,6 @@ export const AgsView = ({ launch }: AgsViewProps) =>
     Option.bind("userId", ({ user }) => Option.fromNullable(user.sub)),
     Option.map(({ ags, deploymentId, userId }) => (
       <LaunchCollapsible title="Assignment & Grade Services" initialOpen={true}>
-        <div>lineitem</div>
-        <pre>{ags.lineitem}</pre>
-        <div>lineitems</div>
-        <pre>{ags.lineitems}</pre>
         {ags.lineitem ? (
           <ScoreForm
             lineItemUrl={ags.lineitem}
@@ -110,13 +106,21 @@ const ScoreForm = (props: AgsFormProps) => {
         props.lineItemUrl,
         props.userId
       ),
-    [props.appId, props.registrationId, props.lineItemUrl]
+    [props.appId, props.registrationId, props.lineItemUrl, props.userId]
   );
   return (
     <div>
-      {renderManagedForm(entityForm, () => (
+      {renderManagedForm(entityForm, ({ submitForm }) => (
         <div className="modal-action">
-          <button className="btn">Create</button>
+          <button
+            className="btn btn-primary"
+            onClick={(e) => {
+              e.preventDefault();
+              submitForm();
+            }}
+          >
+            Send Score
+          </button>
         </div>
       ))}
     </div>

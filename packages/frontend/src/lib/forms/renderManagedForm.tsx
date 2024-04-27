@@ -21,87 +21,87 @@ export const renderManagedForm = <
   R extends Record<K, FormField<any, any>>
 >(
   form: Form<K, R>,
-  renderExtra?: () => JSX.Element
+  renderExtra?: (options: { submitForm: () => void }) => JSX.Element
 ) => {
-  const fieldsHm = React.useMemo(
-    () =>
-      pipe(
-        Object.keys(form.fields) as unknown as readonly K[],
-        (keys: readonly K[]) => keys,
-        ReadonlyArray.filterMap((k) =>
-          pipe(
-            form.fields,
-            ReadonlyRecord.get(k),
-            Option.map((value: FormField<any, any>) => [k, value] as const)
-          )
-        ),
-        HashMap.fromIterable
-      ),
-    [form]
-  );
+  const formFields = form.fields as Record<string, FormField<any, any>>;
   const initialValues = React.useMemo(
     () =>
       pipe(
-        fieldsHm,
-        HashMap.map((value, key) => value.initialValue)
+        Object.entries(formFields),
+        ReadonlyArray.map((a) => [a[0], a[1].initialValue] as const),
+        Object.fromEntries
       ),
-    [fieldsHm]
+    [formFields]
   );
 
   const [fields, setFields] = React.useState(initialValues);
+
+  const setField = (key: string, value: any) => {
+    setFields((prev: any) => ({
+      ...prev,
+      [key]: value,
+    }));
+  };
+
+  const submitForm = () => {
+    pipe(
+      Array.from(Object.keys(fields)),
+      ReadonlyArray.fromIterable,
+
+      ReadonlyArray.map((key) =>
+        pipe(
+          Option.Do,
+          Option.bind("value", () => Option.fromNullable(fields[key])),
+          Option.bind("fieldDef", () => Option.fromNullable(formFields[key])),
+          Option.map(({ value, fieldDef }) => fieldDef.validate(value)),
+          Either.fromOption(
+            (): ValidationError => ({ message: `cant find key: ${key}` })
+          ),
+          Either.flatMap((a) => a),
+          Either.map((v) => [key, v] as const)
+        )
+      ),
+      Either.all,
+      Either.map(toObj),
+      Either.map((values) => {
+        Effect.runCallback(form.onSubmit(values as any));
+      })
+    );
+  };
+
   return (
     <form
       className="mb-0"
       onSubmit={(e) => {
         e.preventDefault();
-        pipe(
-          Array.from(HashMap.keys(fields)),
-          ReadonlyArray.fromIterable,
-
-          ReadonlyArray.map((key) =>
-            pipe(
-              Option.Do,
-              Option.bind("value", () => HashMap.get(key)(fields)),
-              Option.bind("fieldDef", () => HashMap.get(key)(fieldsHm)),
-              Option.map(({ value, fieldDef }) => fieldDef.validate(value)),
-              Either.fromOption(
-                (): ValidationError => ({ message: `cant find key: ${key}` })
-              ),
-              Either.flatMap((a) => a),
-              Either.map((v) => [key, v] as const)
-            )
-          ),
-          Either.all,
-          Either.map(toObj),
-          Either.map((values) => {
-            Effect.runCallback(form.onSubmit(values as any));
-          })
-        );
+        submitForm();
       }}
     >
       {pipe(
-        fieldsHm,
-        HashMap.map((value, key) => {
+        formFields,
+        Object.entries,
+        ReadonlyArray.map(([key, value]: [string, FormField<any, any>]) => {
+          value;
           if (value._tag === "string") {
             return (
-              <div className="form-control w-full" key={key}>
+              <div className="form-control w-full mb-2" key={key}>
                 <input
                   type="text"
                   name={key}
                   className="input input-bordered w-full"
                   placeholder={capitalizeWords(value.label)}
                   value={pipe(
-                    fields,
-                    HashMap.get(key),
+                    fields[key],
+                    Option.fromNullable,
                     Option.getOrElse(() => "")
                   )}
-                  onChange={(e) => setFields(HashMap.set(key, e.target.value))}
+                  onChange={(e) => setField(key, e.target.value)}
                 />
               </div>
             );
           } else if (value._tag === "password") {
             return (
-              <div className="form-control w-full" key={key}>
+              <div className="form-control w-full mb-2" key={key}>
                 <input
                   type="text"
                   name={key}
@@ -109,11 +109,11 @@ export const renderManagedForm = <
                   placeholder={capitalizeWords(value.label)}
                   typeof="password"
                   value={pipe(
-                    fields,
-                    HashMap.get(key),
+                    fields[key],
+                    Option.fromNullable,
                     Option.getOrElse(() => "")
                   )}
-                  onChange={(e) => setFields(HashMap.set(key, e.target.value))}
+                  onChange={(e) => setField(key, e.target.value)}
                 />
               </div>
             );
@@ -122,14 +122,14 @@ export const renderManagedForm = <
               <textarea
                 name={key}
                 key={key}
-                className="textarea textarea-bordered w-full h-60 font-mono whitespace-nowrap"
+                className="textarea textarea-bordered w-full h-60 font-mono whitespace-nowrap mb-2"
                 placeholder={capitalizeWords(key)}
                 value={pipe(
-                  fields,
-                  HashMap.get(key),
+                  fields[key],
+                  Option.fromNullable,
                   Option.getOrElse(() => "")
                 )}
-                onChange={(e) => setFields(HashMap.set(key, e.target.value))}
+                onChange={(e) => setField(key, e.target.value)}
               ></textarea>
             );
           } else if (value._tag === "select") {
@@ -137,13 +137,13 @@ export const renderManagedForm = <
               <select
                 name={key}
                 key={key}
-                className="select select-bordered w-full"
+                className="select select-bordered w-full mb-2"
                 value={pipe(
-                  fields,
-                  HashMap.get(key),
+                  fields[key],
+                  Option.fromNullable,
                   Option.getOrElse(() => "")
                 )}
-                onChange={(e) => setFields(HashMap.set(key, e.target.value))}
+                onChange={(e) => setField(key, e.target.value)}
               >
                 {pipe(
                   value.options,
@@ -157,48 +157,29 @@ export const renderManagedForm = <
             );
           } else if (value._tag === "number") {
             return (
-              <div className="form-control w-full" key={key}>
+              <div className="form-control w-full mb-2" key={key}>
                 <input
                   type="number"
                   name={key}
                   className="input input-bordered w-full"
                   placeholder={capitalizeWords(value.label)}
                   value={pipe(
-                    fields,
-                    HashMap.get(key),
+                    fields[key],
+                    Option.fromNullable,
                     Option.getOrElse(() => "")
                   )}
-                  onChange={(e) => setFields(HashMap.set(key, e.target.value))}
+                  onChange={(e) => setField(key, e.target.value)}
                 />
               </div>
             );
           } else {
             return <></>;
           }
-        }),
-        (hashMap) =>
-          pipe(
-            hashMap,
-            HashMap.keys,
-            ReadonlyArray.fromIterable,
-            ReadonlyArray.filterMap((k) => HashMap.get(k)(hashMap))
-          )
+        })
       )}
 
-      {/* <div className="form-control w-full max-w-xs">
-  <label className="label">
-    <span className="label-text">What is your name?</span>
-    <span className="label-text-alt">Top Right label</span>
-  </label>
-  <input type="text" placeholder="Type here" className="input input-bordered w-full max-w-xs" />
-  <label className="label">
-    <span className="label-text-alt">Bottom Left label</span>
-    <span className="label-text-alt">Bottom Right label</span>
-  </label>
-</div> */}
-
       {renderExtra ? (
-        renderExtra()
+        renderExtra({ submitForm })
       ) : (
         <button className="btn" type="submit">
           Submit

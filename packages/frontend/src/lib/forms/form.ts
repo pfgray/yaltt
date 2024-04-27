@@ -44,7 +44,7 @@ export const number = (
     num: string
   ) => Either.Either<Option.Option<number>, ValidationError>
 ): FormField<string, Option.Option<number>> => ({
-  _tag: "password",
+  _tag: "number",
   label,
   initialValue: initialValue || "",
   validate: validate || (() => Either.right(Option.none())),

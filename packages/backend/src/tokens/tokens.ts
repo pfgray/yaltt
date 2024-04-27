@@ -5,6 +5,8 @@ import { Fetch } from "../fetch/FetchService";
 import nJwt from "njwt";
 import { getKeyForRegistrationId } from "../model/entities/keys";
 import { signJwt } from "../crypto/KeyService";
+import { LtiToken } from "lti-model";
+import { schemaParse } from "../schemaParse";
 
 /**
  * Fetches a token from the platform's token endpoint.
@@ -63,6 +65,7 @@ export const fetchToken = (
         }?${encodeQueryParams(params)}`,
         {}
       );
-    })
+    }),
+    Effect.flatMap(schemaParse(LtiToken))
     // Fetch.get(registration.platform_configuration.token_endpoint)
   );
