@@ -1,8 +1,11 @@
-import * as React from "react";
-import { useParsedQuery } from "../../../lib/react-router/useParsedQuery";
-import { useParsedParams } from "../../../lib/react-router/useSchemaParams";
 import * as S from "@effect/schema/Schema";
-import { WithAuth } from "../../../lib/auth/WithAuth";
+import { formatError } from "@effect/schema/TreeFormatter";
+import { ChevronDownIcon, ChevronUpIcon } from "@heroicons/react/24/outline";
+import { AppId, AppWithRegistrations, TagADT, match } from "@yaltt/model";
+import { Effect, Either, pipe } from "effect";
+import { LtiMessage, PlatformConfiguration } from "lti-schema";
+import * as React from "react";
+import { create } from "zustand";
 import { WithRequest } from "../../../lib/api/WithRequest";
 import {
   ClientError,
@@ -11,20 +14,10 @@ import {
   jsonBody,
   post,
 } from "../../../lib/api/request";
-import { Effect, Either, ReadonlyArray, pipe, Option } from "effect";
-import { LtiMessage, PlatformConfiguration } from "lti-schema";
-import { formatError } from "@effect/schema/TreeFormatter";
-import {
-  CheckCircleIcon,
-  ChevronDownIcon,
-  ChevronUpIcon,
-} from "@heroicons/react/24/outline";
 import { provideRequestService } from "../../../lib/api/requestServiceImpl";
-import { create } from "zustand";
-import { ADT } from "ts-adt";
-import { AppId, TagADT, match } from "@yaltt/model";
-import { useParsedParamsQuery } from "../../../lib/react-router/useParsedParamsQuery";
 import { fetchApp } from "../../../lib/apps/apps";
+import { WithAuth } from "../../../lib/auth/WithAuth";
+import { useParsedParamsQuery } from "../../../lib/react-router/useParsedParamsQuery";
 
 type SelectedScopeState = {
   scopes: ReadonlyArray<string>;
