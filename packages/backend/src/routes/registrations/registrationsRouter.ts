@@ -239,9 +239,7 @@ bindRegistrationEndpoint(createToolInstallation)(({ appId }, _, body) =>
       )({
         app,
         registration,
-        customParameters: {
-          overall: "fooo",
-        },
+        customParameters: body.customParameters,
         messages: body.messages.map((m) => ({
           ...m,
           target_link_uri: mkYalttUrl(

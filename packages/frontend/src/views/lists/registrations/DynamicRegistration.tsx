@@ -1,22 +1,28 @@
 import * as S from "@effect/schema/Schema";
 import { formatError } from "@effect/schema/TreeFormatter";
 import { ChevronDownIcon, ChevronUpIcon } from "@heroicons/react/24/outline";
-import { AppId, AppWithRegistrations, TagADT, match } from "@yaltt/model";
+import {
+  AppId,
+  AppWithRegistrations,
+  TagADT,
+  createToolInstallation,
+  match,
+} from "@yaltt/model";
 import { Effect, Either, pipe } from "effect";
-import { LtiMessage, PlatformConfiguration } from "lti-schema";
+import { LtiMessage, PlatformConfiguration } from "lti-model";
 import * as React from "react";
 import { create } from "zustand";
 import { WithRequest } from "../../../lib/api/WithRequest";
-import {
-  ClientError,
-  ServerError,
-  getDecode,
-  jsonBody,
-  post,
-} from "../../../lib/api/request";
+import { getDecode } from "../../../lib/api/request";
 import { provideRequestService } from "../../../lib/api/requestServiceImpl";
 import { fetchApp } from "../../../lib/apps/apps";
 import { WithAuth } from "../../../lib/auth/WithAuth";
+import {
+  FetchException,
+  FetchParseError,
+  FetchParseJsonError,
+  fetchBodyFromEndpoint,
+} from "../../../lib/endpoint-ts/fetchFromEndpoint";
 import { useParsedParamsQuery } from "../../../lib/react-router/useParsedParamsQuery";
 
 type SelectedScopeState = {
@@ -43,14 +49,19 @@ type Request<E, A> = TagADT<{
   failed: { error: E };
 }>;
 
+type InstallingStateError =
+  | FetchException
+  | FetchParseError
+  | FetchParseJsonError;
+
 type InstallingState = {
-  install: Request<ClientError | ServerError, unknown>;
+  install: Request<InstallingStateError, unknown>;
   installTool: <R, A>(
-    eff: Effect.Effect<A, ClientError | ServerError, R>
-  ) => Effect.Effect<A, ClientError | ServerError, R>;
+    eff: Effect.Effect<A, InstallingStateError, R>
+  ) => Effect.Effect<A, InstallingStateError, R>;
   setInstalling: () => Effect.Effect<void, never, never>;
   setInstallFailed: (
-    err: ClientError | ServerError
+    err: InstallingStateError
   ) => Effect.Effect<void, never, never>;
   setInstallSucceeded: () => Effect.Effect<void, never, never>;
 };
@@ -76,7 +87,7 @@ const useInstallingState = create<InstallingState>()((set) => ({
     ),
   setInstalling: () =>
     Effect.sync(() => set((state) => ({ install: { _tag: "loading" } }))),
-  setInstallFailed: (err: ClientError | ServerError) =>
+  setInstallFailed: (err: InstallingStateError) =>
     Effect.sync(() =>
       set((state) => ({
         install: { _tag: "failed", error: err },
@@ -119,16 +130,7 @@ const fetchDynRegData = (params: {
     Effect.bind("app", () => fetchApp({ appId: params.appId }))
   );
 
-const installToolReq = (
-  appId: number,
-  config: {
-    platformConfiguration: PlatformConfiguration;
-    registrationToken?: string;
-    registrationEndpoint: string;
-    messages: Array<LtiMessage>;
-    scopes: ReadonlyArray<string>;
-  }
-) => post(`/api/apps/${appId}/install`, jsonBody(config));
+const installToolReq = fetchBodyFromEndpoint(createToolInstallation);
 
 export const DynamicRegistration = () => {
   const parsedParamsQuery = useParsedParamsQuery(
@@ -141,6 +143,7 @@ export const DynamicRegistration = () => {
     })
   );
 
+  const [topCustomParams, setTopCustomParams] = React.useState("");
   const scopes = useScopeStore((state) => state.scopes);
   const placements = usePlacementsStore((state) => state.placements);
 
@@ -197,13 +200,27 @@ export const DynamicRegistration = () => {
                             <ServicesSupported
                               platformConfiguration={platformConfiguration}
                             />
+                            <div className="divider"></div>
+                            <div>
+                              <h3>Other Configuration Options</h3>
+                              <textarea
+                                className="textarea textarea-bordered"
+                                placeholder="Custom Parameters (key=value format)"
+                                onChange={(ev) =>
+                                  setTopCustomParams(ev.currentTarget.value)
+                                }
+                                value={topCustomParams}
+                              ></textarea>
+                            </div>
 
                             <div className="w-full flex justify-end flex-row">
                               <button
                                 className="btn btn-primary"
                                 onClick={() => {
                                   pipe(
-                                    installToolReq(params.appId, {
+                                    installToolReq(params)({
+                                      customParameters:
+                                        parseCustomParams(topCustomParams),
                                       platformConfiguration:
                                         platformConfiguration,
                                       registrationToken:
@@ -217,16 +234,9 @@ export const DynamicRegistration = () => {
                                           ([key, p]): LtiMessage => ({
                                             type: p.message_type,
                                             custom_parameters:
-                                              p.custom_parameters
-                                                .split("\n")
-                                                .map((s) => s.split("="))
-                                                .reduce(
-                                                  (acc, [key, value]) => ({
-                                                    ...acc,
-                                                    [key]: value,
-                                                  }),
-                                                  {}
-                                                ),
+                                              parseCustomParams(
+                                                p.custom_parameters
+                                              ),
                                             label: p.label,
                                             icon_uri: p.icon_uri,
                                             roles: p.roles
@@ -273,11 +283,8 @@ export const DynamicRegistration = () => {
                                 loaded: () => <></>,
                                 failed: ({ error }) => (
                                   <div className="w-full flex justify-end flex-row">
-                                    {error._tag === "req_client_error"
-                                      ? "Client"
-                                      : "Server"}{" "}
-                                    Error, status code: {error.status}
-                                    <pre>{JSON.stringify(error.body)}</pre>
+                                    Error, code: {error._tag}
+                                    <pre>{JSON.stringify(error)}</pre>
                                   </div>
                                 ),
                               })
@@ -689,3 +696,15 @@ const KnownPlacements = [
   { type: "wiki_index_menu", description: "Wiki Index Menu" },
   { type: "wiki_page_menu", description: "Wiki Page Menu" },
 ] as const;
+
+const parseCustomParams = (custom_parameters: string): Record<string, string> =>
+  custom_parameters
+    .split("\n")
+    .map((s) => s.split("="))
+    .reduce(
+      (acc, [key, value]) => ({
+        ...acc,
+        [key]: value,
+      }),
+      {}
+    );
