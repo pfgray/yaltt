@@ -4,6 +4,7 @@ import { ChevronDownIcon, ChevronUpIcon } from "@heroicons/react/24/outline";
 import {
   AppId,
   AppWithRegistrations,
+  EncodeError,
   TagADT,
   createToolInstallation,
   match,
@@ -52,7 +53,8 @@ type Request<E, A> = TagADT<{
 type InstallingStateError =
   | FetchException
   | FetchParseError
-  | FetchParseJsonError;
+  | FetchParseJsonError
+  | EncodeError;
 
 type InstallingState = {
   install: Request<InstallingStateError, unknown>;
@@ -282,9 +284,58 @@ export const DynamicRegistration = () => {
                                 loading: () => <></>,
                                 loaded: () => <></>,
                                 failed: ({ error }) => (
-                                  <div className="w-full flex justify-end flex-row">
-                                    Error, code: {error._tag}
-                                    <pre>{JSON.stringify(error)}</pre>
+                                  <div className="w-full flex justify-end flex-col">
+                                    {pipe(
+                                      error,
+                                      match({
+                                        fetch_exception: (fe) => (
+                                          <>
+                                            <div>Error fetching {fe.url}</div>
+                                            <pre>
+                                              {JSON.stringify(fe.reason)}
+                                            </pre>
+                                          </>
+                                        ),
+                                        fetch_parse_json_error: (pe) => (
+                                          <>
+                                            <div>Unable to parse json:</div>
+                                            <pre>{pe.original}</pre>
+                                            <div>Error:</div>
+                                            <pre>
+                                              {JSON.stringify(pe.error)}
+                                            </pre>
+                                          </>
+                                        ),
+                                        fetch_parse_error: (pe) => (
+                                          <>
+                                            <div>Error parsing response:</div>
+                                            <pre>{formatError(pe.reason)}</pre>
+                                            <div>Original data response:</div>
+                                            <pre>
+                                              {JSON.stringify(
+                                                pe.original,
+                                                null,
+                                                2
+                                              )}
+                                            </pre>
+                                          </>
+                                        ),
+                                        encode_error: (ee) => (
+                                          <>
+                                            <div>Error Encoding data:</div>
+                                            <pre>{formatError(ee.error)}</pre>
+                                            <div>Original encode:</div>
+                                            <pre>
+                                              {JSON.stringify(
+                                                ee.actual,
+                                                null,
+                                                2
+                                              )}
+                                            </pre>
+                                          </>
+                                        ),
+                                      })
+                                    )}
                                   </div>
                                 ),
                               })
@@ -700,6 +751,7 @@ const KnownPlacements = [
 const parseCustomParams = (custom_parameters: string): Record<string, string> =>
   custom_parameters
     .split("\n")
+    .filter((s) => s.trim() !== "")
     .map((s) => s.split("="))
     .reduce(
       (acc, [key, value]) => ({

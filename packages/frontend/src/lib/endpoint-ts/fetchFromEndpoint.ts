@@ -102,7 +102,7 @@ export type FetchFromEndpoint = <
   ...params: EndpointFetchParametersFromEndpoint<E>
 ) => Effect.Effect<
   ResponseFromEndpoint<E>,
-  FetchException | FetchParseError | FetchParseJsonError,
+  FetchException | FetchParseError | FetchParseJsonError | EncodeError,
   never
 >;
 
@@ -237,7 +237,7 @@ export type FetchBodyFromEndpoint = <
   body: BodyFromEndpoint<E>
 ) => Effect.Effect<
   ResponseFromEndpoint<E>,
-  FetchException | FetchParseError | FetchParseJsonError,
+  FetchException | FetchParseError | FetchParseJsonError | EncodeError,
   never
 >;
 
@@ -253,23 +253,33 @@ export const fetchBodyFromEndpoint: FetchBodyFromEndpoint =
           return pipe(
             body,
             S.encode(endpoint.body.schema),
-            Effect.mapError((reason) => fetchParseError(body, reason))
+            Effect.mapError((reason) => encodeError(body)(reason))
           );
         }
       }),
       Effect.flatMap(({ path, body }) =>
-        Effect.tryPromise((signal) =>
-          fetch(path, {
-            headers: {
-              "Content-Type": "application/json",
-            },
-            method: "POST",
-            body: JSON.stringify(body),
-            signal,
-          })
+        pipe(
+          Effect.tryPromise((signal) =>
+            fetch(path, {
+              headers: {
+                "Content-Type": "application/json",
+              },
+              method: "POST",
+              body: JSON.stringify(body),
+              signal,
+            })
+          ),
+          Effect.mapError(fetchError(path))
         )
       ),
-      Effect.mapError(fetchError()),
+      (a) => a,
+      // Effect.catch("_tag", {
+      //   failure: "UnknownException",
+      //   onFailure: (e) => Effect.raiseError(fetchError(e)),
+      // }),
+
+      // Effect.mapError(fetchError()),
+      (a) => a,
       Effect.flatMap(parseResponseForEndpoint(endpoint))
     );
 

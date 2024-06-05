@@ -2,7 +2,7 @@ import { pipe, Either, Option, ReadonlyArray, Effect, Context } from "effect";
 import * as PE from "@effect/schema/ParseResult";
 import * as S from "@effect/schema/Schema";
 import * as P from "@effect/schema/Parser";
-import { match } from "@yaltt/model";
+import { EncodeError, match } from "@yaltt/model";
 import { flow } from "effect/Function";
 import {
   FetchException,
@@ -131,7 +131,11 @@ export interface ServerError {
   body: unknown;
 }
 
-export type RequestError = ClientError | ServerError | DecodeError;
+export type RequestError =
+  | ClientError
+  | ServerError
+  | DecodeError
+  | EncodeError;
 
 const handleErrorStatus = Effect.flatMap(
   (

@@ -69,6 +69,7 @@ export const WithRequest = <A,>(props: WithRequestProps<A>): JSX.Element => {
           fetch_exception: genericError,
           fetch_parse_error: (a) => parseError(a.reason),
           fetch_parse_json_error: genericError,
+          encode_error: (e) => parseError(e.error),
         }),
         onRight: (a) => <>{props.children(a, effect)}</>,
       }),
