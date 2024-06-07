@@ -34,6 +34,7 @@ export * from "./deepLinking/LtiResourceLinkContentItem";
 export * from "./message/CustomParameters";
 export * from "./message/LtiMessage";
 export * from "./message/LtiMessageType";
+export * from "./placements/LtiPlacements";
 export * from "./registration/LocalizedKey";
 export * from "./registration/LtiPlatformConfiguration";
 export * from "./registration/LtiToolConfiguration";

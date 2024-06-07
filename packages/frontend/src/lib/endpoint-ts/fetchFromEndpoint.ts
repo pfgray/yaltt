@@ -146,12 +146,14 @@ export const fetchFromEndpoint: FetchFromEndpoint =
   (endpoint) => (routeParams, queryParams) =>
     pipe(
       buildUrlForEndpointAndParams(endpoint)(routeParams, queryParams),
-      Effect.mapError(fetchError(getRouteString(endpoint.route) + "huhuhuu")),
+      Effect.mapError(fetchError(getRouteString(endpoint.route))),
       Effect.bindTo("url"),
       (a) => a,
       Effect.bind("resp", ({ url }) => {
         return pipe(
-          Effect.tryPromise((signal) => fetch(url, { signal })),
+          Effect.tryPromise((signal) =>
+            fetch(url, { signal, headers: { Accept: "application/json" } })
+          ),
           Effect.mapError(fetchError(url))
         );
       }),
@@ -263,23 +265,32 @@ export const fetchBodyFromEndpoint: FetchBodyFromEndpoint =
             fetch(path, {
               headers: {
                 "Content-Type": "application/json",
+                Accept: "application/json",
               },
               method: "POST",
               body: JSON.stringify(body),
               signal,
             })
           ),
-          Effect.mapError(fetchError(path))
+          Effect.mapError(fetchError(path)),
+          Effect.flatMap((resp) =>
+            resp.ok
+              ? Either.right(resp)
+              : pipe(
+                  Effect.tryPromise(() => resp.json()),
+                  Effect.mapError(() => fetchParseJsonError(path, null)),
+                  Effect.flatMap((json) => Either.left(fetchError(path)(json)))
+                )
+          )
         )
       ),
-      (a) => a,
+
       // Effect.catch("_tag", {
       //   failure: "UnknownException",
       //   onFailure: (e) => Effect.raiseError(fetchError(e)),
       // }),
 
       // Effect.mapError(fetchError()),
-      (a) => a,
       Effect.flatMap(parseResponseForEndpoint(endpoint))
     );
 

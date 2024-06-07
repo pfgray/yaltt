@@ -9,8 +9,8 @@ import {
   createToolInstallation,
   match,
 } from "@yaltt/model";
-import { Effect, Either, pipe } from "effect";
-import { LtiMessage, PlatformConfiguration } from "lti-model";
+import { Effect, Either, pipe, ReadonlyRecord } from "effect";
+import { LtiMessage, LtiPlacements, PlatformConfiguration } from "lti-model";
 import * as React from "react";
 import { create } from "zustand";
 import { WithRequest } from "../../../lib/api/WithRequest";
@@ -292,7 +292,11 @@ export const DynamicRegistration = () => {
                                           <>
                                             <div>Error fetching {fe.url}</div>
                                             <pre>
-                                              {JSON.stringify(fe.reason)}
+                                              {JSON.stringify(
+                                                fe.reason,
+                                                null,
+                                                2
+                                              )}
                                             </pre>
                                           </>
                                         ),
@@ -539,7 +543,7 @@ const MessageTypes = (props: {
     (state) => state
   );
 
-  const allPlacements = ltiPlatformConfig.messages_supported
+  const advertisedPlacements = ltiPlatformConfig.messages_supported
     .flatMap((m) => m.placements || [])
     .filter((p) => p !== "resource_selection")
     .filter((item, i, ar) => ar.indexOf(item) === i)
@@ -568,9 +572,35 @@ const MessageTypes = (props: {
     updateRoles,
   } = usePlacementsStore((state) => state);
 
+  const unAdvertisedPlacements = pipe(
+    LtiPlacements,
+    ReadonlyRecord.filter(
+      (p) => !advertisedPlacements.find((ap) => ap.type === p)
+    ),
+    ReadonlyRecord.map((a, b) => {
+      if (a === "ContentArea") {
+        return {
+          type: "ContentArea",
+          message_types: ["LtiResourceLinkRequest"],
+          description: "Content Area",
+        };
+      } else if (a === "RichTextEditor") {
+        return {
+          type: "RichTextEditor",
+          message_types: ["LtiDeepLinkingRequest"],
+          description: "Rich Text Editor",
+        };
+      } else {
+        const hmm: never = a;
+        return hmm;
+      }
+    }),
+    ReadonlyRecord.values
+  );
+
   React.useEffect(() => {
-    setPlacements(
-      allPlacements.reduce((acc: Placements, placement) => {
+    setPlacements({
+      ...advertisedPlacements.reduce((acc: Placements, placement) => {
         return {
           ...acc,
           [placement.type]: {
@@ -586,80 +616,72 @@ const MessageTypes = (props: {
             label: `${props.app.name} (${placement.description})`,
           },
         };
-      }, {})
-    );
+      }, {}),
+
+      ...unAdvertisedPlacements.reduce((acc: Placements, placement) => {
+        return {
+          ...acc,
+          [placement.type]: {
+            enabled: false,
+            message_type: placement.message_types[0],
+            custom_parameters: "foo=bar\ncontext_id=$Context.id",
+            icon_uri: `${window.location.origin}/api/apps/${props.app.id}/icon.svg`,
+            roles: "",
+            label: `${props.app.name} (${placement.description})`,
+          },
+        };
+      }, {}),
+    });
   }, []);
 
-  // type: S.string, <select box containing each supported kind>
-  // target_link_uri: S.optional(Url), <>
-  // custom_parameters: S.optional(CustomParameters),
-  // icon_uri: S.optional(S.string),
-  // placements: S.optional(S.array(S.string)),
-  // roles: S.optional(S.array(S.string)),
-  // label
+  /**
+   * Determines the number of placements to display by default
+   * hiding the rest behind a "show more" button
+   */
+  const DefaultPlacementDisplayCount = 5;
+
+  // if the number of all placements is less than 6, show all
+  // and don't show the "show more" button
+
+  // if the number of all placements is more than 6, show the first 5
+
+  // if we are expanded, or the number of placements is less than 6, show all
 
   return (
     <div>
-      <h3>Placements Supported by this Platform</h3>
-      {allPlacements.map((placement, i) =>
-        !expanded && i > 4 ? null : (
-          <div className="form-control" key={placement.type}>
-            <label className="label cursor-pointer justify-normal">
-              <input
-                type="checkbox"
-                className="checkbox"
-                onChange={() => togglePlacement(placement.type)}
-                checked={
-                  typeof placements[placement.type] !== "undefined" &&
-                  placements[placement.type].enabled === true
-                }
-              />
-              <span className="label-text ml-2">{placement.description}</span>
-            </label>
-            {typeof placements[placement.type] !== "undefined" &&
-              placements[placement.type].enabled === true && (
-                <div className="ml-10 grid grid-cols-2 gap-2">
-                  <input
-                    type="text"
-                    placeholder="Label"
-                    className="input input-bordered w-full max-w-xs"
-                    onChange={updateLabel(placement.type)}
-                    value={placements[placement.type].label}
-                  />
-                  <select
-                    className="select select-bordered w-full max-w-xs"
-                    disabled={placement.message_types.length === 1}
-                    onChange={updateMessageType(placement.type)}
-                  >
-                    {placement.message_types.map((mt) => (
-                      <option key={mt}>{mt}</option>
-                    ))}
-                  </select>
-                  <input
-                    type="text"
-                    placeholder="Roles"
-                    className="input input-bordered w-full max-w-xs"
-                    onChange={updateRoles(placement.type)}
-                    value={placements[placement.type].roles}
-                  />
-                  <input
-                    type="text"
-                    placeholder="Icon Url"
-                    className="input input-bordered w-full max-w-xs"
-                    onChange={updateIconUri(placement.type)}
-                    value={placements[placement.type].icon_uri}
-                  />
-                  <textarea
-                    className="textarea textarea-bordered"
-                    placeholder="Custom Parameters (key=value format)"
-                    onChange={updateCustomParameters(placement.type)}
-                    value={placements[placement.type].custom_parameters}
-                  ></textarea>
-                </div>
+      <h3>Placements</h3>
+      {advertisedPlacements.length > 0 ? (
+        <>
+          <h6>Supported by this Platform</h6>
+          {advertisedPlacements.map((placement, i) =>
+            !expanded && i > DefaultPlacementDisplayCount ? null : (
+              <>
+                {/* <pre>{JSON.stringify(placement, null, 2)}</pre> */}
+                <PlacementConfig placement={placement} />
+              </>
+            )
+          )}
+        </>
+      ) : null}
+      {unAdvertisedPlacements.length > 0 &&
+      (expanded ||
+        unAdvertisedPlacements.length + advertisedPlacements.length <=
+          DefaultPlacementDisplayCount) ? (
+        <>
+          <h6>Standard placements not advertised as supported</h6>
+          {unAdvertisedPlacements.length > 0 && (
+            <>
+              {unAdvertisedPlacements.map((placement, i) =>
+                !expanded && i > DefaultPlacementDisplayCount ? null : (
+                  // <pre>{JSON.stringify(placement, null, 2)}</pre>
+                  <PlacementConfig placement={placement} />
+                )
               )}
-          </div>
-        )
-      )}
+            </>
+          )}
+        </>
+      ) : null}
+
       <div
         className="w-full items-center justify-center flex flex-row cursor-pointer"
         onClick={() => {
@@ -760,3 +782,82 @@ const parseCustomParams = (custom_parameters: string): Record<string, string> =>
       }),
       {}
     );
+
+const PlacementConfig = (props: {
+  placement: {
+    type: string;
+    message_types: string[];
+    description: string;
+  };
+}) => {
+  const placement = props.placement;
+
+  const {
+    placements,
+    togglePlacement,
+    setPlacements,
+    updateCustomParameters,
+    updateIconUri,
+    updateLabel,
+    updateMessageType,
+    updateRoles,
+  } = usePlacementsStore((state) => state);
+
+  return (
+    <div className="form-control" key={placement.type}>
+      <label className="label cursor-pointer justify-normal">
+        <input
+          type="checkbox"
+          className="checkbox"
+          onChange={() => togglePlacement(placement.type)}
+          checked={
+            typeof placements[placement.type] !== "undefined" &&
+            placements[placement.type].enabled === true
+          }
+        />
+        <span className="label-text ml-2">{placement.description}</span>
+      </label>
+      {typeof placements[placement.type] !== "undefined" &&
+        placements[placement.type].enabled === true && (
+          <div className="ml-10 grid grid-cols-2 gap-2">
+            <input
+              type="text"
+              placeholder="Label"
+              className="input input-bordered w-full max-w-xs"
+              onChange={updateLabel(placement.type)}
+              value={placements[placement.type].label}
+            />
+            <select
+              className="select select-bordered w-full max-w-xs"
+              disabled={placement.message_types.length === 1}
+              onChange={updateMessageType(placement.type)}
+            >
+              {placement.message_types.map((mt) => (
+                <option key={mt}>{mt}</option>
+              ))}
+            </select>
+            <input
+              type="text"
+              placeholder="Roles"
+              className="input input-bordered w-full max-w-xs"
+              onChange={updateRoles(placement.type)}
+              value={placements[placement.type].roles}
+            />
+            <input
+              type="text"
+              placeholder="Icon Url"
+              className="input input-bordered w-full max-w-xs"
+              onChange={updateIconUri(placement.type)}
+              value={placements[placement.type].icon_uri}
+            />
+            <textarea
+              className="textarea textarea-bordered"
+              placeholder="Custom Parameters (key=value format)"
+              onChange={updateCustomParameters(placement.type)}
+              value={placements[placement.type].custom_parameters}
+            ></textarea>
+          </div>
+        )}
+    </div>
+  );
+};
