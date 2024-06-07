@@ -124,7 +124,7 @@ export const AppDetails = () => {
               <div className="w-auto overflow-x-auto">
                 <div className="mockup-code before:content-none">
                   <pre>
-                    <code>{url(`/api/apps/${appId}/registrations/new`)}</code>
+                    <code>{url(`/apps/${appId}/dynamic-registration`)}</code>
                   </pre>
                 </div>
               </div>
