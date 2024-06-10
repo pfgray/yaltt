@@ -1,0 +1,25 @@
+version: "3.9"
+services:
+  backend:
+    volumes:
+      - ./:/app
+      - /app/packages/backend/dist
+      - /app/packages/canvas-lti-model/dist
+      - /app/packages/frontend/dist
+      - /app/packages/lti-model/dist
+      - /app/packages/lti-schema/dist
+      - /app/packages/endpoint-ts/dist
+      - /app/packages/model/dist
+      - /app/result
+
+  frontend:
+    volumes:
+      - ./:/app
+      - /app/packages/backend/dist
+      - /app/packages/canvas-lti-model/dist
+      - /app/packages/frontend/dist
+      - /app/packages/lti-model/dist
+      - /app/packages/lti-schema/dist
+      - /app/packages/endpoint-ts/dist
+      - /app/packages/model/dist
+      - /app/result
