@@ -78,6 +78,7 @@ export const createToolInstallation = Endpoint.post(
       messages: S.array(LtiMessage),
       scopes: S.array(S.string),
       customParameters: S.record(S.string, S.string),
+      toolId: S.string,
     })
   )
 );

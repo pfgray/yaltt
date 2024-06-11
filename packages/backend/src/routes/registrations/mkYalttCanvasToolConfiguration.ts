@@ -4,8 +4,6 @@ import { YalttConfig } from "../../config/ConfigService";
 import { ExpressRequest } from "../../express/RequestService";
 import { mkYalttUrl } from "./mkYalttToolConfiguration";
 
-// export const pathForMessageType = () =>
-
 export const mkYalttCanvasToolConfiguration =
   (config: YalttConfig, contextualRequest?: ExpressRequest) =>
   (

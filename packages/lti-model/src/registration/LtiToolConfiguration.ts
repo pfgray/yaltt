@@ -22,6 +22,9 @@ export const LtiToolConfiguration = pipe(
     "https://canvas.instructure.com/lti/registration_config_url": S.optional(
       S.string
     ),
+    "https://canvas.instructure.com/lti/tool_id": S.optional(
+      S.string
+    ),
   }),
   S.extend(LocalizedKeyOp("description"))
 );

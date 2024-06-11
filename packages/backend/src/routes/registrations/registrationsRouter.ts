@@ -152,6 +152,7 @@ bindRegistrationEndpoint(getConfiguration)(({ registrationId }) =>
         customParameters: {},
         messages,
         scopes: [],
+        toolId: ""
       })
     )
   )
@@ -253,6 +254,7 @@ bindRegistrationEndpoint(createToolInstallation)(({ appId }, _, body) =>
         })),
         scopes: registration.scopes,
         claims: registration.claims,
+        toolId: body.toolId,
       });
       console.log("##Sending tool configuration:");
       console.log(JSON.stringify(toolConfiguration, null, 2));
