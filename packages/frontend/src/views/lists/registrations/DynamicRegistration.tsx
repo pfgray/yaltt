@@ -146,6 +146,9 @@ export const DynamicRegistration = () => {
   );
 
   const [topCustomParams, setTopCustomParams] = React.useState("");
+  const [toolId, setToolId] = React.useState(
+    "toolid-" + Math.floor(Math.random() * 1000)
+  );
   const scopes = useScopeStore((state) => state.scopes);
   const placements = usePlacementsStore((state) => state.placements);
 
@@ -205,14 +208,32 @@ export const DynamicRegistration = () => {
                             <div className="divider"></div>
                             <div>
                               <h3>Other Configuration Options</h3>
-                              <textarea
-                                className="textarea textarea-bordered"
-                                placeholder="Custom Parameters (key=value format)"
-                                onChange={(ev) =>
-                                  setTopCustomParams(ev.currentTarget.value)
-                                }
-                                value={topCustomParams}
-                              ></textarea>
+                              <div className="form-control">
+                                <label htmlFor="custom-parameters">
+                                  Custom Parameters
+                                </label>
+                                <textarea
+                                  id="custom-parameters"
+                                  className="textarea textarea-bordered"
+                                  placeholder="Custom Parameters (key=value format)"
+                                  onChange={(ev) =>
+                                    setTopCustomParams(ev.currentTarget.value)
+                                  }
+                                  value={topCustomParams}
+                                ></textarea>
+                                <label htmlFor="tool-id" className="mt-3">
+                                  Toolid
+                                </label>
+                                <input
+                                  id="tool-id"
+                                  type="text"
+                                  className="input input-bordered mb-3"
+                                  onChange={(ev) =>
+                                    setToolId(ev.currentTarget.value?.trim())
+                                  }
+                                  value={toolId}
+                                />
+                              </div>
                             </div>
 
                             <div className="w-full flex justify-end flex-row">
@@ -230,6 +251,7 @@ export const DynamicRegistration = () => {
                                       registrationEndpoint:
                                         platformConfiguration.registration_endpoint,
                                       scopes,
+                                      toolId,
                                       messages: Object.entries(placements)
                                         .filter(([, p]) => p.enabled)
                                         .map(

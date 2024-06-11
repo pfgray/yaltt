@@ -20,6 +20,9 @@ export const LtiToolConfiguration = S.struct({
   "https://canvas.instructure.com/lti/registration_config_url": S.optional(
     S.string
   ),
+  "https://canvas.instructure.com/lti/tool_id": S.optional(
+    S.string
+  ),
 });
 
 export interface LtiToolConfiguration
