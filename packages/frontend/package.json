@@ -28,7 +28,8 @@
     "ts-adt": "^2.1.2",
     "typescript": "^5.1",
     "vite": "^4.0.4",
-    "zustand": "^4.4.4"
+    "zustand": "^4.4.4",
+    "canvas-lti-model": "0.0.0"
   },
   "scripts": {
     "start": "vite",

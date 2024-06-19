@@ -58,7 +58,6 @@ export const AppDetails = () => {
       ),
       onRight: ({ appId }) => (
         <>
-          <pre>hmm, {JSON.stringify({ appId })}</pre>
           <WithRequest eff={fetchApp({ appId })}>
             {(app, reloadApps) => (
               <YalttLayout

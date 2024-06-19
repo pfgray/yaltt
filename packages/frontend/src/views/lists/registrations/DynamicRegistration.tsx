@@ -25,6 +25,7 @@ import {
   fetchBodyFromEndpoint,
 } from "../../../lib/endpoint-ts/fetchFromEndpoint";
 import { useParsedParamsQuery } from "../../../lib/react-router/useParsedParamsQuery";
+import { CanvasPlacementTypes } from "canvas-lti-model";
 
 type SelectedScopeState = {
   scopes: ReadonlyArray<string>;
@@ -740,56 +741,51 @@ const PossibleMessageTypes = [
 // placements: S.optional(S.array(S.string)),
 // roles: S.optional(S.array(S.string)),
 
+const known = <K extends keyof typeof CanvasPlacementTypes>(
+  k: K,
+  v: string
+) => ({ type: CanvasPlacementTypes[k], description: v });
+
 const KnownPlacements = [
-  { type: "global_navigation", description: "Global Navigation" },
-  { type: "homework_submission", description: "Homework Submission" },
-  { type: "link_selection", description: "Link Selection" },
-  { type: "course_navigation", description: "Course Navigation" },
-  { type: "account_navigation", description: "Account Navigation" },
-  { type: "editor_button", description: "Editor Button" },
-  { type: "assignment_edit", description: "Assignment Edit" },
-  { type: "assignment_group_menu", description: "Assignment Group Menu" },
-  { type: "assignment_index_menu", description: "Assignment Index Menu" },
-  { type: "assignment_menu", description: "Assignment Menu" },
-  { type: "assignment_selection", description: "Assignment Selection" },
-  { type: "assignment_view", description: "Assignment View" },
-  { type: "collaboration", description: "Collaboration" },
-  { type: "conference_selection", description: "Conference Selection" },
-  { type: "course_assignments_menu", description: "Course Assignments Menu" },
-  {
-    type: "course_home_sub_navigation",
-    description: "Course Home Sub-Navigation",
-  },
-  {
-    type: "course_settings_sub_navigation",
-    description: "Course Settings Sub-Navigation",
-  },
-  {
-    type: "discussion_topic_index_menu",
-    description: "Discussion Topic Index Menu",
-  },
-  { type: "discussion_topic_menu", description: "Discussion Topic Menu" },
-  { type: "file_index_menu", description: "File Index Menu" },
-  { type: "file_menu", description: "File Menu" },
-  { type: "migration_selection", description: "Migration Selection" },
-  { type: "module_group_menu", description: "Module Group Menu" },
-  { type: "module_index_menu", description: "Module Index Menu" },
-  { type: "module_index_menu_modal", description: "Module Index Menu Modal" },
-  { type: "module_menu_modal", description: "Module Menu Modal" },
-  { type: "module_menu", description: "Module Menu" },
-  { type: "post_grades", description: "Post Grades" },
-  { type: "quiz_index_menu", description: "Quiz Index Menu" },
-  { type: "quiz_menu", description: "Quiz Menu" },
-  { type: "similarity_detection", description: "Similarity Detection" },
-  { type: "student_context_card", description: "Student Context Card" },
-  {
-    type: "submission_type_selection",
-    description: "Submission Type Selection",
-  },
-  { type: "tool_configuration", description: "Tool Configuration" },
-  { type: "user_navigation", description: "User Navigation" },
-  { type: "wiki_index_menu", description: "Wiki Index Menu" },
-  { type: "wiki_page_menu", description: "Wiki Page Menu" },
+  known("GlobalNavigation", "Global Navigation"),
+  known("CourseNavigation", "Course Navigation"),
+  known("AccountNavigation", "Account Navigation"),
+  known("UserNavigation", "User Navigation"),
+  known("HomeworkSubmission", "Homework Submission"),
+  known("DiscussionTopicMenu", "Discussion Topic Menu"),
+  known("DiscussionTopicIndexMenu", "Discussion Topic Index Menu"),
+  known("AssignmentMenu", "Assignment Menu"),
+  known("AssignmentSelection", "Assignment Selection"),
+  known("AssignmentEdit", "Assignment Edit"),
+  known("AssignmentView", "Assignment View"),
+  known("AssignmentGroupMenu", "Assignment Group Menu"),
+  known("AssignmentIndexMenu", "Assignment Index Menu"),
+  known("CourseAssignmentsMenu", "Course Assignments Menu"),
+  known("CourseHomeSubNavigation", "Course Home Sub-Navigation"),
+  known("CourseSettingsSubNavigation", "Course Settings Sub-Navigation"),
+  known("EditorButton", "Editor Button"),
+  known("ModuleMenu", "Module Menu"),
+  known("ModuleIndexMenu", "Module Index Menu"),
+  known("ModuleIndexMenuModal", "Module Index Menu Modal"),
+  known("ModuleGroupMenu", "Module Group Menu"),
+  known("ModuleMenuModal", "Module Menu Modal"),
+  known("FileMenu", "File Menu"),
+  known("FileIndexMenu", "File Index Menu"),
+  known("WikiPageMenu", "Wiki Page Menu"),
+  known("WikiIndexMenu", "Wiki Index Menu"),
+  known("QuizMenu", "Quiz Menu"),
+  known("QuizIndexMenu", "Quiz Index Menu"),
+  known("ConferenceSelection", "Conference Selection"),
+  known("Collaboration", "Collaboration"),
+  known("MigrationSelection", "Migration Selection"),
+  known("PostGrades", "Post Grades"),
+  known("SimilarityDetection", "Similarity Detection"),
+  known("StudentContextCard", "Student Context Card"),
+  known("SubmissionTypeSelection", "Submission Type Selection"),
+  known("ToolConfiguration", "Tool Configuration"),
+  known("TopNavigation", "Top Navigation"),
+  known("UserNavigation", "User Navigation"),
+  known("LinkSelection", "Link Selection"),
 ] as const;
 
 const parseCustomParams = (custom_parameters: string): Record<string, string> =>
