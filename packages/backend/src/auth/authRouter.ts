@@ -10,18 +10,22 @@ const upload = multer.default();
 export const authRouter = express.Router();
 const passport = (passportBase as any).default as typeof passportBase;
 
-authRouter.post(
-  "/login/password",
-  upload.none(),
-  passport.authenticate("local", {
-    // successReturnToOrRedirect: "/api/me",
-    // failureRedirect: "/api/me",
-    failureMessage: true,
-  }),
-  (req, resp) => {
-    resp.json({ success: true });
-  }
-);
+authRouter.post("/login/password", upload.none(), function (req, res, next) {
+  passport.authenticate("local", function callback(err, user, info, status) {
+    if (err) {
+      return res.status(500).json({ failed: true, server_error: true });
+    }
+    if (!user) {
+      return res.status(401).json({ failed: true, server_error: true });
+    }
+    req.logIn(user, function (err) {
+      if (err) {
+        return res.status(500).json({ failed: true, server_error: true });
+      }
+      return res.json({ success: true });
+    });
+  } satisfies passportBase.AuthenticateCallback)(req, res, next);
+});
 
 authRouter.get(
   "/login/google",

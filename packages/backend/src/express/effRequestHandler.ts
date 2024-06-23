@@ -2,7 +2,13 @@ import { pipe, Effect, Option, Either, Exit, Cause } from "effect";
 
 import * as express from "express";
 import { ExpressRequestService } from "./RequestService";
-import { DecodeQueryError, NoRecordFound, PgError, pool } from "../db/db";
+import {
+  DataIntegrityError,
+  DecodeQueryError,
+  NoRecordFound,
+  PgError,
+  pool,
+} from "../db/db";
 import { HashError } from "../crypto/hash";
 import {
   UnauthenticatedError,
@@ -84,7 +90,8 @@ export type EffErrors =
   | FetchJsonParseError
   | FetchStatusError
   | KeyError
-  | ParseJwtError;
+  | ParseJwtError
+  | DataIntegrityError;
 
 export type EffServices =
   | ExpressRequestService
@@ -262,6 +269,13 @@ export const effRequestHandler: EffRequestHandler =
                   e,
                 });
               },
+              data_integrity_error: (e) => {
+                console.error("Data Integrity Error", e);
+                handleErrorResponse(request, response)(500, {
+                  error: "an error ocurred",
+                  e,
+                });
+              },
             }),
             onDie: () => {},
             onInterrupt: () => {},
@@ -273,7 +287,6 @@ export const effRequestHandler: EffRequestHandler =
         pgService.commit();
         const resp = exit.value;
         if ("headers" in resp && typeof resp.headers !== "undefined") {
-          console.log("setting headers! ", resp.headers);
           response.set(resp.headers);
         }
         if ("body" in resp) {

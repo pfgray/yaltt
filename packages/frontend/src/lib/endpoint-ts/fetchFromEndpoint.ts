@@ -21,7 +21,11 @@ import * as S from "@effect/schema/Schema";
 import { ParseError } from "@effect/schema/ParseResult";
 import { EncodeError, encodeEither, encodeError } from "@yaltt/model";
 
-export type FetchError = FetchException | FetchParseJsonError | FetchParseError;
+export type FetchError =
+  | FetchException
+  | FetchParseJsonError
+  | FetchParseError
+  | EncodeError;
 
 export type FetchException = {
   _tag: "fetch_exception";
@@ -100,11 +104,7 @@ export type FetchFromEndpoint = <
   endpoint: E
 ) => (
   ...params: EndpointFetchParametersFromEndpoint<E>
-) => Effect.Effect<
-  ResponseFromEndpoint<E>,
-  FetchException | FetchParseError | FetchParseJsonError | EncodeError,
-  never
->;
+) => Effect.Effect<ResponseFromEndpoint<E>, FetchError, never>;
 
 const buildUrlForEndpointAndParams =
   <

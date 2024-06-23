@@ -27,10 +27,7 @@ import { confirmWithLoading } from "../../../lib/confirmation/Confirm";
 import * as F from "../../../lib/forms/form";
 import { useParsedParams } from "../../../lib/react-router/useSchemaParams";
 import { NewEntityForm } from "../NewEntityForm";
-import {
-  FetchError,
-  fetchFromEndpoint,
-} from "../../../lib/endpoint-ts/fetchFromEndpoint";
+import { FetchError } from "../../../lib/endpoint-ts/fetchFromEndpoint";
 import { fetchApp } from "../../../lib/apps/apps";
 
 const paramSchema = S.struct({ appId: S.compose(S.NumberFromString, AppId) });

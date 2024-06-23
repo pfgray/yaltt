@@ -1,20 +1,19 @@
-import { pipe, Effect, Option, Either, Exit } from "effect";
+import { Effect, Exit, pipe } from "effect";
 import * as express from "express";
 import * as passportBase from "passport";
 
-import { User as ModelUser, User } from "@yaltt/model";
-import { ExpressRequestService } from "../express/RequestService";
-import { tap } from "../util/tap";
-import { getAppsForUser } from "../model/entities/apps";
-import { getPasswordLoginUserById, getUserWithLoginById } from "../model/users";
-import { QueryService } from "../db/QueryService";
-import { DecodeQueryError, NoRecordFound, PgError, pool } from "../db/db";
+import { YalttUser, YalttUserId } from "@yaltt/model";
 import { mkTransactionalPgService } from "../db/TransactionalPgService";
+import { pool } from "../db/db";
+import { ExpressRequestService } from "../express/RequestService";
+import { getUserWithLoginById } from "../model/users";
+import { tap } from "../util/tap";
+
 const passport = (passportBase as any).default as typeof passportBase;
 
 declare global {
   namespace Express {
-    interface User extends ModelUser {}
+    interface User extends YalttUser {}
   }
 }
 
@@ -39,7 +38,7 @@ passport.serializeUser(function (user, cb) {
   });
 });
 
-passport.deserializeUser<number>(function (id, cb) {
+passport.deserializeUser<YalttUserId>(function (id, cb) {
   process.nextTick(function () {
     const pgService = mkTransactionalPgService(pool);
     Effect.runPromiseExit(
@@ -76,7 +75,7 @@ interface LoginError {
   _tag: "login_error";
   cause: unknown;
 }
-export const login = (user: User) =>
+export const login = (user: YalttUser) =>
   ExpressRequestService.pipe(
     tap(() => "logging in"),
     Effect.flatMap(({ request }) =>

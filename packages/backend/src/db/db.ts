@@ -35,6 +35,16 @@ export const decodeQueryError = (
   query,
 });
 
+export interface DataIntegrityError {
+  _tag: "data_integrity_error";
+  message: string;
+}
+
+export const dataIntegrityError = (message: string): DataIntegrityError => ({
+  _tag: "data_integrity_error",
+  message,
+});
+
 const query_ =
   <T>(schema: S.Schema<T, any>) =>
   (queryStr: string, queryParams: unknown[]) => {

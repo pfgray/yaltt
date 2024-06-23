@@ -10,7 +10,7 @@ import { parseBody } from "../../express/parseBody";
 import {
   addUserWithLocalPassword,
   getLoginByUsername,
-  getUserById,
+  getUserWithLoginById,
 } from "../../model/users";
 
 import { Effect, pipe } from "effect";
@@ -19,6 +19,7 @@ import { mkTransactionalPgService } from "../../db/TransactionalPgService";
 import { pool } from "../../db/db";
 import { login } from "../auth";
 import { unauthenticatedError } from "../authedRequestHandler";
+import { passwordUser } from "@yaltt/model";
 
 type NoUserFound = {
   _tag: "no_user_found";
@@ -54,7 +55,7 @@ const noUserFound = (username: string): NoUserFound => ({
       Effect.tap(({ login }) =>
         validatePassword(password, login.salt, login.hashed_password)
       ),
-      Effect.bind("user", ({ login }) => getUserById(login.id)),
+      Effect.bind("user", ({ login }) => getUserWithLoginById(login.id)),
       pgService.provide
     );
 
@@ -72,11 +73,7 @@ const noUserFound = (username: string): NoUserFound => ({
           cb(status.cause);
         }
       } else {
-        cb(null, {
-          id: status.value.user.id,
-          role: status.value.user.role,
-          login: { _tag: "password_login", username },
-        });
+        cb(null, status.value.user);
       }
     });
   })

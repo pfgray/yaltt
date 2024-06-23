@@ -16,7 +16,7 @@ type ListProps<
   entityName: string;
   newForm: F.Form<K, R>;
   editForm: F.Form<K2, R2>;
-  fetchValues: Effect.Effect<RequestService, RequestError, readonly A[]>;
+  fetchValues: Effect.Effect<readonly A[], RequestError, RequestService>;
   columns: string[];
   renderRow: (a: A) => Array<JSX.Element | string | number>;
   width?: string | number;

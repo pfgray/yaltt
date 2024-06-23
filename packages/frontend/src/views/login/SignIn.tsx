@@ -1,49 +1,37 @@
-import * as React from "react";
+import { LoginMechanisms } from "@yaltt/model";
 import {
-  formBody,
-  post,
-  RequestError,
-  RequestService,
-} from "../../lib/api/request";
-import {
-  pipe,
-  Either,
-  Option,
-  ReadonlyArray,
   Effect,
+  Either,
   Equivalence,
+  Option,
+  pipe,
+  ReadonlyArray,
 } from "effect";
+import * as React from "react";
 import { useNavigate } from "react-router-dom";
-import { useQuery } from "../../lib/react-router/useQuery";
 import img from "../../img/bg.jpg";
-import { getLoginMechanisms } from "../../lib/auth/authApi";
-import { WithRequest } from "../../lib/api/WithRequest";
+import { formBody, post, RequestService } from "../../lib/api/request";
 import { provideRequestService } from "../../lib/api/requestServiceImpl";
+import { fetchLoginMechanisms } from "../../lib/auth/authApi";
+import { FetchError } from "../../lib/endpoint-ts/fetchFromEndpoint";
+import { useQuery } from "../../lib/react-router/useQuery";
 import { GoogleIcon } from "./GoogleIcon";
 
-export default function SignIn() {
-  const navigate = useNavigate();
-  let query = useQuery();
-
+const useLoginMechanisms = () => {
   const [loginMechanisms, setLoginMechanisms] = React.useState<
-    Option.Option<
-      Either.Either<RequestError, { types: readonly ("local" | "google")[] }>
-    >
+    Option.Option<Either.Either<LoginMechanisms, FetchError>>
   >(Option.none);
-
   const effect = pipe(
-    provideRequestService(getLoginMechanisms),
+    provideRequestService(fetchLoginMechanisms()),
     Effect.tap((a) =>
       Effect.sync(() => {
         setLoginMechanisms(Option.some(Either.right(a)));
       })
     ),
-    Effect.onError((err) =>
+    Effect.tapError((err) =>
       Effect.sync(() => {
         console.log("Error", err);
-        if (err._tag === "Fail") {
-          setLoginMechanisms(Option.some(Either.left(err.error)));
-        }
+        setLoginMechanisms(Option.some(Either.left(err)));
       })
     )
   );
@@ -51,14 +39,23 @@ export default function SignIn() {
   React.useEffect(() => {
     Effect.runCallback(effect);
   }, []);
+  return loginMechanisms;
+};
+
+export default function SignIn() {
+  const navigate = useNavigate();
+  let query = useQuery();
+
+  const loginMechanisms = useLoginMechanisms();
+
+  const [loginStatus, setLoginStatus] = React.useState<
+    "not_sending" | "loading" | "req_server_error" | "req_client_error"
+  >("not_sending");
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    setLoginStatus("loading");
     const data = new FormData(event.currentTarget);
-    console.log("sending: to", import.meta.env.VITE_API_URL, {
-      username: data.get("username"),
-      password: data.get("password"),
-    });
     Effect.runPromiseExit(
       pipe(
         post("/api/login/password", formBody(data)),
@@ -72,6 +69,12 @@ export default function SignIn() {
             resume(Effect.succeed({}));
           })
         ),
+        Effect.tapError((err) =>
+          Effect.sync(() => {
+            console.log("Error", err);
+            setLoginStatus(err._tag);
+          })
+        ),
         Effect.provideService(RequestService, {
           config: { baseUrl: import.meta.env.VITE_API_URL },
         })
@@ -81,11 +84,6 @@ export default function SignIn() {
 
   return (
     <div
-      // style={
-      //   {
-      //     //backgroundImage: `url(https://images.unsplash.com/photo-1506744038136-46273834b3fb?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2670&q=80)`,
-      //   }
-      // }
       style={{ backgroundImage: `url(${img})` }}
       className="h-screen w-screen bg-cover bg-center bg-gradient-to-r from-cyan-500 to-blue-500"
     >
@@ -116,6 +114,42 @@ export default function SignIn() {
             >
               Sign in
             </button>
+            {loginStatus === "req_server_error" ? (
+              <div role="alert" className="alert alert-error max-w-xs">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="stroke-current shrink-0 h-6 w-6"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                </svg>
+                <span>An error occurred.</span>
+              </div>
+            ) : loginStatus === "req_client_error" ? (
+              <div role="alert" className="alert alert-warning max-w-xs">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="stroke-current shrink-0 h-6 w-6"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                  />
+                </svg>
+                <span>Invalid Login</span>
+              </div>
+            ) : null}
+            {/* <pre>{loginStatus}</pre> */}
             {pipe(
               loginMechanisms,
               Option.flatMap(

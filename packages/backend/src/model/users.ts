@@ -1,89 +1,144 @@
 import { pipe, Effect, Option, ReadonlyArray } from "effect";
 import * as S from "@effect/schema/Schema";
 import { buffer } from "../util/BufferSchema";
-import { query, query1, toOption } from "../db/db";
+import { dataIntegrityError, query, query1, toOption } from "../db/db";
 
 import { hashPassword } from "../crypto/hash";
-import { passwordUser, googleUser, GoogleProfile } from "@yaltt/model";
+import {
+  passwordUser,
+  googleUser,
+  YalttUserId,
+  GoogleProfile,
+  YalttUser,
+} from "@yaltt/model";
 
 const UserRow = S.struct({
-  id: S.number,
-  logins: S.unknown,
+  id: YalttUserId,
   role: S.literal("admin", "user"),
   created: S.ValidDateFromSelf,
+  _tag: S.literal("password", "google"),
+  picture: S.nullable(S.string),
+  display_name: S.nullable(S.string),
+  email: S.nullable(S.string),
+  username: S.nullable(S.string),
 });
 
-const PasswordLoginRow = S.struct({
-  user_id: S.number,
-  username: S.string,
-  hashed_password: buffer,
-  salt: buffer,
-});
+export type UserRow = S.Schema.To<typeof UserRow>;
 
-const GoogleLoginRow = S.struct({
-  user_id: S.number,
-  profile: GoogleProfile,
-  google_id: S.string,
-});
+export const convertUser = (u: UserRow) => {
+  if (u._tag === "password" && u.username) {
+    return Effect.succeed(
+      passwordUser({
+        ...u,
+        login: {
+          username: u.username,
+        },
+      })
+    );
+  } else if (u._tag === "google" && u.picture && u.display_name && u.email) {
+    return Effect.succeed(
+      googleUser({
+        ...u,
+        login: {
+          picture: u.picture,
+          email: u.email,
+          displayName: u.display_name,
+        },
+      })
+    );
+  } else {
+    return Effect.fail(
+      dataIntegrityError(`Invalid user login data. ${u.id}, ${u._tag}`)
+    );
+  }
+};
 
 export const getAllUsers = () =>
   pipe(
-    query(
-      S.struct({
-        id: S.number,
-        role: S.literal("admin", "user"),
-        created: S.ValidDateFromSelf,
-        pl_username: S.string,
-      })
-    )(
+    query(UserRow)(
       `
-      select
-        u.id as id, u.created as created, u.role as role,
-        pl.username as pl_username
-      from users u
-        join password_logins pl on pl.user_id = u.id
+        select
+          users.id,
+          user_logins._tag,
+          user_logins.picture,
+          user_logins.display_name,
+          user_logins.email,
+          user_logins.username,
+          users.created,
+          users.role
+
+        from (
+
+          select
+            user_id,
+            'google' as _tag,
+            profile -> 'picture' as picture,
+            profile -> 'displayName' as display_name,
+            profile -> 'email' as email,
+            null as username
+          from google_logins
+
+          union
+
+          select
+            user_id,
+            'password' as _tag,
+            null as picture,
+            null as display_name,
+            null as email,
+            username
+          from password_logins
+
+        ) as user_logins
+        join users on user_logins.user_id = users.id;
       `,
       []
     ),
-    Effect.map(
-      ReadonlyArray.map((result) => ({
-        id: result.id,
-        created: result.created,
-        role: result.role,
-        login: {
-          _tag: "password_login" as const,
-          username: result.pl_username,
-        },
-      }))
-    )
+    Effect.flatMap(Effect.forEach(convertUser))
   );
 
-export const getUserById = (id: number) =>
+export const getUserWithLoginById = (id: YalttUserId) =>
   pipe(
     query1(UserRow)(
-      "select id, logins, role, created from users where id = $1;",
+      `
+      select
+        users.id,
+        user_logins._tag,
+        user_logins.picture,
+        user_logins.display_name,
+        user_logins.email,
+        user_logins.username,
+        users.created,
+        users.role
+
+      from (
+
+        select
+          user_id,
+          'google' as _tag,
+          profile -> 'picture' as picture,
+          profile -> 'displayName' as display_name,
+          profile -> 'email' as email,
+          null as username
+        from google_logins
+
+        union
+
+        select
+          user_id,
+          'password' as _tag,
+          null as picture,
+          null as display_name,
+          null as email,
+          username
+        from password_logins
+
+      ) as user_logins
+      join users on user_logins.user_id = users.id
+      where users.id = $1;`,
       [id]
     ),
-    Effect.map((result) => ({
-      id: result.id,
-      created: result.created,
-      role: result.role,
-      logins: result.logins,
-    }))
-  );
-
-export const getUserWithLoginById = (id: number) =>
-  pipe(
-    getPasswordLoginUserById(id),
-    (a) => a,
-    toOption,
-    (a) => a,
-    Effect.flatMap(
-      Option.match({
-        onNone: () => getGoogleLoginUserById(id),
-        onSome: (user) => Effect.succeed(user),
-      })
-    )
+    Effect.flatMap(convertUser)
   );
 
 export const getPasswordLoginUserById = (id: number) =>
@@ -117,7 +172,7 @@ export const getPasswordLoginUserById = (id: number) =>
 export const getLoginByUsername = (username: string) =>
   query1(
     S.struct({
-      id: S.number,
+      id: YalttUserId,
       username: S.string,
       hashed_password: buffer,
       salt: buffer,
@@ -128,16 +183,10 @@ export const getLoginByUsername = (username: string) =>
   );
 
 export const getUserByGoogleProfileId = (googleProfileId: string) =>
-  query1(
-    S.struct({
-      id: S.number,
-      google_id: S.string,
-      profile: S.unknown,
-    })
-  )(
+  query1(GoogleLoginRow)(
     `
     select
-      u.id,
+      u.id as user_id,
       gl.google_id,
       gl.profile
     from users u 
@@ -163,7 +212,7 @@ export const addOrUpdateUserWithLocalPassword = (
             onNone: () => addUserWithLocalPassword(username, password, role),
             onSome: (login) =>
               pipe(
-                getUserById(login.id),
+                getUserWithLoginById(login.id),
                 Effect.flatMap((user) =>
                   updateLocalPasswordForUser(user, username, password)
                 )
@@ -175,8 +224,15 @@ export const addOrUpdateUserWithLocalPassword = (
   );
 };
 
+const PasswordLoginRow = S.struct({
+  user_id: S.number,
+  username: S.string,
+  hashed_password: buffer,
+  salt: buffer,
+});
+
 export const updateLocalPasswordForUser = (
-  user: S.Schema.To<typeof UserRow>,
+  user: YalttUser,
   username: string,
   pw: string
 ) =>
@@ -189,7 +245,12 @@ export const updateLocalPasswordForUser = (
         [user.id, pw.hashedPassword, pw.salt]
       )
     ),
-    Effect.map(() => passwordUser(user.id, username, user.role))
+    Effect.map(() =>
+      passwordUser({
+        ...user,
+        login: { username },
+      })
+    )
   );
 
 export const addLocalPasswordForUser = (
@@ -224,8 +285,19 @@ export const addUserWithLocalPassword = (
     Effect.bind("passwordLogin", ({ user }) =>
       addLocalPasswordForUser(user.id, username, password)
     ),
-    Effect.map(({ user }) => passwordUser(user.id, username, user.role))
+    Effect.map(({ user }) =>
+      passwordUser({
+        ...user,
+        login: { username },
+      })
+    )
   );
+
+const GoogleLoginRow = S.struct({
+  user_id: YalttUserId,
+  profile: GoogleProfile,
+  google_id: S.string,
+});
 
 export const addGoogleLoginForUser = (
   userId: number,
@@ -267,7 +339,14 @@ export const addUserWithGoogleLogin = (
       addGoogleLoginForUser(user.id, googleId, profile)
     ),
     Effect.map(({ user, google }) =>
-      googleUser(user.id, google.google_id, google.profile, user.role)
+      googleUser({
+        ...user,
+        login: {
+          displayName: google.profile.displayName,
+          email: google.profile.email,
+          picture: google.profile.picture,
+        },
+      })
     )
   );
 
@@ -284,18 +363,20 @@ export const addOrUpdateUserWithGoogleProfile = (
         onNone: () => addUserWithGoogleLogin(googleId, profile, role),
         onSome: (login) =>
           pipe(
-            getUserById(login.id),
+            getUserWithLoginById(login.user_id),
             Effect.bindTo("user"),
             Effect.bind("googleLogin", ({ user }) =>
               updateGoogleLoginForUser(login.google_id, profile)
             ),
             Effect.map(({ user, googleLogin }) =>
-              googleUser(
-                user.id,
-                googleLogin.google_id,
-                googleLogin.profile,
-                role
-              )
+              googleUser({
+                ...user,
+                login: {
+                  displayName: googleLogin.profile.displayName,
+                  email: googleLogin.profile.email,
+                  picture: googleLogin.profile.picture,
+                },
+              })
             )
           ),
       })
@@ -306,7 +387,7 @@ export const getGoogleLoginUserById = (id: number) =>
   pipe(
     query1(
       S.struct({
-        id: S.number,
+        id: YalttUserId,
         role: S.literal("admin", "user"),
         created: S.ValidDateFromSelf,
         profile: GoogleProfile,
@@ -325,6 +406,13 @@ export const getGoogleLoginUserById = (id: number) =>
       [id]
     ),
     Effect.map((result) =>
-      googleUser(id, result.google_id, result.profile, result.role)
+      googleUser({
+        ...result,
+        login: {
+          displayName: result.profile.displayName,
+          email: result.profile.email,
+          picture: result.profile.picture,
+        },
+      })
     )
   );

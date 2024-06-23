@@ -152,7 +152,7 @@ bindRegistrationEndpoint(getConfiguration)(({ registrationId }) =>
         customParameters: {},
         messages,
         scopes: [],
-        toolId: ""
+        toolId: "",
       })
     )
   )
@@ -169,7 +169,7 @@ bindRegistrationEndpoint(getCanvasConfiguration)(({ registrationId }) =>
       "placements",
       ({ reg, app, config, request }): ReadonlyArray<CanvasPlacement> => [
         {
-          placement: "course_navigation",
+          placement: "https://canvas.instructure.com/lti/course_navigation",
           message_type: "LtiResourceLinkRequest",
           target_link_uri: mkYalttUrl(
             config,

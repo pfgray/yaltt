@@ -76,7 +76,7 @@ app.use(appRouter);
 app.use(registrationRouter);
 app.use(agsRouter);
 app.use("/api", launchRouter);
-app.use("/api", adminRouter);
+app.use(adminRouter);
 
 if (process.env.ADMIN_USER && process.env.ADMIN_PASSWORD) {
   const username = process.env.ADMIN_USER.trim();

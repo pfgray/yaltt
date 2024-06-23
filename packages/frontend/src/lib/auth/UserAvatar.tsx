@@ -1,9 +1,9 @@
 import { pipe, Either, Option, ReadonlyArray, Effect } from "effect";
-import { User } from "@yaltt/model";
+import { YalttUser } from "@yaltt/model";
 import { match } from "@yaltt/model";
 
 type UserAvatarProps = {
-  user: User;
+  user: YalttUser;
   tabIndex?: number;
 };
 export const UserAvatar = (props: UserAvatarProps) => {
@@ -12,7 +12,7 @@ export const UserAvatar = (props: UserAvatarProps) => {
       {pipe(
         props.user.login,
         match({
-          password_login: (pwl) => (
+          password: (pwl) => (
             <label
               tabIndex={props.tabIndex}
               className="btn btn-ghost btn-circle avatar placeholder"
@@ -22,9 +22,9 @@ export const UserAvatar = (props: UserAvatarProps) => {
               </div>
             </label>
           ),
-          google_login: (gl) =>
+          google: (gl) =>
             pipe(
-              gl.profile.picture,
+              gl.picture,
               Option.fromNullable,
               Option.match({
                 onNone: () => (
@@ -34,7 +34,7 @@ export const UserAvatar = (props: UserAvatarProps) => {
                   >
                     <div className="bg-base-300 rounded-full w-10">
                       <span className="text-xs">
-                        {gl.profile.displayName.charAt(0)}
+                        {gl.displayName.charAt(0)}
                       </span>
                     </div>
                   </label>

@@ -1,8 +1,4 @@
-import { getDecode } from "../api/request";
-import * as S from "@effect/schema/Schema";
+import { fetchFromEndpoint } from "../endpoint-ts/fetchFromEndpoint";
+import { getLoginMechanisms } from "@yaltt/model";
 
-export const getLoginMechanisms = getDecode(
-  S.struct({
-    types: S.array(S.literal("local", "google")),
-  })
-)("/api/loginMechanisms");
+export const fetchLoginMechanisms = fetchFromEndpoint(getLoginMechanisms);

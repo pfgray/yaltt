@@ -1,4 +1,4 @@
-import { AppId, User } from "@yaltt/model";
+import { AppId, YalttUser } from "@yaltt/model";
 import * as S from "@effect/schema/Schema";
 import { query, query1 } from "../../db/db";
 
@@ -17,13 +17,13 @@ export const getAppForId = (appId: number) =>
     [appId]
   );
 
-export const getAppsForUser = (u: User) =>
+export const getAppsForUser = (u: YalttUser) =>
   query(AppRow)(
     "select id, name, user_id, created, modified, icon_url from apps where user_id = $1",
     [u.id]
   );
 
-export const createAppForUser = (name: string, u: User) =>
+export const createAppForUser = (name: string, u: YalttUser) =>
   query1(AppRow)(
     "insert into apps (name, user_id) values ($1, $2) returning *",
     [name, u.id]

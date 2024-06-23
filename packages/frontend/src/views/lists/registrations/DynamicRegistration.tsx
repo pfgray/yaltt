@@ -150,6 +150,7 @@ export const DynamicRegistration = () => {
   const [toolId, setToolId] = React.useState(
     "toolid-" + Math.floor(Math.random() * 1000)
   );
+  const [includeToolId, setIncludeToolId] = React.useState(false);
   const scopes = useScopeStore((state) => state.scopes);
   const placements = usePlacementsStore((state) => state.placements);
 
@@ -222,18 +223,39 @@ export const DynamicRegistration = () => {
                                   }
                                   value={topCustomParams}
                                 ></textarea>
-                                <label htmlFor="tool-id" className="mt-3">
-                                  Toolid
-                                </label>
-                                <input
-                                  id="tool-id"
-                                  type="text"
-                                  className="input input-bordered mb-3"
-                                  onChange={(ev) =>
-                                    setToolId(ev.currentTarget.value?.trim())
-                                  }
-                                  value={toolId}
-                                />
+                                {isCanvas(platformConfiguration) && (
+                                  <>
+                                    <label className="label cursor-pointer justify-normal mt-3">
+                                      <input
+                                        type="checkbox"
+                                        className="checkbox"
+                                        onChange={() => {
+                                          setIncludeToolId(!includeToolId);
+                                        }}
+                                        checked={includeToolId}
+                                      />
+                                      <span className="label-text ml-2">
+                                        Include Tool ID
+                                      </span>
+                                    </label>
+
+                                    <label htmlFor="tool-id" className="mt-1">
+                                      https://canvas.instructure.com/lti/tool_id
+                                    </label>
+                                    <input
+                                      id="tool-id"
+                                      type="text"
+                                      className="input input-bordered mb-3"
+                                      disabled={!includeToolId}
+                                      onChange={(ev) =>
+                                        setToolId(
+                                          ev.currentTarget.value?.trim()
+                                        )
+                                      }
+                                      value={toolId}
+                                    />
+                                  </>
+                                )}
                               </div>
                             </div>
 
@@ -252,7 +274,9 @@ export const DynamicRegistration = () => {
                                       registrationEndpoint:
                                         platformConfiguration.registration_endpoint,
                                       scopes,
-                                      toolId,
+                                      toolId: includeToolId
+                                        ? toolId
+                                        : undefined,
                                       messages: Object.entries(placements)
                                         .filter(([, p]) => p.enabled)
                                         .map(
@@ -480,6 +504,10 @@ type Placements = Record<
     label: string;
   }
 >;
+
+export const isCanvas = (config: PlatformConfiguration) =>
+  config["https://purl.imsglobal.org/spec/lti-platform-configuration"]
+    .product_family_code === "canvas";
 
 type InputType = HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement;
 

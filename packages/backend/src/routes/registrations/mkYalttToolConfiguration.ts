@@ -31,7 +31,7 @@ export const mkYalttToolConfiguration =
     customParameters: Record<string, string>;
     messages: ReadonlyArray<LtiMessage>;
     scopes: ReadonlyArray<string>;
-    toolId: string;
+    toolId?: string;
   }): ToolConfiguration => {
     const mkUrl = mkYalttUrl(config, contextualRequest);
     const mkRegUrl = (rest: string) =>
@@ -57,7 +57,9 @@ export const mkYalttToolConfiguration =
         messages: options.messages,
         target_link_uri: mkRegUrl("/launch"),
         "https://canvas.instructure.com/lti/privacy_level": "public",
-        "https://canvas.instructure.com/lti/tool_id": options.toolId,
+        ...(options.toolId
+          ? { "https://canvas.instructure.com/lti/tool_id": options.toolId }
+          : {}),
       },
     };
   };

@@ -3,14 +3,14 @@ import * as React from "react";
 import { getCurrentUser } from "./userApi";
 import { provideRequestService } from "../api/requestServiceImpl";
 import { useLocation, useNavigate } from "react-router-dom";
-import { User } from "@yaltt/model";
+import { YalttUser } from "@yaltt/model";
 
 type WithAuthProps = {
-  children: (user: User) => JSX.Element;
+  children: (user: YalttUser) => JSX.Element;
 };
 
 export const WithAuth = (props: WithAuthProps): JSX.Element => {
-  const [user, setUser] = React.useState<User | null>(null);
+  const [user, setUser] = React.useState<YalttUser | null>(null);
   const location = useLocation();
   const navigate = useNavigate();
 

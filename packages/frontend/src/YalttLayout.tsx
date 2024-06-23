@@ -3,7 +3,7 @@ import { WithAuth } from "./lib/auth/WithAuth";
 import { UserAvatar } from "./lib/auth/UserAvatar";
 import { useDisplayMode } from "./lib/ui/useDisplayMode";
 import { Link, Outlet } from "react-router-dom";
-import { User } from "@yaltt/model";
+import { YalttUser } from "@yaltt/model";
 import { post } from "./lib/api/request";
 import { Effect, pipe } from "effect";
 import { provideRequestService } from "./lib/api/requestServiceImpl";
@@ -29,9 +29,9 @@ export const YalttLayout = (props: YalttLayoutProps) => {
 };
 
 type PlainYalttLayoutProps = {
-  user: User;
-  header: (user: User) => React.ReactNode;
-  children: (user: User) => React.ReactNode;
+  user: YalttUser;
+  header: (user: YalttUser) => React.ReactNode;
+  children: (user: YalttUser) => React.ReactNode;
 };
 export const PlainYalttLayout = (props: PlainYalttLayoutProps) => {
   const displayMode = useDisplayMode();
@@ -59,29 +59,32 @@ export const PlainYalttLayout = (props: PlainYalttLayoutProps) => {
                 </a>
               </li>
               */}
-              {props.user.role === 'admin' ? (
+              {props.user.role === "admin" ? (
                 <li>
-                  <Link to="/admin">
-                    Admin
-                  </Link>
+                  <Link to="/admin">Admin</Link>
                 </li>
               ) : null}
               <li>
-                <Link to="/">
-                  Apps
-                </Link>
+                <Link to="/">Apps</Link>
               </li>
               <li>
-                <a role="button" onClick={() => {
-                  pipe(
-                    post("/api/logout", undefined),
-                    provideRequestService,
-                    Effect.flatMap(() => Effect.sync(() => {
-                      window.location.href = '/';
-                    })),
-                    Effect.runPromise
-                  )
-                }}>Logout</a>
+                <a
+                  role="button"
+                  onClick={() => {
+                    pipe(
+                      post("/api/logout", undefined),
+                      provideRequestService,
+                      Effect.flatMap(() =>
+                        Effect.sync(() => {
+                          window.location.href = "/";
+                        })
+                      ),
+                      Effect.runPromise
+                    );
+                  }}
+                >
+                  Logout
+                </a>
               </li>
             </ul>
           </div>

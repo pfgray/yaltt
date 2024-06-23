@@ -112,6 +112,9 @@ export const DeepLinkingForm = (props: DeepLinkingFormProps) => {
                   fetch_parse_json_error: (err) => {
                     console.error("error parsing json response:", err);
                   },
+                  encode_error: (err) => {
+                    console.error("error encoding request", err);
+                  },
                 }),
                 onRight: (res) => console.log(JSON.stringify(res)),
               })

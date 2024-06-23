@@ -1,28 +1,26 @@
-import * as React from "react";
-import { render } from "react-dom";
 import { createRoot } from "react-dom/client";
-import { YalttRouterLayout } from "./YalttLayout";
 import "./index.css";
+import { YalttRouterLayout } from "./YalttLayout";
 
 import {
   createBrowserRouter,
   RouteObject,
   RouterProvider,
 } from "react-router-dom";
+import { Admin } from "./views/admin/Admin";
+import { LaunchView } from "./views/launch/LaunchView";
+import { Account } from "./views/lists/account/Account";
+import { AppDetails } from "./views/lists/apps/AppDetails";
 import { Apps } from "./views/lists/apps/Apps";
-import { Users } from "./views/lists/users/Users";
 import { Contexts } from "./views/lists/contexts/Contexts";
 import { Launches } from "./views/lists/launches/Launches";
-import { Account } from "./views/lists/account/Account";
-import SignIn from "./views/login/SignIn";
-import { Registrations } from "./views/lists/registrations/Registrations";
-import { AppDetails } from "./views/lists/apps/AppDetails";
-import { DynamicRegistration } from "./views/lists/registrations/DynamicRegistration";
-import { NewManualRegistration } from "./views/registration/NewManualRegistration";
-import { DynamicRegistrationAppPicker } from "./views/lists/registrations/DynamicRegistrationAppPicker";
 import { RegistrationLogin } from "./views/lists/launches/RegistrationLogin";
-import { LaunchView } from "./views/launch/LaunchView";
-import { Admin } from "./views/admin/Admin";
+import { DynamicRegistration } from "./views/lists/registrations/DynamicRegistration";
+import { DynamicRegistrationAppPicker } from "./views/lists/registrations/DynamicRegistrationAppPicker";
+import { Registrations } from "./views/lists/registrations/Registrations";
+import { Users } from "./views/lists/users/Users";
+import SignIn from "./views/login/SignIn";
+import { NewManualRegistration } from "./views/registration/NewManualRegistration";
 
 const mkPath = (
   path: string,
