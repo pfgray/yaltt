@@ -47,7 +47,14 @@ export const number = (
   _tag: "number",
   label,
   initialValue: initialValue || "",
-  validate: validate || (() => Either.right(Option.none())),
+  validate:
+    validate ||
+    ((a) => {
+      const num = parseInt(a, 10);
+      return isNaN(num)
+        ? Either.left(Option.none())
+        : Either.right(Option.some(num));
+    }),
 });
 
 export const textarea = (

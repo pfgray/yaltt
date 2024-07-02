@@ -67,8 +67,9 @@ export const agsForm = (
     scoreGiven: F.number("Score Given"),
     scoreMaximum: F.number("Score Maximum"),
     comment: F.textarea("Comment", ""),
-  })((fields) =>
-    pipe(
+  })((fields) => {
+    console.log("sending score with fields", fields);
+    return pipe(
       sendScore(
         {
           appId,
@@ -87,8 +88,8 @@ export const agsForm = (
         comment: fields.comment,
       }),
       provideRequestService
-    )
-  );
+    );
+  });
 
 type AgsFormProps = {
   appId: AppId;

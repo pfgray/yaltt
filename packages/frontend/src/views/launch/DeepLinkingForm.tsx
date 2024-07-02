@@ -11,6 +11,7 @@ import React from "react";
 import { makeMatchers } from "ts-adt/MakeADT";
 import { provideRequestService } from "../../lib/api/requestServiceImpl";
 import { fetchBodyFromEndpoint } from "../../lib/endpoint-ts/fetchFromEndpoint";
+import { formatError } from "@effect/schema/TreeFormatter";
 
 const sendContentItems = (
   contentItems: ContentItem[],
@@ -113,7 +114,10 @@ export const DeepLinkingForm = (props: DeepLinkingFormProps) => {
                     console.error("error parsing json response:", err);
                   },
                   encode_error: (err) => {
-                    console.error("error encoding request", err);
+                    console.error(
+                      "error encoding request",
+                      formatError(err.error)
+                    );
                   },
                 }),
                 onRight: (res) => console.log(JSON.stringify(res)),
@@ -148,16 +152,21 @@ const ContentItemForm = (props: ContentItemFormProps) => {
       props.update({ ...props.contentItem, [key]: e.currentTarget.value });
     };
   const updateLineItemField =
-    (key: string) =>
+    (key: string, isNumber?: boolean) =>
     (e: { currentTarget: { value: string | number | boolean } }) => {
       const lineItem =
         "lineItem" in props.contentItem &&
         typeof props.contentItem.lineItem !== "undefined"
           ? props.contentItem.lineItem
           : { scoreMaximum: 100 };
+      const value = e.currentTarget.value;
+      const parsed =
+        isNumber && typeof value === "string"
+          ? parseInt(value, 10)
+          : e.currentTarget.value;
       props.update({
         ...props.contentItem,
-        ...{ lineItem: { ...lineItem, [key]: e.currentTarget.value } },
+        ...{ lineItem: { ...lineItem, [key]: parsed } },
       });
     };
   return (
@@ -314,10 +323,9 @@ const ContentItemForm = (props: ContentItemFormProps) => {
                     type="number"
                     className="input input-bordered w-full"
                     value={item.lineItem?.scoreMaximum}
-                    onChange={updateLineItemField("scoreMaximum")}
+                    onChange={updateLineItemField("scoreMaximum", true)}
                   />
                   <input
-                    type="number"
                     placeholder="Resource Id"
                     className="input input-bordered w-full"
                     value={item.lineItem?.resourceId}
