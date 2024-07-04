@@ -20,6 +20,8 @@ import {
   successResponse,
 } from "./express/effRequestHandler";
 import { getIconForApp } from "./routes/apps/appIcon";
+import { match } from "endpoint-ts";
+import { formatError } from "@effect/schema/TreeFormatter";
 
 const app = express.default();
 
@@ -92,7 +94,29 @@ if (process.env.ADMIN_USER && process.env.ADMIN_PASSWORD) {
       Effect.runPromiseExit
     ).then((exit) => {
       if (exit._tag === "Failure") {
-        console.error("Failed to create admin user: ", exit.cause);
+        if(exit.cause._tag === 'Fail') {
+          pipe(
+            exit.cause.error,
+            match({
+              data_integrity_error: (e) =>
+                `Data Integrity Error: ${e.message}`,
+              decode_query_error: (e) =>
+                `Could not decode query result: ${formatError(e.error.error)}`,
+              hash_error: (e) =>
+                `Hash Error: ${e.cause.message}\n${e.cause.stack}`,
+                no_record_found: e =>
+                `No Record found: ${e.query}`
+                ,
+                pg_error: e =>
+                `PG error: ${e.cause.message}\n${e.cause.stack}`
+            }),
+            message => {
+              console.log(message)
+            }
+          )
+        } else {
+          console.error("Failed to create admin user: ", exit.cause);
+        }
         pgService.rollback();
       } else {
         pgService.commit();

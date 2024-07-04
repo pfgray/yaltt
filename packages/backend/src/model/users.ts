@@ -277,7 +277,11 @@ export const addUserWithLocalPassword = (
   pipe(
     Effect.succeed({}),
     Effect.bind("user", () =>
-      query1(UserRow)(
+      query1(S.struct({
+        id: YalttUserId,
+        role: S.literal("admin", "user"),
+        created: S.ValidDateFromSelf,
+      }))(
         "insert into users (logins, role) values ('{}'::jsonb, $1) returning *",
         [role]
       )
@@ -330,7 +334,11 @@ export const addUserWithGoogleLogin = (
   pipe(
     Effect.succeed({}),
     Effect.bind("user", () =>
-      query1(UserRow)(
+      query1(S.struct({
+        id: YalttUserId,
+        role: S.literal("admin", "user"),
+        created: S.ValidDateFromSelf,
+      }))(
         "insert into users (logins, role) values ('{}'::jsonb, $1) returning *",
         [role]
       )
