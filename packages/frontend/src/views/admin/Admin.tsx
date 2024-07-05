@@ -10,21 +10,40 @@ import { useNavigate } from "react-router-dom";
 import { useQuery } from "../../lib/react-router/useQuery";
 import img from "../../img/bg.jpg";
 import * as S from "@effect/schema/Schema";
-import { getUsers, match, YalttUser } from "@yaltt/model";
+import { createPasswordUser, getUsers, match, YalttUser } from "@yaltt/model";
 import { WithRequest } from "../../lib/api/WithRequest";
 import { confirmWithLoading } from "../../lib/confirmation/Confirm";
 import { provideRequestService } from "../../lib/api/requestServiceImpl";
 import { EllipsisVerticalIcon } from "@heroicons/react/24/outline";
 import { YalttLayout } from "../../YalttLayout";
-import { fetchFromEndpoint } from "../../lib/endpoint-ts/fetchFromEndpoint";
+import {
+  fetchBodyFromEndpoint,
+  fetchFromEndpoint,
+} from "../../lib/endpoint-ts/fetchFromEndpoint";
 import { UserAvatar } from "../../lib/auth/UserAvatar";
+import { NewEntityForm } from "../lists/NewEntityForm";
+import * as F from "../../lib/forms/form";
 
 const fetchUsers = fetchFromEndpoint(getUsers);
+const postCreatePasswordUser = fetchBodyFromEndpoint(createPasswordUser);
+
+const newUserForm = F.mkForm({
+  username: F.string("Username", ""),
+  password: F.password("Password", ""),
+})((fields) => {
+  console.log("doing the thing?");
+  return pipe(
+    postCreatePasswordUser()(fields),
+    // Effect.flatMap(() => onAfterSuccess),
+    provideRequestService
+  );
+});
 
 export const Admin = () => {
+  const userDialogRef = React.useRef<HTMLDialogElement>(null);
   return (
     <WithRequest eff={fetchUsers()}>
-      {(users) => (
+      {(users, reloadUsers) => (
         <YalttLayout
           header={
             <div className="text-sm breadcrumbs">
@@ -35,11 +54,33 @@ export const Admin = () => {
           }
         >
           <div className="flex flex-col w-full">
+            <dialog ref={userDialogRef} className="modal">
+              <div className="modal-box w-11/12 max-w-xl">
+                <NewEntityForm
+                  close={() => {
+                    userDialogRef.current?.close();
+                  }}
+                  form={newUserForm}
+                  entityName={"User"}
+                  afterSubmit={reloadUsers}
+                />
+              </div>
+            </dialog>
             <div className="flex flex-1 pt-20 justify-center">
               <div className="min-w-[50%]">
                 <div className="flex-1 flex w-full p-1">
                   <div className="flex-1 flex justify-start prose">
                     <h1>Users</h1>
+                  </div>
+                  <div className="flex justify-end">
+                    <button
+                      className="btn btn-primary w-64 btn-sm"
+                      onClick={() => {
+                        userDialogRef.current?.showModal();
+                      }}
+                    >
+                      Create Password User
+                    </button>
                   </div>
                 </div>
                 <div className="divider"></div>

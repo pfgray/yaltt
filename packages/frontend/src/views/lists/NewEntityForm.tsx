@@ -42,9 +42,14 @@ export const NewEntityForm = <R extends Record<string, F.FormField<any, any>>>(
     <>
       <h3 className="font-bold text-lg mb-4">New {props.entityName}</h3>
       {props.extraUnderHeader && props.extraUnderHeader()}
-      {renderManagedForm(entityForm, () => (
+      {renderManagedForm(entityForm, (form) => (
         <div className="modal-action">
-          <button className="btn">Create</button>
+          <button disabled={form.submitting} className="btn">
+            {form.submitting ? (
+              <span className="loading loading-dots loading-xs"></span>
+            ) : null}
+            Create
+          </button>
         </div>
       ))}
     </>

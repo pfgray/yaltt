@@ -21,7 +21,10 @@ export const renderManagedForm = <
   R extends Record<K, FormField<any, any>>
 >(
   form: Form<K, R>,
-  renderExtra?: (options: { submitForm: () => void }) => JSX.Element
+  renderExtra?: (options: {
+    submitForm: () => void;
+    submitting: boolean;
+  }) => JSX.Element
 ) => {
   const formFields = form.fields as Record<string, FormField<any, any>>;
   const initialValues = React.useMemo(
@@ -36,6 +39,8 @@ export const renderManagedForm = <
 
   const [fields, setFields] = React.useState(initialValues);
 
+  const [submitting, setSubmitting] = React.useState(false);
+
   const setField = (key: string, value: any) => {
     setFields((prev: any) => ({
       ...prev,
@@ -47,7 +52,6 @@ export const renderManagedForm = <
     pipe(
       Array.from(Object.keys(fields)),
       ReadonlyArray.fromIterable,
-
       ReadonlyArray.map((key) =>
         pipe(
           Option.Do,
@@ -63,8 +67,17 @@ export const renderManagedForm = <
       ),
       Either.all,
       Either.map(toObj),
+      Either.map((a) => {
+        setSubmitting(true);
+        return a;
+      }),
       Either.map((values) => {
         Effect.runCallback(form.onSubmit(values as any));
+      }),
+      Either.map((a) => {
+        setSubmitting(false);
+        setFields(initialValues);
+        return a;
       })
     );
   };
@@ -103,7 +116,7 @@ export const renderManagedForm = <
             return (
               <div className="form-control w-full mb-2" key={key}>
                 <input
-                  type="text"
+                  type="password"
                   name={key}
                   className="input input-bordered w-full"
                   placeholder={capitalizeWords(value.label)}
@@ -179,7 +192,7 @@ export const renderManagedForm = <
       )}
 
       {renderExtra ? (
-        renderExtra({ submitForm })
+        renderExtra({ submitForm, submitting })
       ) : (
         <button className="btn" type="submit">
           Submit

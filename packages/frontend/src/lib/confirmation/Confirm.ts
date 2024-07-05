@@ -30,7 +30,6 @@ export const confirmWithLoading = <E>(options: {
       "confirmation_modal_description"
     );
 
-    console.log("got here");
     if (
       confirmModalRootEl &&
       confirmModalRootEl instanceof HTMLDialogElement &&
@@ -41,7 +40,6 @@ export const confirmWithLoading = <E>(options: {
       title &&
       description
     ) {
-      console.log("doing the thing");
       title.innerHTML = options.title;
       description.innerHTML = options.description;
       console.log(
