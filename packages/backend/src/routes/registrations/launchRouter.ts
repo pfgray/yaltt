@@ -87,6 +87,7 @@ const handleLoginRequest = effRequestHandler(
           prompt: "none",
           response_mode: "form_post",
           response_type: "id_token",
+          state: "foo",
         }),
         toParams
       );
