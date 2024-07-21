@@ -430,29 +430,27 @@ const ServicesSupported = (props: {
 
   return (
     <div>
-      <h3>Services Supported by this Platform</h3>
+      <h3>Permissions Supported by this Platform</h3>
       <div className="list-none pl-0 grid grid-cols-2 gap-2">
-        {PossibleScopes.map((ps) => ({
-          ...ps,
-          supported:
-            typeof props.platformConfiguration.scopes_supported.find(
-              (scope) => {
-                return scope === ps.type;
-              }
-            ) !== "undefined",
-        })).map((ps) => (
-          <div className="form-control" key={ps.type}>
-            <label className="label cursor-pointer justify-normal">
-              <input
-                type="checkbox"
-                className="checkbox"
-                onChange={() => toggleScope(ps.type)}
-                checked={scopes.includes(ps.type)}
-              />
-              <span className="label-text ml-2">{ps.description}</span>
-            </label>
-          </div>
-        ))}
+        {props.platformConfiguration.scopes_supported
+          .map((type) => ({
+            type,
+            description: PossibleScopes.find((ps) => ps.type === type)
+              ?.description,
+          }))
+          .map(({ type, description }) => (
+            <div className="form-control" key={type}>
+              <label className="label cursor-pointer justify-normal">
+                <input
+                  type="checkbox"
+                  className="checkbox"
+                  onChange={() => toggleScope(type)}
+                  checked={scopes.includes(type)}
+                />
+                <span className="label-text ml-2">{description || type}</span>
+              </label>
+            </div>
+          ))}
       </div>
     </div>
   );
