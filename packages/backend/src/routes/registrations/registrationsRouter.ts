@@ -52,6 +52,7 @@ import {
 
 import { deleteRegistration } from "@yaltt/model";
 import { getRouteString } from "endpoint-ts";
+import { getAppForId } from "../../model/entities/apps";
 
 export const registrationRouter = express.Router();
 const bindRegistrationEndpoint = bindEndpoint(registrationRouter);
@@ -164,7 +165,7 @@ bindRegistrationEndpoint(getCanvasConfiguration)(({ registrationId }) =>
     Effect.bindTo("request"),
     Effect.bind("config", () => getConfig),
     Effect.bind("reg", () => getRegistrationForId(registrationId)),
-    Effect.bind("app", ({ reg }) => appIdIsForUser(reg.app_id)),
+    Effect.bind("app", ({ reg }) => getAppForId(reg.app_id)),
     Effect.let(
       "placements",
       ({ reg, app, config, request }): ReadonlyArray<CanvasPlacement> => [
