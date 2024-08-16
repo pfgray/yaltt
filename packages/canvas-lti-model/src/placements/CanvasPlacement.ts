@@ -1,9 +1,10 @@
 import * as S from "@effect/schema/Schema";
 import { CanvasLtiMessageTypes } from "../message/CanvasLtiMessageTypes";
 import { CanvasPlacementTypes } from "./CanvasPlacementTypes";
+import { NonPrefixedCanvasPlacementTypes } from "./NonPrefixedCanvasPlacementTypes";
 
 export const CanvasPlacement = S.struct({
-  placement: S.literal(...Object.values(CanvasPlacementTypes)),
+  placement: S.literal(...Object.values(NonPrefixedCanvasPlacementTypes)),
   target_link_uri: S.optional(S.string),
   text: S.optional(S.string),
   icon_uri: S.optional(S.string),

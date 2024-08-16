@@ -1,6 +1,7 @@
 export * from "./scopes/CanvasScopes";
 export * from "./placements/CanvasPlacement";
 export * from "./placements/CanvasPlacementTypes";
+export * from "./placements/NonPrefixedCanvasPlacementTypes";
 export * from "./message/CanvasLtiMessageTypes";
 export * from "./configuration/CanvasPrivacyLevel";
 export * from "./configuration/CanvasToolConfiguration";

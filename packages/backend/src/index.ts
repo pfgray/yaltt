@@ -80,6 +80,67 @@ app.use(agsRouter);
 app.use("/api", launchRouter);
 app.use(adminRouter);
 
+app.get("/api/no_canvas_extension", (req, res) => {
+  res.json({
+    title: "Yaltt",
+    description: "Yet another LTI test tool",
+    target_link_uri: "http://yaltt.inst.test/api/registrations/1/launch",
+    oidc_initiation_url: "http://yaltt.inst.test/api/registrations/1/login",
+    public_jwk_url: "http://yaltt.inst.test/api/registrations/1/jwks",
+    scopes: [],
+    extensions: [
+      {
+        platform: "canvas.instructure.coms",
+        windowTarget: "_blank",
+        required_permissions: "asdf",
+        settings: {
+          placements: [
+            {
+              windowTarget: "_blank",
+              required_permissions: "asdf",
+              placement: "course_navigation",
+              target_link_uri:
+                "http://yaltt.inst.test/api/registrations/1/resource_link",
+              message_type: "LtiResourceLinkRequest",
+            },
+          ],
+        },
+      },
+    ],
+  });
+});
+
+app.get("/api/invalid_placements", (req, res) => {
+  res.json({
+    title: "Yaltt",
+    description: "Yet another LTI test tool",
+    target_link_uri: "http://yaltt.inst.test/api/registrations/1/launch",
+    oidc_initiation_url: "http://yaltt.inst.test/api/registrations/1/login",
+    public_jwk_url: "http://yaltt.inst.test/api/registrations/1/jwks",
+    scopes: [],
+    extensions: [
+      {
+        platform: "canvas.instructure.com",
+        settings: {
+          windowTarget: "_self",
+          placements: [
+            {
+              windowTarget: "_self",
+              visibility: "foo",
+              default: "hidden",
+              use_tray: "true",
+              placement: "course_navigation",
+              target_link_uri:
+                "http://yaltt.inst.test/api/registrations/1/resource_link",
+              message_type: "LtiResourceLinkRequest",
+            },
+          ],
+        },
+      },
+    ],
+  });
+});
+
 if (process.env.ADMIN_USER && process.env.ADMIN_PASSWORD) {
   const username = process.env.ADMIN_USER.trim();
   if (username.length > 0) {
@@ -94,26 +155,22 @@ if (process.env.ADMIN_USER && process.env.ADMIN_PASSWORD) {
       Effect.runPromiseExit
     ).then((exit) => {
       if (exit._tag === "Failure") {
-        if(exit.cause._tag === 'Fail') {
+        if (exit.cause._tag === "Fail") {
           pipe(
             exit.cause.error,
             match({
-              data_integrity_error: (e) =>
-                `Data Integrity Error: ${e.message}`,
+              data_integrity_error: (e) => `Data Integrity Error: ${e.message}`,
               decode_query_error: (e) =>
                 `Could not decode query result: ${formatError(e.error.error)}`,
               hash_error: (e) =>
                 `Hash Error: ${e.cause.message}\n${e.cause.stack}`,
-                no_record_found: e =>
-                `No Record found: ${e.query}`
-                ,
-                pg_error: e =>
-                `PG error: ${e.cause.message}\n${e.cause.stack}`
+              no_record_found: (e) => `No Record found: ${e.query}`,
+              pg_error: (e) => `PG error: ${e.cause.message}\n${e.cause.stack}`,
             }),
-            message => {
-              console.log(message)
+            (message) => {
+              console.log(message);
             }
-          )
+          );
         } else {
           console.error("Failed to create admin user: ", exit.cause);
         }

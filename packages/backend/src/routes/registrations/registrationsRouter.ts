@@ -23,7 +23,6 @@ import {
   LtiMessageTypes,
   LtiVersionClaimKey,
   MessageTypeClaimKey,
-  PublicJwk,
   ToolConfiguration,
 } from "lti-model";
 import { unauthorizedError } from "../../auth/authedRequestHandler";
@@ -51,7 +50,6 @@ import {
 } from "./mkYalttToolConfiguration";
 
 import { deleteRegistration } from "@yaltt/model";
-import { getRouteString } from "endpoint-ts";
 import { getAppForId } from "../../model/entities/apps";
 
 export const registrationRouter = express.Router();
@@ -170,7 +168,7 @@ bindRegistrationEndpoint(getCanvasConfiguration)(({ registrationId }) =>
       "placements",
       ({ reg, app, config, request }): ReadonlyArray<CanvasPlacement> => [
         {
-          placement: "https://canvas.instructure.com/lti/course_navigation",
+          placement: "course_navigation",
           message_type: "LtiResourceLinkRequest",
           target_link_uri: mkYalttUrl(
             config,
