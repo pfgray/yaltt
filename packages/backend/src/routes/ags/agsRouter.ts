@@ -1,7 +1,7 @@
 import { Effect, pipe } from "effect";
 import * as express from "express";
 
-import { createScoreForUser } from "@yaltt/model";
+import { createScoreForUser, createLineItem } from "@yaltt/model";
 import { LtiScope } from "lti-model";
 import { bindEndpoint } from "../../express/endpointRequestHandler";
 import { Fetch } from "../../fetch/FetchService";
@@ -20,6 +20,22 @@ bindAgsEndpoint(createScoreForUser)(({ appId, registrationId }, query, score) =>
     ),
     Effect.flatMap((token) => {
       return Fetch.post(query.lineItemUrl + "/scores", score, {
+        headers: {
+          Authorization: `Bearer ${token.access_token}`,
+        },
+      });
+    })
+  )
+);
+
+bindAgsEndpoint(createLineItem)(({ appId, registrationId }, query, lineItem) =>
+  pipe(
+    registrationAndApp(appId, registrationId),
+    Effect.flatMap(({ registration }) =>
+      fetchToken(registration, [LtiScope.AgsLineItem])
+    ),
+    Effect.flatMap((token) => {
+      return Fetch.post(query.lineItemsUrl, lineItem, {
         headers: {
           Authorization: `Bearer ${token.access_token}`,
         },

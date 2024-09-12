@@ -1,3 +1,4 @@
+export * from "./ags/LineItem";
 export * from "./ags/Score";
 export * from "./ags/Submission";
 export * from "./ags/ActivityProgress";
