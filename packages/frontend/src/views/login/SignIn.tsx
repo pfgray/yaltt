@@ -8,7 +8,7 @@ import {
   ReadonlyArray,
 } from "effect";
 import * as React from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, createSearchParams } from "react-router-dom";
 import img from "../../img/bg.jpg";
 import { formBody, post, RequestService } from "../../lib/api/request";
 import { provideRequestService } from "../../lib/api/requestServiceImpl";
@@ -16,6 +16,8 @@ import { fetchLoginMechanisms } from "../../lib/auth/authApi";
 import { FetchError } from "../../lib/endpoint-ts/fetchFromEndpoint";
 import { useQuery } from "../../lib/react-router/useQuery";
 import { GoogleIcon } from "./GoogleIcon";
+
+const inIframe = () => window.self !== window.top;
 
 const useLoginMechanisms = () => {
   const [loginMechanisms, setLoginMechanisms] = React.useState<
@@ -42,11 +44,31 @@ const useLoginMechanisms = () => {
   return loginMechanisms;
 };
 
+if (window.opener) {
+  window.opener.postMessage("login", "*");
+  window.close();
+}
+
 export default function SignIn() {
   const navigate = useNavigate();
   let query = useQuery();
 
   const loginMechanisms = useLoginMechanisms();
+
+  React.useEffect(() => {
+    function redirectToUrl(event: MessageEvent) {
+      if (event.data === "login") {
+        const redirectUrl = query.get("redirectUrl") || "/";
+        navigate(redirectUrl, {
+          replace: true,
+        });
+      }
+    }
+    window.addEventListener("message", redirectToUrl);
+    return () => {
+      window.removeEventListener("message", redirectToUrl);
+    };
+  }, []);
 
   const [loginStatus, setLoginStatus] = React.useState<
     "not_sending" | "loading" | "req_server_error" | "req_client_error"
@@ -168,6 +190,17 @@ export default function SignIn() {
                     type="button"
                     href="/api/login/google"
                     className="btn btn-wide bg-zinc-950/70 border-0 text-white mb-2"
+                    rel="opener"
+                    onClick={(event) => {
+                      if (inIframe()) {
+                        window.open(
+                          "/api/login/google",
+                          "google-login",
+                          "width=600,height=600"
+                        );
+                        event.preventDefault();
+                      }
+                    }}
                   >
                     <GoogleIcon /> Sign in with Google
                   </a>

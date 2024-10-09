@@ -11,6 +11,8 @@ import { format } from "timeago.js";
 import { Link, createSearchParams, useNavigate } from "react-router-dom";
 import { NewEntityForm } from "../NewEntityForm";
 import { fetchApps } from "../../../lib/apps/apps";
+import { post } from "../../../lib/api/request";
+import { provideRequestService } from "../../../lib/api/requestServiceImpl";
 
 export const DynamicRegistrationAppPicker = () => {
   const navigate = useNavigate();
