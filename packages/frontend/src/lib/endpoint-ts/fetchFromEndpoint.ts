@@ -25,6 +25,7 @@ export type FetchError =
   | FetchException
   | FetchParseJsonError
   | FetchParseError
+  | UnauthorizedError
   | EncodeError;
 
 export type FetchException = {
@@ -70,6 +71,14 @@ const fetchParseError = (
   original,
   reason,
 });
+
+export type UnauthorizedError = {
+  _tag: "unauthorized_error";
+};
+
+export const unauthorizedError: UnauthorizedError = {
+  _tag: "unauthorized_error",
+};
 
 type EndpointFetchParametersFromEndpoint<
   E extends Endpoint<any, any, any, any, any, any, any>
@@ -154,7 +163,14 @@ export const fetchFromEndpoint: FetchFromEndpoint =
           Effect.tryPromise((signal) =>
             fetch(url, { signal, headers: { Accept: "application/json" } })
           ),
-          Effect.mapError(fetchError(url))
+          Effect.mapError(fetchError(url)),
+          Effect.flatMap((resp) => {
+            if (resp.status === 401) {
+              return Effect.fail(unauthorizedError);
+            } else {
+              return Effect.succeed(resp);
+            }
+          })
         );
       }),
       (a) => a,

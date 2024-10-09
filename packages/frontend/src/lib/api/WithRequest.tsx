@@ -11,6 +11,7 @@ import {
   FetchParseJsonError,
 } from "../endpoint-ts/fetchFromEndpoint";
 import { ParseError } from "@effect/schema/ParseResult";
+import { useNavigate } from "react-router-dom";
 
 type WithRequestProps<A> = {
   eff: Effect.Effect<A, RequestError | FetchError, RequestService>;
@@ -21,8 +22,14 @@ type WithRequestProps<A> = {
 };
 
 export const WithRequest = <A,>(props: WithRequestProps<A>): JSX.Element => {
+  const navigate = useNavigate();
   const [value, setValue] = React.useState<
-    Option.Option<Either.Either<A, RequestError | FetchError>>
+    Option.Option<
+      Either.Either<
+        A,
+        RequestError | Exclude<FetchError, { _tag: "unauthorized_error" }>
+      >
+    >
   >(Option.none);
   props.eff;
   provideRequestService<A, RequestError | FetchError, RequestService>(
@@ -40,10 +47,21 @@ export const WithRequest = <A,>(props: WithRequestProps<A>): JSX.Element => {
     ),
     Effect.onError((err) =>
       Effect.sync(() => {
-        console.log("Error", err);
+        console.log("Error in WithRequest:", err);
         if (err._tag === "Fail") {
-          err.error._tag;
-          setValue(Option.some(Either.left(err.error)));
+          console.log("is Fail");
+          err.error._tag === "fetch_exception" && err.error.reason; // error._tag;
+          if (err.error._tag === "unauthorized_error") {
+            console.log("is unauthorized_error");
+            const redirectUrl = `/login?redirectUrl=${encodeURIComponent(
+              location.pathname + location.search
+            )}`;
+            navigate(redirectUrl, {
+              replace: true,
+            });
+          } else {
+            setValue(Option.some(Either.left(err.error)));
+          }
         }
       })
     )
