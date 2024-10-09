@@ -33,7 +33,7 @@ export const fetchToken = (
         key.private_key,
         {
           expiresIn: "1h",
-          audience: registration.platform_configuration.token_endpoint,
+          audience: "lol", //registration.platform_configuration.token_endpoint,
           issuer: Option.getOrUndefined(registration.client_id),
           subject: Option.getOrUndefined(registration.client_id),
           keyid: key.id.toString(),

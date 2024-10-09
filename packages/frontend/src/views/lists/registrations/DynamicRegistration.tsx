@@ -4,7 +4,6 @@ import { ChevronDownIcon, ChevronUpIcon } from "@heroicons/react/24/outline";
 import {
   AppId,
   AppWithRegistrations,
-  EncodeError,
   TagADT,
   createToolInstallation,
   match,
@@ -18,14 +17,11 @@ import { getDecode } from "../../../lib/api/request";
 import { provideRequestService } from "../../../lib/api/requestServiceImpl";
 import { fetchApp } from "../../../lib/apps/apps";
 import { WithAuth } from "../../../lib/auth/WithAuth";
-import {
-  FetchException,
-  FetchParseError,
-  FetchParseJsonError,
-  fetchBodyFromEndpoint,
-} from "../../../lib/endpoint-ts/fetchFromEndpoint";
+import { fetchBodyFromEndpoint } from "../../../lib/endpoint-ts/fetchFromEndpoint";
 import { useParsedParamsQuery } from "../../../lib/react-router/useParsedParamsQuery";
 import { CanvasPlacementTypes } from "canvas-lti-model";
+import { useInstallingState } from "./useInstallingState";
+import { sendCloseMessage } from "./sendCloseMessage";
 
 type SelectedScopeState = {
   scopes: ReadonlyArray<string>;
@@ -44,74 +40,14 @@ const useScopeStore = create<SelectedScopeState>()((set) => ({
     ),
 }));
 
-type Request<E, A> = TagADT<{
+export type Request<E, A> = TagADT<{
   initial: {};
   loading: {};
   loaded: { data: A };
   failed: { error: E };
 }>;
 
-type InstallingStateError =
-  | FetchException
-  | FetchParseError
-  | FetchParseJsonError
-  | EncodeError;
-
-type InstallingState = {
-  install: Request<InstallingStateError, unknown>;
-  installTool: <R, A>(
-    eff: Effect.Effect<A, InstallingStateError, R>
-  ) => Effect.Effect<A, InstallingStateError, R>;
-  setInstalling: () => Effect.Effect<void, never, never>;
-  setInstallFailed: (
-    err: InstallingStateError
-  ) => Effect.Effect<void, never, never>;
-  setInstallSucceeded: () => Effect.Effect<void, never, never>;
-};
-
-const useInstallingState = create<InstallingState>()((set) => ({
-  install: { _tag: "initial" },
-  installTool: (eff) =>
-    pipe(
-      Effect.sync(() => set((state) => ({ install: { _tag: "loading" } }))),
-      Effect.flatMap(() => eff),
-      Effect.tap(() =>
-        Effect.sync(() =>
-          set((state) => ({ install: { _tag: "loaded", data: {} } }))
-        )
-      ),
-      Effect.tapError((err) =>
-        Effect.sync(() =>
-          set((state) => ({
-            install: { _tag: "failed", error: err },
-          }))
-        )
-      )
-    ),
-  setInstalling: () =>
-    Effect.sync(() => set((state) => ({ install: { _tag: "loading" } }))),
-  setInstallFailed: (err: InstallingStateError) =>
-    Effect.sync(() =>
-      set((state) => ({
-        install: { _tag: "failed", error: err },
-      }))
-    ),
-  setInstallSucceeded: () =>
-    Effect.sync(() =>
-      set((state) => ({ install: { _tag: "loaded", data: {} } }))
-    ),
-}));
-
-const sendCloseMessage = Effect.sync(() => {
-  (window.opener || window.parent).postMessage(
-    {
-      subject: "org.imsglobal.lti.close",
-    },
-    "*"
-  );
-});
-
-const fetchOpenIdConfig = (params: {
+export const fetchOpenIdConfig = (params: {
   openid_configuration: string;
   registration_token?: string;
 }) =>

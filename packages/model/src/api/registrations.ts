@@ -62,6 +62,7 @@ export const getPublicJwkSet = Endpoint.get(
   {},
   Response.json(PublicJwkSet)
 );
+
 export const createToolInstallation = Endpoint.post(
   pipe(
     appsRoute,
@@ -79,6 +80,20 @@ export const createToolInstallation = Endpoint.post(
       scopes: S.array(S.string),
       customParameters: S.record(S.string, S.string),
       toolId: S.optional(S.string),
+    })
+  )
+);
+
+export const createNewAppInstallation = Endpoint.post(
+  pipe(appsRoute, path("install")),
+  {},
+  Response.json(S.unknown),
+  Body.json(
+    S.struct({
+      registrationEndpoint: S.string,
+      registrationToken: S.optional(S.string),
+      platformConfiguration: PlatformConfiguration,
+      toolConfiguration: S.unknown,
     })
   )
 );

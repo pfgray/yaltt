@@ -8,11 +8,13 @@ import { formatError } from "@effect/schema/TreeFormatter";
 import { newAppForm } from "../apps/Apps";
 import { getGradientForString } from "../../../lib/ui/gradients";
 import { format } from "timeago.js";
-import { Link } from "react-router-dom";
+import { Link, createSearchParams, useNavigate } from "react-router-dom";
 import { NewEntityForm } from "../NewEntityForm";
 import { fetchApps } from "../../../lib/apps/apps";
 
 export const DynamicRegistrationAppPicker = () => {
+  const navigate = useNavigate();
+
   const query = useParsedQuery(
     S.struct({
       openid_configuration: S.string,
@@ -45,6 +47,58 @@ export const DynamicRegistrationAppPicker = () => {
                       </div>
                     </dialog>
                     <div className="container px-4 flex flex-wrap -mx-1 lg:-mx-4">
+                      <div className="my-1 px-1 w-full md:w-1/2 lg:my-4 lg:px-4 lg:w-1/3">
+                        <div className="card bg-base-200 h-64">
+                          <div className="card-body items-center text-center">
+                            <h2 className="card-title">Custom Registration</h2>
+                            <p>
+                              Create an app by pasting a raw JSON registration
+                              configuration
+                            </p>
+                            <div className="card-actions justify-end">
+                              <button
+                                className="btn btn-primary"
+                                onClick={() => {
+                                  navigate({
+                                    pathname: `/dynamic-registration/custom`,
+                                    search: createSearchParams({
+                                      openid_configuration:
+                                        query.openid_configuration,
+                                      ...(query.registration_token
+                                        ? {
+                                            registration_token:
+                                              query.registration_token,
+                                          }
+                                        : {}),
+                                    }).toString(),
+                                  });
+                                }}
+                              >
+                                Enter JSON
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="my-1 px-1 w-full md:w-1/2 lg:my-4 lg:px-4 lg:w-1/3">
+                        <div className="card bg-base-200 h-64">
+                          <div className="card-body items-center text-center">
+                            <h2 className="card-title">New App</h2>
+                            <p>Add a new App</p>
+                            <div className="card-actions justify-end">
+                              <button
+                                className="btn btn-primary"
+                                onClick={() => {
+                                  dialogRef.current?.showModal();
+                                }}
+                              >
+                                Create App
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
                       {apps.map((app) => {
                         const appGradient = getGradientForString(app.name);
                         return (
@@ -93,24 +147,6 @@ export const DynamicRegistrationAppPicker = () => {
                           </div>
                         );
                       })}
-                      <div className="my-1 px-1 w-full md:w-1/2 lg:my-4 lg:px-4 lg:w-1/3">
-                        <div className="card bg-base-200 h-64">
-                          <div className="card-body items-center text-center">
-                            <h2 className="card-title">New App</h2>
-                            <p>Add a new App</p>
-                            <div className="card-actions justify-end">
-                              <button
-                                className="btn btn-primary"
-                                onClick={() => {
-                                  dialogRef.current?.showModal();
-                                }}
-                              >
-                                Create App
-                              </button>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
                     </div>
                   </div>
                 )}

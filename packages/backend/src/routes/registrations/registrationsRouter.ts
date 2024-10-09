@@ -5,6 +5,7 @@ import * as express from "express";
 import {
   AppId,
   RegistrationId,
+  createNewAppInstallation,
   createRegistration,
   createToolInstallation,
   getApiTokenForRegistration,
@@ -25,7 +26,10 @@ import {
   MessageTypeClaimKey,
   ToolConfiguration,
 } from "lti-model";
-import { unauthorizedError } from "../../auth/authedRequestHandler";
+import {
+  authedRequest,
+  unauthorizedError,
+} from "../../auth/authedRequestHandler";
 import { getConfig } from "../../config/ConfigService";
 import { exportPublicKeyJWK } from "../../crypto/KeyService";
 import { ExpressRequestService } from "../../express/RequestService";
@@ -50,7 +54,10 @@ import {
 } from "./mkYalttToolConfiguration";
 
 import { deleteRegistration } from "@yaltt/model";
-import { getAppForId } from "../../model/entities/apps";
+import {
+  createAppAndRegistrationForUser,
+  getAppForId,
+} from "../../model/entities/apps";
 
 export const registrationRouter = express.Router();
 const bindRegistrationEndpoint = bindEndpoint(registrationRouter);
@@ -278,6 +285,62 @@ bindRegistrationEndpoint(createToolInstallation)(({ appId }, _, body) =>
     Effect.flatMap(({ registration, install }) =>
       setRegistrationClientId(
         registration.id,
+        install.client_id,
+        install["https://purl.imsglobal.org/spec/lti-tool-configuration"][
+          "https://canvas.instructure.com/lti/registration_config_url"
+        ]
+      )
+    )
+  )
+);
+
+bindRegistrationEndpoint(createNewAppInstallation)((_, __, body) =>
+  pipe(
+    Effect.bindTo("user")(authedRequest),
+    Effect.bind("request", () => ExpressRequestService),
+    Effect.bind("config", () => getConfig),
+    Effect.bind("registration", ({ user }) =>
+      createAppAndRegistrationForUser(
+        "client_name" in body && typeof body.client_name === "string"
+          ? body.client_name
+          : "Test App",
+        user,
+        body.platformConfiguration,
+        default_claims, // body.claims,
+        []
+      )
+    ),
+    Effect.mapError((a) => a),
+    Effect.bind("installRequest", ({ config, registration, request }) => {
+      const url = new URL(body.registrationEndpoint);
+      // todo: this shouldn't be here, remove it once Canvas supports it in the header
+      if (body.registrationToken) {
+        url.searchParams.append("registration_token", body.registrationToken);
+      }
+      const toolConfiguration = body.toolConfiguration;
+      console.log("##Sending tool configuration:");
+      console.log(JSON.stringify(toolConfiguration, null, 2));
+
+      return Fetch.post(
+        url.toString(),
+        toolConfiguration,
+        body.registrationToken
+          ? {
+              headers: {
+                Authorization: `Bearer ${body.registrationToken}`,
+              },
+            }
+          : {}
+      );
+    }),
+    Effect.mapError((a) => a),
+    Effect.bind("install", ({ installRequest }) =>
+      schemaParse(CreatedToolConfiguration)(installRequest)
+    ),
+    Effect.mapError((a) => a),
+    Effect.flatMap(({ registration, install }) =>
+      setRegistrationClientId(
+        registration.registration.id,
         install.client_id,
         install["https://purl.imsglobal.org/spec/lti-tool-configuration"][
           "https://canvas.instructure.com/lti/registration_config_url"

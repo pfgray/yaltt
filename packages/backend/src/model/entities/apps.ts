@@ -1,6 +1,9 @@
 import { AppId, YalttUser } from "@yaltt/model";
 import * as S from "@effect/schema/Schema";
 import { query, query1 } from "../../db/db";
+import { createRegistrationForAppId } from "./registrations";
+import { Effect, pipe } from "effect";
+import { PlatformConfiguration } from "lti-model";
 
 const AppRow = S.struct({
   id: AppId,
@@ -27,6 +30,28 @@ export const createAppForUser = (name: string, u: YalttUser) =>
   query1(AppRow)(
     "insert into apps (name, user_id) values ($1, $2) returning *",
     [name, u.id]
+  );
+
+export const createAppAndRegistrationForUser = (
+  name: string,
+  u: YalttUser,
+  platformConfiguration: PlatformConfiguration,
+  claims: ReadonlyArray<string> = [],
+  scopes: ReadonlyArray<string> = [],
+  client_id?: string
+) =>
+  pipe(
+    Effect.bindTo("app")(createAppForUser(name, u)),
+    Effect.bind("registration", ({ app }) =>
+      createRegistrationForAppId(
+        app.id,
+        "dynamic",
+        platformConfiguration,
+        claims,
+        scopes,
+        client_id
+      )
+    )
   );
 
 export const deleteAppForId = (appId: number) =>

@@ -1,125 +1,39 @@
+import * as React from "react";
+import { useParsedQuery } from "../../../lib/react-router/useParsedQuery";
 import * as S from "@effect/schema/Schema";
+import { WithAuth } from "../../../lib/auth/WithAuth";
+import { WithRequest } from "../../../lib/api/WithRequest";
+import { Effect, Either, pipe } from "effect";
 import { formatError } from "@effect/schema/TreeFormatter";
-import { ChevronDownIcon, ChevronUpIcon } from "@heroicons/react/24/outline";
+import { newAppForm } from "../apps/Apps";
+import { getGradientForString } from "../../../lib/ui/gradients";
+import { format } from "timeago.js";
+import { Link } from "react-router-dom";
+import { NewEntityForm } from "../NewEntityForm";
+import { fetchApps } from "../../../lib/apps/apps";
+import { fetchOpenIdConfig } from "./DynamicRegistration";
+import { PlatformConfiguration } from "lti-model";
+import { useInstallingState } from "./useInstallingState";
+import { fetchBodyFromEndpoint } from "../../../lib/endpoint-ts/fetchFromEndpoint";
 import {
-  AppId,
-  AppWithRegistrations,
-  EncodeError,
-  TagADT,
+  createNewAppInstallation,
   createToolInstallation,
   match,
 } from "@yaltt/model";
-import { Effect, Either, pipe, ReadonlyRecord } from "effect";
-import { LtiMessage, LtiPlacements, PlatformConfiguration } from "lti-model";
-import * as React from "react";
-import { create } from "zustand";
-import { WithRequest } from "../../../lib/api/WithRequest";
-import { getDecode } from "../../../lib/api/request";
-import { provideRequestService } from "../../../lib/api/requestServiceImpl";
-import { fetchApp } from "../../../lib/apps/apps";
-import { WithAuth } from "../../../lib/auth/WithAuth";
-import {
-  FetchException,
-  FetchParseError,
-  FetchParseJsonError,
-  fetchBodyFromEndpoint,
-} from "../../../lib/endpoint-ts/fetchFromEndpoint";
-import { useParsedParamsQuery } from "../../../lib/react-router/useParsedParamsQuery";
-import { CanvasPlacementTypes } from "canvas-lti-model";
 import { sendCloseMessage } from "./sendCloseMessage";
+import { provideRequestService } from "../../../lib/api/requestServiceImpl";
 
-type Request<E, A> = TagADT<{
-  initial: {};
-  loading: {};
-  loaded: { data: A };
-  failed: { error: E };
-}>;
+const installToolReq = fetchBodyFromEndpoint(createNewAppInstallation);
 
-type InstallingStateError =
-  | FetchException
-  | FetchParseError
-  | FetchParseJsonError
-  | EncodeError;
-
-type InstallingState = {
-  install: Request<InstallingStateError, unknown>;
-  installTool: <R, A>(
-    eff: Effect.Effect<A, InstallingStateError, R>
-  ) => Effect.Effect<A, InstallingStateError, R>;
-  setInstalling: () => Effect.Effect<void, never, never>;
-  setInstallFailed: (
-    err: InstallingStateError
-  ) => Effect.Effect<void, never, never>;
-  setInstallSucceeded: () => Effect.Effect<void, never, never>;
-};
-
-const useInstallingState = create<InstallingState>()((set) => ({
-  install: { _tag: "initial" },
-  installTool: (eff) =>
-    pipe(
-      Effect.sync(() => set((state) => ({ install: { _tag: "loading" } }))),
-      Effect.flatMap(() => eff),
-      Effect.tap(() =>
-        Effect.sync(() =>
-          set((state) => ({ install: { _tag: "loaded", data: {} } }))
-        )
-      ),
-      Effect.tapError((err) =>
-        Effect.sync(() =>
-          set((state) => ({
-            install: { _tag: "failed", error: err },
-          }))
-        )
-      )
-    ),
-  setInstalling: () =>
-    Effect.sync(() => set((state) => ({ install: { _tag: "loading" } }))),
-  setInstallFailed: (err: InstallingStateError) =>
-    Effect.sync(() =>
-      set((state) => ({
-        install: { _tag: "failed", error: err },
-      }))
-    ),
-  setInstallSucceeded: () =>
-    Effect.sync(() =>
-      set((state) => ({ install: { _tag: "loaded", data: {} } }))
-    ),
-}));
-
-const fetchOpenIdConfig = (params: {
-  openid_configuration: string;
-  registration_token?: string;
-}) =>
-  getDecode(S.unknown)(
-    `/api/retrieve_openid_configuration?url=${params.openid_configuration}` +
-      (params.registration_token
-        ? `&registration_token=${params.registration_token}`
-        : "")
-  );
-
-const fetchDynRegData = (params: {
-  appId: AppId;
-  openid_configuration: string;
-  registration_token?: string;
-}) =>
-  pipe(
-    fetchOpenIdConfig(params),
-    Effect.bindTo("openidConfig"),
-    Effect.bind("app", () => fetchApp({ appId: params.appId }))
-  );
-
-const installToolReq = fetchBodyFromEndpoint(createToolInstallation);
-
-export const DynamicRegistrationSimple = () => {
-  const parsedParamsQuery = useParsedParamsQuery(
-    S.struct({
-      appId: S.compose(S.NumberFromString, AppId),
-    }),
+export const DynamicRegistrationCustom = () => {
+  const query = useParsedQuery(
     S.struct({
       openid_configuration: S.string,
       registration_token: S.optional(S.string),
     })
   );
+
+  const [jsonConfiguration, setJsonConfiguration] = React.useState("");
 
   const { install, installTool } = useInstallingState((state) => state);
 
@@ -127,13 +41,11 @@ export const DynamicRegistrationSimple = () => {
     <WithAuth>
       {(user) =>
         pipe(
-          parsedParamsQuery,
+          query,
           Either.match({
-            onRight: ({ params, query }) => (
-              <WithRequest
-                eff={fetchDynRegData({ ...query, appId: params.appId })}
-              >
-                {({ openidConfig, app }) =>
+            onRight: (q) => (
+              <WithRequest eff={fetchOpenIdConfig(q)}>
+                {(openidConfig) =>
                   pipe(
                     S.decodeEither(PlatformConfiguration)(openidConfig, {
                       onExcessProperty: "ignore",
@@ -143,7 +55,7 @@ export const DynamicRegistrationSimple = () => {
                         <div className="flex flex-col items-center w-full">
                           <article className="prose">
                             <h3>Error retrieving OpenID Configuration from:</h3>
-                            <pre>{query.openid_configuration}</pre>
+                            <pre>{q.openid_configuration}</pre>
                             <h3>Raw Response Body</h3>
                             <pre>{JSON.stringify(openidConfig, null, 2)}</pre>
                             <h3>Parse Error:</h3>
@@ -152,41 +64,47 @@ export const DynamicRegistrationSimple = () => {
                         </div>
                       ),
                       onRight: (platformConfiguration) => (
-                        <div className="flex flex-col items-center justify-center w-full h-full">
-                          <article className="prose">
-                            <h1 className="text-center text-7xl">{app.name}</h1>
+                        <div className="flex flex-col items-center w-full">
+                          <article className="prose mt-5">
+                            <h1 className="text-center">
+                              Installing app into "
+                              {
+                                (openidConfig as any)[
+                                  "https://purl.imsglobal.org/spec/lti-platform-configuration"
+                                ][
+                                  "https://canvas.instructure.com/lti/account_name"
+                                ]
+                              }
+                              "
+                            </h1>
 
-                            <div className="w-full flex justify-center flex-row">
+                            <div>
+                              <div className="form-control">
+                                <label htmlFor="custom-parameters">
+                                  Raw JSON Configuration
+                                </label>
+                                <textarea
+                                  id="json-configuration"
+                                  className="textarea textarea-bordered mb-4"
+                                  onChange={(ev) =>
+                                    setJsonConfiguration(ev.currentTarget.value)
+                                  }
+                                  value={jsonConfiguration}
+                                ></textarea>
+                              </div>
+                            </div>
+                            <div className="w-full flex justify-end flex-row">
                               <button
-                                className="btn btn-primary btn-lg"
+                                className="btn btn-primary"
                                 onClick={() => {
                                   pipe(
-                                    installToolReq(params)({
-                                      customParameters: {},
-                                      platformConfiguration:
-                                        platformConfiguration,
-                                      registrationToken:
-                                        query.registration_token,
+                                    installToolReq()({
+                                      platformConfiguration,
+                                      registrationToken: q.registration_token,
                                       registrationEndpoint:
                                         platformConfiguration.registration_endpoint,
-                                      scopes: [
-                                        "https://purl.imsglobal.org/spec/lti-ags/scope/lineitem",
-                                        "https://purl.imsglobal.org/spec/lti-ags/scope/lineitem.readonly",
-                                        "https://purl.imsglobal.org/spec/lti-ags/scope/result.readonly",
-                                        "https://purl.imsglobal.org/spec/lti-ags/scope/score",
-                                      ],
-                                      messages: [
-                                        {
-                                          label: "Yaltt",
-                                          type: "LtiDeepLinkingRequest",
-                                          placements: ["RichTextEditor"],
-                                        },
-                                        {
-                                          label: "Yaltt",
-                                          type: "LtiResourceLinkRequest",
-                                          placements: ["ContentArea"],
-                                        },
-                                      ],
+                                      toolConfiguration:
+                                        JSON.parse(jsonConfiguration),
                                     }),
                                     installTool,
                                     Effect.flatMap(() => sendCloseMessage),
@@ -215,6 +133,7 @@ export const DynamicRegistrationSimple = () => {
                                 )}
                               </button>
                             </div>
+
                             {pipe(
                               install,
                               match({
@@ -231,7 +150,9 @@ export const DynamicRegistrationSimple = () => {
                                             <div>Error fetching {fe.url}</div>
                                             <pre>
                                               {JSON.stringify(
-                                                fe.reason,
+                                                JSON.parse(
+                                                  (fe.reason as any).e.body
+                                                ),
                                                 null,
                                                 2
                                               )}
@@ -282,6 +203,13 @@ export const DynamicRegistrationSimple = () => {
                                 ),
                               })
                             )}
+                            <div className="divider"></div>
+
+                            <h3>Raw Platform Configuration</h3>
+
+                            <pre>{JSON.stringify(openidConfig, null, 2)}</pre>
+                            <h6>Fetched from:</h6>
+                            <pre>{q.openid_configuration}</pre>
                           </article>
                         </div>
                       ),
