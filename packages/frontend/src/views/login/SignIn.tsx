@@ -106,7 +106,9 @@ export default function SignIn() {
 
   return (
     <div
-      style={{ backgroundImage: `url(${img})` }}
+      style={{
+        backgroundImage: `url(https://www.roadunraveled.com/wp-content/uploads/2019/09/shenandoah-top.jpg)`,
+      }}
       className="h-screen w-screen bg-cover bg-center bg-gradient-to-r from-cyan-500 to-blue-500"
     >
       <div
