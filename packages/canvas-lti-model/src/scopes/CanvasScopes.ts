@@ -7,6 +7,11 @@ import { LtiScope } from "lti-model";
  */
 export const CanvasScopes = {
   /**
+   * Can show content of page tools in launched on
+   */
+  LTI_PAGE_CONTENT_SHOW_SCOPE:
+    "https://canvas.instructure.com/lti/page_content/show",
+  /**
    * Can view Progress records associated with the context the tool is installed in
    */
   LTI_AGS_SHOW_PROGRESS_SCOPE:
