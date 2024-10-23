@@ -410,6 +410,10 @@ const PossibleScopes = [
     description: "Create Student Submissions",
   },
   {
+    type: "https://purl.imsglobal.org/spec/lti/scope/noticehandlers",
+    description: "Register Notice Handlers",
+  },
+  {
     type: "https://purl.imsglobal.org/spec/lti-nrps/scope/contextmembership.readonly",
     description: "Read Course Membership",
   },
