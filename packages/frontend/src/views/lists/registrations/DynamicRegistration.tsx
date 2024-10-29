@@ -410,6 +410,10 @@ const PossibleScopes = [
     description: "Create Student Submissions",
   },
   {
+    type: "https://purl.imsglobal.org/spec/lti/scope/noticehandlers",
+    description: "Register Notice Handlers",
+  },
+  {
     type: "https://purl.imsglobal.org/spec/lti-nrps/scope/contextmembership.readonly",
     description: "Read Course Membership",
   },
@@ -425,6 +429,10 @@ const PossibleScopes = [
     type: "https://canvas.instructure.com/lti-ags/progress/scope/show",
     description: "Read Student Progress",
   },
+  {
+    type: "https://canvas.instructure.com/lti/page_content/show",
+    description: "Read Page Content",
+  }
 ];
 
 type Placements = Record<
