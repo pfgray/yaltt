@@ -1,4 +1,4 @@
-import { AppId, YalttUser } from "@yaltt/model";
+import { AppId, DateFromStringOrDate, YalttUser } from "@yaltt/model";
 import * as S from "@effect/schema/Schema";
 import { query, query1 } from "../../db/db";
 import { createRegistrationForAppId } from "./registrations";
@@ -9,8 +9,8 @@ const AppRow = S.struct({
   id: AppId,
   name: S.string,
   user_id: S.number,
-  created: S.ValidDateFromSelf,
-  modified: S.ValidDateFromSelf,
+  created: DateFromStringOrDate,
+  modified: DateFromStringOrDate,
   icon_url: S.optionFromNullable(S.string),
 });
 

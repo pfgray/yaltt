@@ -1,9 +1,10 @@
 import * as S from "@effect/schema/Schema";
 import { query, query1 } from "../../db/db";
+import { DateFromStringOrDate } from "@yaltt/model";
 
 const EnrollmentRow = S.struct({
   id: S.number,
-  created: S.ValidDateFromSelf,
+  created: DateFromStringOrDate,
   person_id: S.number,
   context_id: S.number,
   roles: S.array(S.string),

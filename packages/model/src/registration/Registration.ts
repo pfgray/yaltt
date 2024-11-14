@@ -3,6 +3,7 @@ import { PlatformConfiguration } from "lti-model";
 import { RegistrationType } from "./RegistrationType";
 import type * as B from "effect/Brand";
 import { AppId } from "../app/App";
+import { DateFromStringOrDate } from "../lib/DateFromStringOrDate";
 
 export type RegistrationId = number & B.Brand<"RegistrationId">;
 
@@ -12,7 +13,7 @@ export const Registration = S.struct({
   id: RegistrationId,
   client_id: S.optionFromNullable(S.string),
   type: RegistrationType,
-  created: S.ValidDateFromSelf,
+  created: DateFromStringOrDate,
   app_id: AppId,
   claims: S.array(S.string),
   scopes: S.array(S.string),

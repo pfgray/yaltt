@@ -1,9 +1,10 @@
 import * as S from "@effect/schema/Schema";
 import { query, query1 } from "../../db/db";
+import { DateFromStringOrDate } from "@yaltt/model";
 
 const PersonRow = S.struct({
   id: S.number,
-  created: S.ValidDateFromSelf,
+  created: DateFromStringOrDate,
   sub: S.string,
   name: S.optionFromNullable(S.string),
   given_name: S.optionFromNullable(S.string),

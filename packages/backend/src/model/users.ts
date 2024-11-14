@@ -10,12 +10,13 @@ import {
   YalttUserId,
   GoogleProfile,
   YalttUser,
+  DateFromStringOrDate,
 } from "@yaltt/model";
 
 const UserRow = S.struct({
   id: YalttUserId,
   role: S.literal("admin", "user"),
-  created: S.ValidDateFromSelf,
+  created: DateFromStringOrDate,
   _tag: S.literal("password", "google"),
   picture: S.nullable(S.string),
   display_name: S.nullable(S.string),
@@ -147,7 +148,7 @@ export const getPasswordLoginUserById = (id: number) =>
       S.struct({
         id: S.number,
         role: S.literal("admin", "user"),
-        created: S.ValidDateFromSelf,
+        created: DateFromStringOrDate,
         pl_username: S.string,
       })
     )(
@@ -281,7 +282,7 @@ export const addUserWithLocalPassword = (
         S.struct({
           id: YalttUserId,
           role: S.literal("admin", "user"),
-          created: S.ValidDateFromSelf,
+          created: DateFromStringOrDate,
         })
       )(
         "insert into users (logins, role) values ('{}'::jsonb, $1) returning *",
@@ -340,7 +341,7 @@ export const addUserWithGoogleLogin = (
         S.struct({
           id: YalttUserId,
           role: S.literal("admin", "user"),
-          created: S.ValidDateFromSelf,
+          created: DateFromStringOrDate,
         })
       )(
         "insert into users (logins, role) values ('{}'::jsonb, $1) returning *",
@@ -401,7 +402,7 @@ export const getGoogleLoginUserById = (id: number) =>
       S.struct({
         id: YalttUserId,
         role: S.literal("admin", "user"),
-        created: S.ValidDateFromSelf,
+        created: DateFromStringOrDate,
         profile: GoogleProfile,
         google_id: S.string,
       })

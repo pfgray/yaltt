@@ -1,10 +1,11 @@
 import * as S from "@effect/schema/Schema";
 import { query, query1 } from "../../db/db";
+import { DateFromStringOrDate } from "@yaltt/model";
 
 const ContextRow = S.struct({
   id: S.number,
   registration_id: S.number,
-  created: S.ValidDateFromSelf,
+  created: DateFromStringOrDate,
   title: S.optionFromNullable(S.string),
   type: S.optionFromNullable(S.array(S.string)),
   label: S.optionFromNullable(S.string),

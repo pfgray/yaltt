@@ -4,10 +4,11 @@ import { query, query1 } from "../../db/db";
 import { pipe, Effect, Option, Either } from "effect";
 import { buffer } from "../../util/BufferSchema";
 import { generateKeyPair } from "../../crypto/KeyService";
+import { DateFromStringOrDate } from "@yaltt/model";
 
 const KeyRowWithoutPrivateKey = S.struct({
   id: S.number,
-  created: S.ValidDateFromSelf,
+  created: DateFromStringOrDate,
   active: S.boolean,
   registration_id: S.number,
   public_key: buffer,
