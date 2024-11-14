@@ -173,16 +173,29 @@ bindRegistrationEndpoint(getCanvasConfiguration)(({ registrationId }) =>
     Effect.bind("app", ({ reg }) => getAppForId(reg.app_id)),
     Effect.let(
       "placements",
-      ({ reg, app, config, request }): ReadonlyArray<CanvasPlacement> => [
-        {
-          placement: "course_navigation",
-          message_type: "LtiResourceLinkRequest",
-          target_link_uri: mkYalttUrl(
-            config,
-            request.request
-          )(`/api/registrations/${reg.id}/resource_link`),
-        },
-      ]
+      ({ reg, app, config, request }): ReadonlyArray<CanvasPlacement> => {
+        const mkUrl = mkYalttUrl(config, request.request);
+        const mkAppUrl = (rest: string) => mkUrl(`/api/apps/${app.id}${rest}`);
+        return [
+          {
+            placement: "course_navigation",
+            message_type: "LtiResourceLinkRequest",
+            target_link_uri: mkYalttUrl(
+              config,
+              request.request
+            )(`/api/registrations/${reg.id}/launch`),
+          },
+          {
+            placement: "editor_button",
+            message_type: "LtiDeepLinkingRequest",
+            icon_uri: mkAppUrl("/icon.svg"),
+            target_link_uri: mkYalttUrl(
+              config,
+              request.request
+            )(`/api/registrations/${reg.id}/launch`),
+          },
+        ];
+      }
     ),
     Effect.map(({ reg, app, config, placements, request }) =>
       mkYalttCanvasToolConfiguration(config, request.request)(
