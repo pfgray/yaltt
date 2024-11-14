@@ -204,6 +204,19 @@ app.get(
   )
 );
 
+app.get(
+  "/api/icon.svg",
+  pipe(
+    successResponse(
+      getIconForApp({ name: "Yaltt" }),
+      { "Content-Type": "image/svg+xml" },
+      true
+    ),
+    Effect.succeed,
+    effRequestHandler
+  )
+);
+
 if (process.env.DOCS_ROOT) {
   console.log(`Using DOCS_ROOT: ${process.env.DOCS_ROOT}`);
   app.use("/docs", express.static(process.env.DOCS_ROOT));
