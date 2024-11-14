@@ -35,7 +35,7 @@ export const DynamicRegistrationAppPicker = () => {
             onRight: (query) => (
               <WithRequest eff={fetchApps()}>
                 {(apps, reloadApps) => (
-                  <div className="container my-12 mx-auto px-4 md:px-12">
+                  <div className="container my-12 mx-auto px-4 md:px-6">
                     <dialog ref={dialogRef} className="modal">
                       <div className="modal-box">
                         <NewEntityForm
@@ -49,7 +49,7 @@ export const DynamicRegistrationAppPicker = () => {
                       </div>
                     </dialog>
                     <div className="container px-4 flex flex-wrap -mx-1 lg:-mx-4">
-                      <div className="my-1 px-1 w-full md:w-1/2 lg:my-4 lg:px-4 lg:w-1/3">
+                      <div className="my-1 px-1 w-1/2 md:w-1/2 lg:my-4 lg:px-4 lg:w-1/3">
                         <div className="card bg-base-200 h-64">
                           <div className="card-body items-center text-center">
                             <h2 className="card-title">Custom Registration</h2>
@@ -82,7 +82,7 @@ export const DynamicRegistrationAppPicker = () => {
                           </div>
                         </div>
                       </div>
-                      <div className="my-1 px-1 w-full md:w-1/2 lg:my-4 lg:px-4 lg:w-1/3">
+                      <div className="my-1 px-1 w-1/2 md:w-1/2 lg:my-4 lg:px-4 lg:w-1/3">
                         <div className="card bg-base-200 h-64">
                           <div className="card-body items-center text-center">
                             <h2 className="card-title">New App</h2>
@@ -105,7 +105,7 @@ export const DynamicRegistrationAppPicker = () => {
                         const appGradient = getGradientForString(app.name);
                         return (
                           <div
-                            className="my-1 px-1 w-full md:w-1/2 lg:my-4 lg:px-4 lg:w-1/3"
+                            className="my-1 px-1 w-1/2 md:w-1/2 lg:my-4 lg:px-4 lg:w-1/3"
                             key={app.id}
                           >
                             <div className="card card-compact bg-base-300 shadow-xl m-1 h-64">
