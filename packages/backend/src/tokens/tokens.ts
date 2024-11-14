@@ -1,8 +1,7 @@
 import * as crypto from "crypto";
-import { Effect, Option, ReadonlyArray, pipe } from "effect";
-import { RegistrationRow } from "../model/entities/registrations";
+import { Effect, Option, pipe } from "effect";
+import { Registration } from "@yaltt/model";
 import { Fetch } from "../fetch/FetchService";
-import nJwt from "njwt";
 import { getKeyForRegistrationId } from "../model/entities/keys";
 import { signJwt } from "../crypto/KeyService";
 import { LtiToken } from "lti-model";
@@ -15,7 +14,7 @@ import { schemaParse } from "../schemaParse";
  * @returns
  */
 export const fetchToken = (
-  registration: RegistrationRow,
+  registration: Registration,
   scopes: ReadonlyArray<string>,
   deployment_id?: string
 ) =>

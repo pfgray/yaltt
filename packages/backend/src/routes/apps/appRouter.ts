@@ -13,6 +13,7 @@ import {
   deleteApp,
   getApp,
   getApps,
+  Registration,
   stringToInteger,
 } from "@yaltt/model";
 import {

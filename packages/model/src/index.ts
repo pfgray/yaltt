@@ -11,6 +11,7 @@ export * from "./lib/decode";
 export * from "./lib/encode";
 export * from "./matchers/match";
 export * from "./registration/Registration";
+export * from "./registration/RegistrationType";
 export * from "./schemas/stringInteger";
 export * from "./schemas/jwt";
 export * from "./yaltt/toolConfiguration";

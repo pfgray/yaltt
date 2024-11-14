@@ -3,10 +3,10 @@ import { Effect, Option, pipe } from "effect";
 
 import { signJwt } from "../crypto/KeyService";
 import { getKeyForRegistrationId } from "../model/entities/keys";
-import { RegistrationRow } from "../model/entities/registrations";
+import { Registration } from "@yaltt/model";
 
 export const signJwtPayloadForRegistration =
-  (registration: RegistrationRow) => (payload: {}) =>
+  (registration: Registration) => (payload: {}) =>
     pipe(
       getKeyForRegistrationId(registration.id),
       Effect.bindTo("key"),

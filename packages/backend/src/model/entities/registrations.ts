@@ -4,27 +4,10 @@ import { query, query1 } from "../../db/db";
 
 import { Effect } from "effect";
 import { createKeyForRegistrationId } from "./keys";
-import { AppId, RegistrationId } from "@yaltt/model";
-
-const RegistrationType = S.union(S.literal("manual"), S.literal("dynamic"));
-
-export const RegistrationRow = S.struct({
-  id: RegistrationId,
-  client_id: S.optionFromNullable(S.string),
-  type: RegistrationType,
-  created: S.ValidDateFromSelf,
-  app_id: AppId,
-  claims: S.array(S.string),
-  scopes: S.array(S.string),
-  custom_parameters: S.record(S.string, S.string),
-  platform_configuration: PlatformConfiguration,
-  registration_config_url: S.optionFromNullable(S.string),
-});
-
-export interface RegistrationRow extends S.Schema.To<typeof RegistrationRow> {}
+import { Registration, RegistrationType } from "@yaltt/model";
 
 export const getRegistrationForId = (registrationId: number) =>
-  query1(RegistrationRow)(
+  query1(Registration)(
     "select id, client_id, type, app_id, created, platform_configuration, claims, scopes, custom_parameters, registration_config_url from registrations where id = $1",
     [registrationId]
   );
@@ -33,7 +16,7 @@ export const deleteRegistrationForId = (registrationId: number) =>
   query(S.unknown)("delete from registrations where id = $1", [registrationId]);
 
 export const getRegistrationsForAppId = (appId: number) =>
-  query(RegistrationRow)(
+  query(Registration)(
     "select id, client_id, type, app_id, created, platform_configuration, claims, scopes, custom_parameters, registration_config_url from registrations where app_id = $1",
     [appId]
   );
@@ -47,7 +30,7 @@ export const createRegistrationForAppId = (
   client_id?: string
 ) =>
   Effect.tap(
-    query1(RegistrationRow)(
+    query1(Registration)(
       `insert into registrations 
       (app_id, type, client_id, platform_configuration, claims, scopes)
       values ($1, $2, $3, $4, $5, $6)

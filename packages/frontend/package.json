@@ -17,7 +17,6 @@
     "endpoint-ts": "^0.0.0",
     "esbuild": "^0.17.4",
     "lti-model": "0.0.0",
-    "lti-schema": "0.0.0",
     "postcss": "^8.4.29",
     "react": "^18.2.0",
     "react-daisyui": "^5.0.0",
