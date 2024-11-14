@@ -2,7 +2,7 @@ import * as S from "@effect/schema/Schema";
 
 export const LtiSupportedMessage = S.struct({
   type: S.string,
-  placements: S.array(S.string),
+  placements: S.optional(S.array(S.string)),
 });
 
 export interface LtiSupportedMessage
