@@ -22,6 +22,7 @@ bindAgsEndpoint(createScoreForUser)(({ appId, registrationId }, query, score) =>
       return Fetch.post(query.lineItemUrl + "/scores", score, {
         headers: {
           Authorization: `Bearer ${token.access_token}`,
+          "Content-Type": "application/vnd.ims.lis.v1.score+json",
         },
       });
     })
@@ -38,6 +39,7 @@ bindAgsEndpoint(createLineItem)(({ appId, registrationId }, query, lineItem) =>
       return Fetch.post(query.lineItemsUrl, lineItem, {
         headers: {
           Authorization: `Bearer ${token.access_token}`,
+          "Content-Type": "application/vnd.ims.lis.v2.lineitem+json",
         },
       });
     })
