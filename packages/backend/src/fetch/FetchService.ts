@@ -57,12 +57,13 @@ export const Fetch = {
       Effect.flatMap((fs) =>
         fs.fetch(url, {
           ...init,
-          body: JSON.stringify(body),
+
           headers: {
             "Content-Type": "application/json",
             ...init?.headers,
           },
           method: "POST",
+          ...(body ? { body: JSON.stringify(body) } : {}),
         })
       ),
       Effect.flatMap((resp) => {

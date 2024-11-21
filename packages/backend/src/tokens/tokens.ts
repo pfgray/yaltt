@@ -6,6 +6,7 @@ import { getKeyForRegistrationId } from "../model/entities/keys";
 import { signJwt } from "../crypto/KeyService";
 import { LtiToken } from "lti-model";
 import { schemaParse } from "../schemaParse";
+import { Headers } from "node-fetch";
 
 /**
  * Fetches a token from the platform's token endpoint.
@@ -32,7 +33,7 @@ export const fetchToken = (
         key.private_key,
         {
           expiresIn: "1h",
-          audience: "lol", //registration.platform_configuration.token_endpoint,
+          audience: registration.platform_configuration.token_endpoint,
           issuer: Option.getOrUndefined(registration.client_id),
           subject: Option.getOrUndefined(registration.client_id),
           keyid: key.id.toString(),
@@ -62,7 +63,12 @@ export const fetchToken = (
         `${
           registration.platform_configuration.token_endpoint
         }?${encodeQueryParams(params)}`,
-        {}
+        undefined,
+        {
+          headers: {
+            "Content-Type": "application/x-www-form-urlencoded",
+          },
+        }
       );
     }),
     Effect.flatMap(schemaParse(LtiToken))
