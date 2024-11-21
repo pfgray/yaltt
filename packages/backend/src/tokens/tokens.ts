@@ -51,7 +51,7 @@ export const fetchToken = (
         client_assertion_type:
           "urn:ietf:params:oauth:client-assertion-type:jwt-bearer",
         client_assertion: token,
-        grant_type: "client_credentials",
+        grant_type: "authorization_code",
         scope: scopes.join(" "),
         ...pipe(
           registration.client_id,

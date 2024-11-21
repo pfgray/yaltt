@@ -57,7 +57,6 @@ export const Fetch = {
       Effect.flatMap((fs) =>
         fs.fetch(url, {
           ...init,
-
           headers: {
             "Content-Type": "application/json",
             ...init?.headers,
