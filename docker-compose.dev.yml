@@ -58,3 +58,8 @@ services:
       - POSTGRES_USER=yaltt
       - POSTGRES_PASSWORD=password
       - POSTGRES_DB=yaltt
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+
+volumes:
+  postgres-data: {}
