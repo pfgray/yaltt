@@ -10,13 +10,13 @@
     "@types/react": "^18.2.21",
     "@types/react-dom": "^18.0.10",
     "@vitejs/plugin-react": "^3.0.1",
-    "@yaltt/model": "0.0.0",
+    "@yaltt/model": "workspace:*",
     "autoprefixer": "^10.4.15",
     "daisyui": "^4.4.6",
     "effect": "^2.4.1",
-    "endpoint-ts": "^0.0.0",
+    "endpoint-ts": "workspace:*",
     "esbuild": "^0.17.4",
-    "lti-model": "0.0.0",
+    "lti-model": "workspace:*",
     "postcss": "^8.4.29",
     "react": "^18.2.0",
     "react-daisyui": "^5.0.0",
@@ -28,7 +28,7 @@
     "typescript": "^5.1",
     "vite": "^4.0.4",
     "zustand": "^4.4.4",
-    "canvas-lti-model": "0.0.0"
+    "canvas-lti-model": "workspace:*"
   },
   "scripts": {
     "start": "vite",

@@ -6,6 +6,7 @@ export default defineConfig({
   plugins: [react()],
   envDir: __dirname,
   server: {
+    allowedHosts: true,
     port: 80,
     strictPort: true,
     proxy: {

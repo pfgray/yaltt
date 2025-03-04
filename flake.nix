@@ -2,7 +2,7 @@
   description = "An Algebraic Data Type generator for Typescript";
 
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-23.05";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-24.11";
     flake-utils.url = "github:numtide/flake-utils";
     gbt.url = "github:pfgray/gbt";
   };
@@ -16,8 +16,8 @@
 
           devShell = pkgs.mkShell {
             packages = with pkgs; [
-              nodejs.pkgs.pnpm
-              pkgs.nodejs-18_x
+              pnpm_10
+              nodejs_22
               gbt.packages.${system}.gbt
             ];
             shellHook = ''

@@ -11,6 +11,7 @@ export const authRouter = express.Router();
 const passport = (passportBase as any).default as typeof passportBase;
 
 authRouter.post("/login/password", upload.none(), function (req, res, next) {
+  console.log("password login?", req.body);
   passport.authenticate("local", function callback(err, user, info, status) {
     if (err) {
       return res.status(500).json({ failed: true, server_error: true });
