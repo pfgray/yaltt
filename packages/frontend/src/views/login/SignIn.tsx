@@ -49,6 +49,53 @@ if (window.opener) {
   window.close();
 }
 
+const requestStorageAccess = Effect.async<boolean, never, never>((resume) => {
+  if (inIframe() && typeof document.requestStorageAccess === "function") {
+    document.requestStorageAccess().then(
+      () => {
+        console.log("cookie access granted");
+        resume(Effect.succeed(true));
+      },
+      () => {
+        console.log("cookie access denied");
+        resume(Effect.succeed(false));
+      }
+    );
+  }
+});
+
+const submitForm = (
+  data: any,
+  query: any,
+  navigate: any,
+  setLoginStatus: any
+) => {
+  Effect.runPromiseExit(
+    pipe(
+      post("/api/login/password", formBody(data)),
+      Effect.flatMap(() =>
+        Effect.async<{}, never, never>((resume) => {
+          const redirectUrl = query.get("redirectUrl") || "/";
+          console.log("REDIRECTING TO:", redirectUrl);
+          navigate(redirectUrl, {
+            replace: true,
+          });
+          resume(Effect.succeed({}));
+        })
+      ),
+      Effect.tapError((err) =>
+        Effect.sync(() => {
+          console.log("Error", err);
+          setLoginStatus(err._tag);
+        })
+      ),
+      Effect.provideService(RequestService, {
+        config: { baseUrl: import.meta.env.VITE_API_URL },
+      })
+    )
+  );
+};
+
 export default function SignIn() {
   const navigate = useNavigate();
   let query = useQuery();
@@ -76,32 +123,42 @@ export default function SignIn() {
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    setLoginStatus("loading");
-    const data = new FormData(event.currentTarget);
-    Effect.runPromiseExit(
-      pipe(
-        post("/api/login/password", formBody(data)),
-        Effect.flatMap(() =>
-          Effect.async<{}, never, never>((resume) => {
-            const redirectUrl = query.get("redirectUrl") || "/";
-            console.log("REDIRECTING TO:", redirectUrl);
-            navigate(redirectUrl, {
-              replace: true,
-            });
-            resume(Effect.succeed({}));
-          })
-        ),
-        Effect.tapError((err) =>
-          Effect.sync(() => {
-            console.log("Error", err);
-            setLoginStatus(err._tag);
-          })
-        ),
-        Effect.provideService(RequestService, {
-          config: { baseUrl: import.meta.env.VITE_API_URL },
-        })
-      )
+    // if (inIframe()) {
+    //   if (typeof document.requestStorageAccess === "function") {
+    //     document.requestStorageAccess().then(
+    //       () => {
+    //         console.log("cookie access granted");
+    //         submitForm(
+    //           new FormData(event.currentTarget),
+    //           query,
+    //           navigate,
+    //           setLoginStatus
+    //         );
+    //       },
+    //       () => {
+    //         console.log("cookie access denied");
+    //       }
+    //     );
+    //   } else {
+    //     console.log("browser aint supported");
+    //   }
+    // } else {
+    //   submitForm(
+    //     new FormData(event.currentTarget),
+    //     query,
+    //     navigate,
+    //     setLoginStatus
+    //   );
+    // }
+
+    submitForm(
+      new FormData(event.currentTarget),
+      query,
+      navigate,
+      setLoginStatus
     );
+
+    setLoginStatus("loading");
   };
 
   return (
@@ -214,6 +271,22 @@ export default function SignIn() {
             </a>
           </div>
         </form>
+        {inIframe() ? (
+          <button
+            onClick={() => {
+              document.requestStorageAccess().then(
+                () => {
+                  console.log("huh");
+                },
+                () => {
+                  console.log("nah");
+                }
+              );
+            }}
+          >
+            Click to enable third-part cookies
+          </button>
+        ) : null}
       </div>
     </div>
   );
