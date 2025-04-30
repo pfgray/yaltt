@@ -1,15 +1,14 @@
-version: "3.9"
 services:
   backend:
     labels:
       - traefik.enable=true
     environment:
-      - YALTT_HOST=yaltt.inst.test
+      - YALTT_HOST=yaltt.inseng.test
 
   frontend:
     labels:
       - traefik.enable=true
-      - "traefik.http.routers.yalttfrontend.rule=Host(`yaltt.inst.test`)"
+      - "traefik.http.routers.yalttfrontend.rule=Host(`yaltt.inseng.test`)"
     networks:
       default:
         aliases:
