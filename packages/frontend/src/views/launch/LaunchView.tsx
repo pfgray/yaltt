@@ -13,6 +13,7 @@ import { Launch } from "./Launch";
 import { RawLaunch } from "./RawLaunch";
 import { DeepLinkingView } from "./DeepLinkingView";
 import { AgsView } from "./AgsView";
+import { PostMessageForm } from "./PostMessageForm";
 
 const fetchLaunch = (launchId: number) =>
   getDecode(Launch)(`/api/launch/${launchId}`);
@@ -40,6 +41,7 @@ export const LaunchView = () => {
                 <DeepLinkingView launch={launch} />
                 <RawLaunch launch={launch} />
                 <TokenFetcher launch={launch} />
+                <PostMessageForm launch={launch} />
               </div>
             </div>
           )}
