@@ -14,6 +14,16 @@ services:
         aliases:
           - yaltt.inst.test
 
+  # For prod-like builds
+  # web:
+  #   labels:
+  #     - traefik.enable=true
+  #     - "traefik.http.routers.yalttfrontend.rule=Host(`yaltt.inseng.test`)"
+  #   networks:
+  #     default:
+  #       aliases:
+  #         - yaltt.inst.test
+
 networks:
   default:
     external: true
