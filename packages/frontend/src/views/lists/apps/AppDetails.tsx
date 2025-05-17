@@ -29,6 +29,7 @@ import { useParsedParams } from "../../../lib/react-router/useSchemaParams";
 import { NewEntityForm } from "../NewEntityForm";
 import { FetchError } from "../../../lib/endpoint-ts/fetchFromEndpoint";
 import { fetchApp } from "../../../lib/apps/apps";
+import { Pre } from "../../../lib/ui/Pre";
 
 const paramSchema = S.struct({ appId: S.compose(S.NumberFromString, AppId) });
 
@@ -50,7 +51,7 @@ export const AppDetails = () => {
       onLeft: (err) => (
         <div>
           Error parsing app id from params{" "}
-          <pre>{JSON.stringify(err, null, 2)}</pre>
+          <Pre>{JSON.stringify(err, null, 2)}</Pre>
         </div>
       ),
       onRight: ({ appId }) => (
@@ -89,7 +90,6 @@ export const AppDetails = () => {
                         dynamicRegDialogRef={dynamicRegDialogRef}
                         reloadApps={reloadApps}
                       />
-                      {/* <pre>{JSON.stringify(app, null, 2)}</pre> */}
                     </div>
                   )}
                 </div>
@@ -119,9 +119,7 @@ export const AppDetails = () => {
               </article>
               <div className="w-auto overflow-x-auto">
                 <div className="mockup-code before:content-none">
-                  <pre>
-                    <code>{url(`/apps/${appId}/dynamic-registration`)}</code>
-                  </pre>
+                  <Pre>{url(`/apps/${appId}/dynamic-registration`)}</Pre>
                 </div>
               </div>
               <div className="modal-action">

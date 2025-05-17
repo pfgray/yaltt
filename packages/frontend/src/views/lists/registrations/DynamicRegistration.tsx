@@ -22,6 +22,7 @@ import { useParsedParamsQuery } from "../../../lib/react-router/useParsedParamsQ
 import { CanvasPlacementTypes } from "canvas-lti-model";
 import { useInstallingState } from "./useInstallingState";
 import { sendCloseMessage } from "./sendCloseMessage";
+import { Pre } from "../../../lib/ui/Pre";
 
 type SelectedScopeState = {
   scopes: ReadonlyArray<string>;
@@ -112,11 +113,11 @@ export const DynamicRegistration = () => {
                         <div className="flex flex-col items-center w-full">
                           <article className="prose">
                             <h3>Error retrieving OpenID Configuration from:</h3>
-                            <pre>{query.openid_configuration}</pre>
+                            <Pre>{query.openid_configuration}</Pre>
                             <h3>Raw Response Body</h3>
-                            <pre>{JSON.stringify(openidConfig, null, 2)}</pre>
+                            <Pre>{JSON.stringify(openidConfig, null, 2)}</Pre>
                             <h3>Parse Error:</h3>
-                            <pre>{formatError(errors)}</pre>
+                            <Pre>{formatError(errors)}</Pre>
                           </article>
                         </div>
                       ),
@@ -274,51 +275,51 @@ export const DynamicRegistration = () => {
                                         fetch_exception: (fe) => (
                                           <>
                                             <div>Error fetching {fe.url}</div>
-                                            <pre>
+                                            <Pre>
                                               {JSON.stringify(
                                                 fe.reason,
                                                 null,
                                                 2
                                               )}
-                                            </pre>
+                                            </Pre>
                                           </>
                                         ),
                                         fetch_parse_json_error: (pe) => (
                                           <>
                                             <div>Unable to parse json:</div>
-                                            <pre>{pe.original}</pre>
+                                            <Pre>{pe.original}</Pre>
                                             <div>Error:</div>
-                                            <pre>
+                                            <Pre>
                                               {JSON.stringify(pe.error)}
-                                            </pre>
+                                            </Pre>
                                           </>
                                         ),
                                         fetch_parse_error: (pe) => (
                                           <>
                                             <div>Error parsing response:</div>
-                                            <pre>{formatError(pe.reason)}</pre>
+                                            <Pre>{formatError(pe.reason)}</Pre>
                                             <div>Original data response:</div>
-                                            <pre>
+                                            <Pre>
                                               {JSON.stringify(
                                                 pe.original,
                                                 null,
                                                 2
                                               )}
-                                            </pre>
+                                            </Pre>
                                           </>
                                         ),
                                         encode_error: (ee) => (
                                           <>
                                             <div>Error Encoding data:</div>
-                                            <pre>{formatError(ee.error)}</pre>
+                                            <Pre>{formatError(ee.error)}</Pre>
                                             <div>Original encode:</div>
-                                            <pre>
+                                            <Pre>
                                               {JSON.stringify(
                                                 ee.actual,
                                                 null,
                                                 2
                                               )}
-                                            </pre>
+                                            </Pre>
                                           </>
                                         ),
                                       })
@@ -331,9 +332,9 @@ export const DynamicRegistration = () => {
 
                             <h3>Raw Platform Configuration</h3>
 
-                            <pre>{JSON.stringify(openidConfig, null, 2)}</pre>
+                            <Pre>{JSON.stringify(openidConfig, null, 2)}</Pre>
                             <h6>Fetched from:</h6>
-                            <pre>{query.openid_configuration}</pre>
+                            <Pre>{query.openid_configuration}</Pre>
                           </article>
                         </div>
                       ),
@@ -345,7 +346,7 @@ export const DynamicRegistration = () => {
             onLeft: (err) => (
               <div>
                 error
-                <pre>{formatError(err)}</pre>{" "}
+                <Pre>{formatError(err)}</Pre>{" "}
               </div>
             ),
           })
@@ -432,7 +433,7 @@ const PossibleScopes = [
   {
     type: "https://canvas.instructure.com/lti/page_content/show",
     description: "Read Page Content",
-  }
+  },
 ];
 
 type Placements = Record<
@@ -649,7 +650,7 @@ const MessageTypes = (props: {
           {advertisedPlacements.map((placement, i) =>
             !expanded && i > DefaultPlacementDisplayCount ? null : (
               <>
-                {/* <pre>{JSON.stringify(placement, null, 2)}</pre> */}
+                {/* <Pre>{JSON.stringify(placement, null, 2)}</Pre> */}
                 <PlacementConfig placement={placement} />
               </>
             )
@@ -666,7 +667,7 @@ const MessageTypes = (props: {
             <>
               {unAdvertisedPlacements.map((placement, i) =>
                 !expanded && i > DefaultPlacementDisplayCount ? null : (
-                  // <pre>{JSON.stringify(placement, null, 2)}</pre>
+                  // <Pre>{JSON.stringify(placement, null, 2)}</Pre>
                   <PlacementConfig placement={placement} />
                 )
               )}

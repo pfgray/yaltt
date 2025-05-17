@@ -72,7 +72,6 @@ export const DeepLinkingForm = (props: DeepLinkingFormProps) => {
   ]);
   return (
     <div className="prose flex flex-col gap-4">
-      {/* <pre>{JSON.stringify(contentItems)}</pre> */}
       {contentItems.map((contentItem, i) => {
         return (
           <div>

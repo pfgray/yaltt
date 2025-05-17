@@ -13,6 +13,7 @@ import {
   extractNamesRolesServiceClaim,
 } from "lti-model";
 import { LaunchCollapsible } from "./LaunchCollapsible";
+import { Pre } from "../../lib/ui/Pre";
 
 export type TokenFetcherProps = {
   launch: Launch;
@@ -44,12 +45,12 @@ export const TokenFetcher = (props: TokenFetcherProps) => {
   return (
     <LaunchCollapsible title="API Tokens">
       <div className="flex flex-col">
-        <Form className="shadow bg-base-200 rounded-lg p-4">
+        <Form>
           {scopesSupported.map((scope, i) => (
             <Form.Label
               key={scope}
               title={scope}
-              className={(i === 0 ? "" : "border-t-2 ") + "border-neutral"}
+              className={(i === 0 ? "" : "border-t ") + "border-neutral"}
             >
               <Checkbox
                 checked={selectedScopes.includes(scope)}
@@ -80,9 +81,7 @@ export const TokenFetcher = (props: TokenFetcherProps) => {
             error: (e) => (
               <div className="max-w-lg w-max">
                 <h6 className="mt-2">Error:</h6>
-                <pre className="max-w-full">
-                  {JSON.stringify(e.error, null, 2)}
-                </pre>
+                <Pre>{JSON.stringify(e.error, null, 2)}</Pre>
               </div>
             ),
             loaded: (t) => {
@@ -90,12 +89,7 @@ export const TokenFetcher = (props: TokenFetcherProps) => {
                 <div className="prose">
                   <div>
                     <h6 className="mt-2">Token</h6>
-                    <pre
-                      className="my-1 break-all text-pretty"
-                      style={{ textWrap: "wrap" } as {}}
-                    >
-                      {t.value.access_token}
-                    </pre>
+                    <Pre>{t.value.access_token}</Pre>
                   </div>
                   {pipe(
                     [
@@ -137,10 +131,7 @@ export const TokenFetcher = (props: TokenFetcherProps) => {
                     ReadonlyArray.match({
                       onEmpty: () => (
                         <>
-                          Token:{" "}
-                          <pre className="whitespace-normal break-all">
-                            {t.value.access_token}
-                          </pre>
+                          Token: <Pre>{t.value.access_token}</Pre>
                         </>
                       ),
                       onNonEmpty: (a) => a,
@@ -160,10 +151,12 @@ const renderServiceRequest = (name: string, token: string) => (url: string) => {
   return (
     <div>
       <h6 className="mt-2">{name}</h6>
-      <pre className="my-1">{`curl \\
+      <div className="my-1">
+        <Pre>{`curl \\
   -H 'Content-Type: application/json' \\
   -H 'Authorization: Bearer ${token}' \\
-  ${url}`}</pre>
+  ${url}`}</Pre>
+      </div>
     </div>
   );
 };

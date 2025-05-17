@@ -6,6 +6,7 @@ import { YalttLayout } from "../../../YalttLayout";
 import { WithRequest } from "../../../lib/api/WithRequest";
 import { getDecode } from "../../../lib/api/request";
 import { useParsedParams } from "../../../lib/react-router/useSchemaParams";
+import { Pre } from "../../../lib/ui/Pre";
 
 const paramSchema = S.struct({ appId: stringToInteger });
 
@@ -34,7 +35,7 @@ export const WithContextApp = (props: WithContextAppProps) => {
       onLeft: (err) => (
         <div>
           Error parsing app id from params{" "}
-          <pre>{JSON.stringify(err, null, 2)}</pre>
+          <Pre>{JSON.stringify(err, null, 2)}</Pre>
         </div>
       ),
       onRight: ({ appId }) => (

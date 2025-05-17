@@ -13,6 +13,7 @@ import { NewEntityForm } from "../NewEntityForm";
 import { fetchApps } from "../../../lib/apps/apps";
 import { post } from "../../../lib/api/request";
 import { provideRequestService } from "../../../lib/api/requestServiceImpl";
+import { Pre } from "../../../lib/ui/Pre";
 
 export const DynamicRegistrationAppPicker = () => {
   const navigate = useNavigate();
@@ -158,7 +159,7 @@ export const DynamicRegistrationAppPicker = () => {
               return (
                 <div>
                   error
-                  <pre>{formatError(err)}</pre>{" "}
+                  <Pre>{formatError(err)}</Pre>{" "}
                 </div>
               );
             },

@@ -143,11 +143,11 @@ export const DynamicRegistrationSimple = () => {
                         <div className="flex flex-col items-center w-full">
                           <article className="prose">
                             <h3>Error retrieving OpenID Configuration from:</h3>
-                            <pre>{query.openid_configuration}</pre>
+                            <Pre>{query.openid_configuration}</Pre>
                             <h3>Raw Response Body</h3>
-                            <pre>{JSON.stringify(openidConfig, null, 2)}</pre>
+                            <Pre>{JSON.stringify(openidConfig, null, 2)}</Pre>
                             <h3>Parse Error:</h3>
-                            <pre>{formatError(errors)}</pre>
+                            <Pre>{formatError(errors)}</Pre>
                           </article>
                         </div>
                       ),
@@ -229,51 +229,51 @@ export const DynamicRegistrationSimple = () => {
                                         fetch_exception: (fe) => (
                                           <>
                                             <div>Error fetching {fe.url}</div>
-                                            <pre>
+                                            <Pre>
                                               {JSON.stringify(
                                                 fe.reason,
                                                 null,
                                                 2
                                               )}
-                                            </pre>
+                                            </Pre>
                                           </>
                                         ),
                                         fetch_parse_json_error: (pe) => (
                                           <>
                                             <div>Unable to parse json:</div>
-                                            <pre>{pe.original}</pre>
+                                            <Pre>{pe.original}</Pre>
                                             <div>Error:</div>
-                                            <pre>
+                                            <Pre>
                                               {JSON.stringify(pe.error)}
-                                            </pre>
+                                            </Pre>
                                           </>
                                         ),
                                         fetch_parse_error: (pe) => (
                                           <>
                                             <div>Error parsing response:</div>
-                                            <pre>{formatError(pe.reason)}</pre>
+                                            <Pre>{formatError(pe.reason)}</Pre>
                                             <div>Original data response:</div>
-                                            <pre>
+                                            <Pre>
                                               {JSON.stringify(
                                                 pe.original,
                                                 null,
                                                 2
                                               )}
-                                            </pre>
+                                            </Pre>
                                           </>
                                         ),
                                         encode_error: (ee) => (
                                           <>
                                             <div>Error Encoding data:</div>
-                                            <pre>{formatError(ee.error)}</pre>
+                                            <Pre>{formatError(ee.error)}</Pre>
                                             <div>Original encode:</div>
-                                            <pre>
+                                            <Pre>
                                               {JSON.stringify(
                                                 ee.actual,
                                                 null,
                                                 2
                                               )}
-                                            </pre>
+                                            </Pre>
                                           </>
                                         ),
                                       })
@@ -293,7 +293,7 @@ export const DynamicRegistrationSimple = () => {
             onLeft: (err) => (
               <div>
                 error
-                <pre>{formatError(err)}</pre>{" "}
+                <Pre>{formatError(err)}</Pre>{" "}
               </div>
             ),
           })

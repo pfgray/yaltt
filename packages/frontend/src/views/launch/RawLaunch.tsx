@@ -1,3 +1,4 @@
+import { Pre } from "../../lib/ui/Pre";
 import { Launch } from "./Launch";
 import { LaunchCollapsible } from "./LaunchCollapsible";
 
@@ -10,9 +11,7 @@ export const RawLaunch = (props: RawLaunchProps) => {
 
   return (
     <LaunchCollapsible title="Raw Launch">
-      <div className="prose">
-        <pre>{JSON.stringify(launch.id_token, null, 2)}</pre>
-      </div>
+      <Pre>{JSON.stringify(launch.id_token, null, 2)}</Pre>
     </LaunchCollapsible>
   );
 };

@@ -12,6 +12,7 @@ import {
 } from "../endpoint-ts/fetchFromEndpoint";
 import { ParseError } from "@effect/schema/ParseResult";
 import { useNavigate } from "react-router-dom";
+import { Pre } from "../ui/Pre";
 
 type WithRequestProps<A> = {
   eff: Effect.Effect<A, RequestError | FetchError, RequestService>;
@@ -93,13 +94,7 @@ export const WithRequest = <A,>(props: WithRequestProps<A>): JSX.Element => {
 };
 
 const genericError = (err: unknown) => (
-  <div>
-    <pre>{JSON.stringify(err, null, 2)}</pre>
-  </div>
+  <Pre>{JSON.stringify(err, null, 2)}</Pre>
 );
 
-const parseError = (err: ParseError) => (
-  <div>
-    <pre>{formatError(err)}</pre>
-  </div>
-);
+const parseError = (err: ParseError) => <Pre>{formatError(err)}</Pre>;

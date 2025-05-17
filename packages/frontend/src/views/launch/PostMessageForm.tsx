@@ -25,7 +25,7 @@ export const PostMessageForm = (props: PostMessageFormProps) => {
   return (
     <LaunchCollapsible title="Post Message">
       <div className="flex flex-col">
-        <Form className="shadow bg-base-200 rounded-lg p-4">
+        <Form>
           <Textarea
             rows={5}
             className={`font-mono leading ${

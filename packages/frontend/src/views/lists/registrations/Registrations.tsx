@@ -9,6 +9,7 @@ import { getDecode, jsonBody, post } from "../../../lib/api/request";
 import { provideRequestService } from "../../../lib/api/requestServiceImpl";
 import * as F from "../../../lib/forms/form";
 import { useParsedParams } from "../../../lib/react-router/useSchemaParams";
+import { Pre } from "../../../lib/ui/Pre";
 
 const newRegistrationForm = (appId: number) =>
   F.mkForm({
@@ -38,7 +39,7 @@ export const Registrations = () => {
       onLeft: (err) => (
         <div>
           Error parsing app id from params{" "}
-          <pre>{JSON.stringify(err, null, 2)}</pre>
+          <Pre>{JSON.stringify(err, null, 2)}</Pre>
         </div>
       ),
       onRight: ({ appId }) => (

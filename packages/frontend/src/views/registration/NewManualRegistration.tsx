@@ -1,3 +1,4 @@
+import { Pre } from "../../lib/ui/Pre";
 import { WithContextApp } from "../lists/apps/WithContextApp";
 
 export const NewManualRegistration = () => {
@@ -6,9 +7,9 @@ export const NewManualRegistration = () => {
       {(app) => (
         <div>
           <div className="mockup-code">
-            <pre data-prefix="$">
+            <Pre data-prefix="$">
               <code>{JSON.stringify(app, null, 2)}</code>
-            </pre>
+            </Pre>
           </div>
         </div>
       )}
