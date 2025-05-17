@@ -85,6 +85,7 @@ export const agsScoreForm = (
     scoreGiven: F.number("Score Given"),
     scoreMaximum: F.number("Score Maximum"),
     comment: F.textarea("Comment", ""),
+    lineItemUrl: F.string("Line Item URL", lineItemUrl),
   })((fields) => {
     console.log("sending score with fields", fields);
     return pipe(
@@ -94,7 +95,7 @@ export const agsScoreForm = (
           registrationId,
         },
         {
-          lineItemUrl,
+          lineItemUrl: fields.lineItemUrl,
         }
       )({
         timestamp: new Date(),
@@ -129,6 +130,7 @@ const ScoreForm = (props: AgsScoreFormProps) => {
   );
   return (
     <div>
+      <h2 className="text-xl mt-3 mb-2">Score</h2>
       {renderManagedForm(entityForm, ({ submitForm }) => (
         <div className="modal-action">
           <button
@@ -155,6 +157,7 @@ export const agsLineItemForm = (
     label: F.string("Label", ""),
     scoreMaximum: F.number("Score Maximum", "100"),
     resourceId: F.string("Resource Id"),
+    resourceLinkId: F.string("Resource Link Id"),
   })((fields) => {
     console.log("sending lineItem with fields", fields);
     return pipe(
@@ -173,6 +176,7 @@ export const agsLineItemForm = (
           Option.getOrElse(() => 100)
         ),
         resourceId: fields.resourceId,
+        resourceLinkId: fields.resourceLinkId,
       }),
       provideRequestService
     );
@@ -192,6 +196,7 @@ export const LineItemForm = (props: AgsLineItemFormProps) => {
   );
   return (
     <div>
+      <h2 className="text-xl mt-3 mb-2">Line Item</h2>
       {renderManagedForm(entityForm, ({ submitForm }) => (
         <div className="modal-action">
           <button
