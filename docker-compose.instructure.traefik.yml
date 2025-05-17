@@ -12,7 +12,7 @@ services:
     networks:
       default:
         aliases:
-          - yaltt.inst.test
+          - yaltt.inseng.test
 
   # For prod-like builds
   # web:
