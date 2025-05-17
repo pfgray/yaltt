@@ -42,12 +42,6 @@ export const confirmWithLoading = <E>(options: {
     ) {
       title.innerHTML = options.title;
       description.innerHTML = options.description;
-      console.log(
-        "got confirm modal: ",
-        confirmModalRootEl,
-        submitBtn,
-        cancelBtn
-      );
       confirmModalRootEl.showModal();
 
       const cleanup = Effect.sync(() => {

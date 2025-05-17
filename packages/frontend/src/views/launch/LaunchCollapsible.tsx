@@ -10,7 +10,6 @@ type LaunchCollapsibleProps = {
 
 export const LaunchCollapsible = (props: LaunchCollapsibleProps) => {
   const [open, setOpen] = useState(props.initialOpen === true);
-  console.log("Rendering collapsible with:", props.initialOpen, open);
   return (
     <div className="flex flex-wrap gap-2">
       <Collapse

@@ -31,7 +31,6 @@ const newUserForm = F.mkForm({
   username: F.string("Username", ""),
   password: F.password("Password", ""),
 })((fields) => {
-  console.log("doing the thing?");
   return pipe(
     postCreatePasswordUser()(fields),
     // Effect.flatMap(() => onAfterSuccess),
@@ -144,7 +143,6 @@ export const Admin = () => {
                                           description:
                                             "Are you sure you want to delete this user?",
                                           onSubmit: () => {
-                                            console.log("deleting user");
                                             return Effect.succeed(undefined);
                                           },
                                         }),

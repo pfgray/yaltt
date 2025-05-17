@@ -87,7 +87,6 @@ export const agsScoreForm = (
     comment: F.textarea("Comment", ""),
     lineItemUrl: F.string("Line Item URL", lineItemUrl),
   })((fields) => {
-    console.log("sending score with fields", fields);
     return pipe(
       sendScore(
         {
@@ -159,7 +158,6 @@ export const agsLineItemForm = (
     resourceId: F.string("Resource Id"),
     resourceLinkId: F.string("Resource Link Id"),
   })((fields) => {
-    console.log("sending lineItem with fields", fields);
     return pipe(
       sendLineItem(
         {
