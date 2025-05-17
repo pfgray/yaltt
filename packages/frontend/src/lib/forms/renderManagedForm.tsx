@@ -97,12 +97,16 @@ export const renderManagedForm = <
           value;
           if (value._tag === "string") {
             return (
-              <div className="form-control w-full mb-2" key={key}>
+              <label className="form-control w-full" key={key}>
+                <div className="label">
+                  <span className="label-text">
+                    {capitalizeWords(value.label)}
+                  </span>
+                </div>
                 <input
                   type="text"
                   name={key}
                   className="input input-bordered w-full"
-                  placeholder={capitalizeWords(value.label)}
                   value={pipe(
                     fields[key],
                     Option.fromNullable,
@@ -110,11 +114,16 @@ export const renderManagedForm = <
                   )}
                   onChange={(e) => setField(key, e.target.value)}
                 />
-              </div>
+              </label>
             );
           } else if (value._tag === "password") {
             return (
-              <div className="form-control w-full mb-2" key={key}>
+              <label className="form-control w-full" key={key}>
+                <div className="label">
+                  <span className="label-text">
+                    {capitalizeWords(value.label)}
+                  </span>
+                </div>
                 <input
                   type="password"
                   name={key}
@@ -128,49 +137,67 @@ export const renderManagedForm = <
                   )}
                   onChange={(e) => setField(key, e.target.value)}
                 />
-              </div>
+              </label>
             );
           } else if (value._tag === "textarea") {
             return (
-              <textarea
-                name={key}
-                key={key}
-                className="textarea textarea-bordered w-full h-60 font-mono whitespace-nowrap mb-2"
-                placeholder={capitalizeWords(key)}
-                value={pipe(
-                  fields[key],
-                  Option.fromNullable,
-                  Option.getOrElse(() => "")
-                )}
-                onChange={(e) => setField(key, e.target.value)}
-              ></textarea>
+              <label className="form-control w-full" key={key}>
+                <div className="label">
+                  <span className="label-text">
+                    {capitalizeWords(value.label)}
+                  </span>
+                </div>
+                <textarea
+                  name={key}
+                  key={key}
+                  className="textarea textarea-bordered w-full h-60 font-mono whitespace-nowrap"
+                  value={pipe(
+                    fields[key],
+                    Option.fromNullable,
+                    Option.getOrElse(() => "")
+                  )}
+                  onChange={(e) => setField(key, e.target.value)}
+                ></textarea>
+              </label>
             );
           } else if (value._tag === "select") {
             return (
-              <select
-                name={key}
-                key={key}
-                className="select select-bordered w-full mb-2"
-                value={pipe(
-                  fields[key],
-                  Option.fromNullable,
-                  Option.getOrElse(() => "")
-                )}
-                onChange={(e) => setField(key, e.target.value)}
-              >
-                {pipe(
-                  value.options,
-                  ReadonlyArray.map((option) => (
-                    <option key={option} value={option}>
-                      {option}
-                    </option>
-                  ))
-                )}
-              </select>
+              <label className="form-control w-full" key={key}>
+                <div className="label">
+                  <span className="label-text">
+                    {capitalizeWords(value.label)}
+                  </span>
+                </div>
+                <select
+                  name={key}
+                  key={key}
+                  className="select select-bordered w-full mb-2"
+                  value={pipe(
+                    fields[key],
+                    Option.fromNullable,
+                    Option.getOrElse(() => "")
+                  )}
+                  onChange={(e) => setField(key, e.target.value)}
+                >
+                  {pipe(
+                    value.options,
+                    ReadonlyArray.map((option) => (
+                      <option key={option} value={option}>
+                        {option}
+                      </option>
+                    ))
+                  )}
+                </select>
+              </label>
             );
           } else if (value._tag === "number") {
             return (
-              <div className="form-control w-full mb-2" key={key}>
+              <label className="form-control w-full" key={key}>
+                <div className="label">
+                  <span className="label-text">
+                    {capitalizeWords(value.label)}
+                  </span>
+                </div>
                 <input
                   type="number"
                   name={key}
@@ -183,7 +210,7 @@ export const renderManagedForm = <
                   )}
                   onChange={(e) => setField(key, e.target.value)}
                 />
-              </div>
+              </label>
             );
           } else {
             return <></>;
