@@ -6,3 +6,7 @@
   height: 100%;
   width: 100%;
 }
+
+.collapse > input[type="checkbox"] {
+  cursor: pointer;
+}
