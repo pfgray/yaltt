@@ -230,7 +230,6 @@ export default function SignIn() {
                 <span>Invalid Login</span>
               </div>
             ) : null}
-            {/* <pre>{loginStatus}</pre> */}
             {pipe(
               loginMechanisms,
               Option.flatMap(
