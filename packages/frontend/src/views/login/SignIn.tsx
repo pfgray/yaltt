@@ -270,22 +270,6 @@ export default function SignIn() {
             </a>
           </div>
         </form>
-        {inIframe() ? (
-          <button
-            onClick={() => {
-              document.requestStorageAccess().then(
-                () => {
-                  console.log("huh");
-                },
-                () => {
-                  console.log("nah");
-                }
-              );
-            }}
-          >
-            Click to enable third-part cookies
-          </button>
-        ) : null}
       </div>
     </div>
   );
