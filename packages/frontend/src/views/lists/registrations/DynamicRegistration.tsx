@@ -41,6 +41,14 @@ const useScopeStore = create<SelectedScopeState>()((set) => ({
     ),
 }));
 
+const useExtraScopesStore = create<{
+  extraScopes: string;
+  setExtraScopes: (extraScopes: string) => void;
+}>()((set) => ({
+  extraScopes: "",
+  setExtraScopes: (extraScopes) => set({ extraScopes }),
+}));
+
 export type Request<E, A> = TagADT<{
   initial: {};
   loading: {};
@@ -89,6 +97,12 @@ export const DynamicRegistration = () => {
   );
   const [includeToolId, setIncludeToolId] = React.useState(false);
   const scopes = useScopeStore((state) => state.scopes);
+  const extraScopes = useExtraScopesStore((state) =>
+    state.extraScopes
+      .split("\n")
+      .map((a) => a.trim())
+      .filter((s) => s !== "")
+  );
   const placements = usePlacementsStore((state) => state.placements);
 
   const { install, installTool } = useInstallingState((state) => state);
@@ -210,7 +224,7 @@ export const DynamicRegistration = () => {
                                         query.registration_token,
                                       registrationEndpoint:
                                         platformConfiguration.registration_endpoint,
-                                      scopes,
+                                      scopes: [...scopes, ...extraScopes],
                                       toolId: includeToolId
                                         ? toolId
                                         : undefined,
@@ -361,6 +375,8 @@ const ServicesSupported = (props: {
 }) => {
   const { scopes, toggleScope, setScopes } = useScopeStore((state) => state);
 
+  const { extraScopes, setExtraScopes } = useExtraScopesStore((state) => state);
+
   React.useEffect(() => {
     setScopes(props.platformConfiguration.scopes_supported);
   }, []);
@@ -388,6 +404,17 @@ const ServicesSupported = (props: {
               </label>
             </div>
           ))}
+      </div>
+      <div>
+        <h6 className="mt-3">Custom Scopes</h6>
+        <div className="form-control">
+          <textarea
+            className="textarea textarea-bordered"
+            placeholder="Custom Scopes (one per line)"
+            onChange={(ev) => setExtraScopes(ev.currentTarget.value)}
+            value={extraScopes}
+          ></textarea>
+        </div>
       </div>
     </div>
   );
