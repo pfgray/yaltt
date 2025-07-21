@@ -1,10 +1,10 @@
 import * as S from "@effect/schema/Schema";
-import { PlatformConfiguration } from "lti-model";
+import { PlatformConfiguration, CreatedToolConfiguration } from "lti-model";
 import { query, query1 } from "../../db/db";
 
-import { Effect } from "effect";
+import { Effect, pipe } from "effect";
 import { createKeyForRegistrationId } from "./keys";
-import { Registration, RegistrationType } from "@yaltt/model";
+import { Registration, RegistrationId, RegistrationType } from "@yaltt/model";
 
 export const getRegistrationForId = (registrationId: number) =>
   query1(Registration)(
@@ -51,4 +51,26 @@ export const setRegistrationClientId = (
         registration_config_url = $3
       where id = $1`,
     [registrationId, client_id, registration_config_url]
+  );
+
+export const setRegistrationSavedConfiguration = (
+  registrationId: number,
+  saved_configuration: CreatedToolConfiguration
+) =>
+  query(S.unknown)(
+    `update registrations
+        set saved_configuration = $2
+      where id = $1`,
+    [registrationId, saved_configuration]
+  );
+
+export const getSavedConfigurationForRegistrationId = (
+  registrationId: RegistrationId
+) =>
+  pipe(
+    query1(S.struct({ saved_configuration: CreatedToolConfiguration }))(
+      "SELECT saved_configuration FROM registrations WHERE id = $1 AND saved_configuration IS NOT NULL",
+      [registrationId]
+    ),
+    Effect.map(({ saved_configuration }) => saved_configuration)
   );

@@ -22,10 +22,22 @@ import {
 import { getIconForApp } from "./routes/apps/appIcon";
 import { match } from "endpoint-ts";
 import { formatError } from "@effect/schema/TreeFormatter";
+import { runMigrations } from "./db/migrations";
 
 const app = express.default();
 
 const port = 3000;
+
+const pgService = mkTransactionalPgService(pool);
+// Run migrations before starting the application
+pipe(runMigrations(), pgService.provide, Effect.runPromiseExit).then((exit) => {
+  if (exit._tag === "Failure") {
+    console.error("Failed to run migrations:", exit.cause);
+    process.exit(1);
+  } else {
+    console.log("Migrations completed successfully");
+  }
+});
 
 const redisClient = createClient({
   socket: {

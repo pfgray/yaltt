@@ -14,11 +14,13 @@ import {
   getOpenidConfig,
   getPublicJwkSet,
   getRegistrations,
+  getSavedConfigurationForRegistration,
   signDeepLinkingContentItems,
 } from "@yaltt/model";
 import { CanvasPlacement } from "canvas-lti-model";
 import {
   ContentItemsClaimKey,
+  CreatedToolConfiguration,
   DeploymentIdClaimKey,
   LtiMessage,
   LtiMessageTypes,
@@ -41,7 +43,9 @@ import {
   deleteRegistrationForId,
   getRegistrationForId,
   getRegistrationsForAppId,
+  getSavedConfigurationForRegistrationId,
   setRegistrationClientId,
+  setRegistrationSavedConfiguration,
 } from "../../model/entities/registrations";
 import { schemaParse } from "../../schemaParse";
 import { fetchToken } from "../../tokens/tokens";
@@ -226,10 +230,6 @@ bindRegistrationEndpoint(getPublicJwkSet)(({ registrationId }) =>
   )
 );
 
-const CreatedToolConfiguration = ToolConfiguration.pipe(
-  S.extend(S.struct({ client_id: S.string }))
-);
-
 bindRegistrationEndpoint(createToolInstallation)(({ appId }, _, body) =>
   pipe(
     appIdIsForUser(appId),
@@ -295,6 +295,9 @@ bindRegistrationEndpoint(createToolInstallation)(({ appId }, _, body) =>
       schemaParse(CreatedToolConfiguration)(installRequest)
     ),
     Effect.mapError((a) => a),
+    Effect.tap(({ registration, install }) =>
+      setRegistrationSavedConfiguration(registration.id, install)
+    ),
     Effect.flatMap(({ registration, install }) =>
       setRegistrationClientId(
         registration.id,
@@ -399,10 +402,16 @@ bindRegistrationEndpoint(deleteRegistration)(({ registrationId, appId }) =>
 
 bindRegistrationEndpoint(getApiTokenForRegistration)(
   ({ appId, registrationId }, { scope }) => {
-    const scopes = scope.split(",");
     return pipe(
       registrationAndApp(appId, registrationId),
-      Effect.flatMap(({ registration }) => fetchToken(registration, scopes))
+      Effect.flatMap(({ registration }) => {
+        const scopes = pipe(
+          scope,
+          Option.map((s) => s.split(",")),
+          Option.getOrElse(() => registration.scopes)
+        );
+        return fetchToken(registration, scopes);
+      })
     );
   }
 );
@@ -420,5 +429,15 @@ bindRegistrationEndpoint(signDeepLinkingContentItems)(
         })
       ),
       Effect.map((signedJwt) => ({ signedJwt }))
+    )
+);
+
+bindRegistrationEndpoint(getSavedConfigurationForRegistration)(
+  ({ appId, registrationId }) =>
+    pipe(
+      registrationAndApp(appId, registrationId),
+      Effect.flatMap(() =>
+        getSavedConfigurationForRegistrationId(registrationId)
+      )
     )
 );

@@ -17,7 +17,6 @@ import {
   parseJwtError,
   parseParams,
   parseParamsError,
-  parseQuery,
 } from "../../express/parseParams";
 import { getRegistrationForId } from "../../model/entities/registrations";
 import {
@@ -45,6 +44,8 @@ import {
 } from "../../model/entities/launches";
 import { getAppForId } from "../../model/entities/apps";
 import { successResponse } from "../../express/effRequestHandler";
+import { parseQuery } from "../../express/endpointRequestHandler";
+import { QP } from "endpoint-ts";
 
 const upload = multer.default();
 export const launchRouter = express.Router();
@@ -273,11 +274,9 @@ const handleLaunchRequest = effRequestHandler(
     launchUrlParams,
     Effect.bindTo("params"),
     Effect.bind("query", () =>
-      parseQuery(
-        S.struct({
-          placement: S.optional(S.string),
-        })
-      )
+      parseQuery({
+        placement: QP.optional(S.string),
+      })
     ),
     Effect.bind("idToken", () => parseIdToken),
     Effect.bind(

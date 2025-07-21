@@ -11,6 +11,7 @@ import {
   PlatformConfiguration,
   PublicJwkSet,
   ToolConfiguration,
+  CreatedToolConfiguration,
 } from "lti-model";
 import { CanvasToolConfiguration } from "canvas-lti-model";
 import { AppId } from "../app/App";
@@ -124,7 +125,7 @@ export const getApiTokenForRegistration = Endpoint.get(
     path("token")
   ),
   {
-    scope: QP.single(S.string),
+    scope: QP.optional(S.string),
   },
   Response.json(LtiToken)
 );
@@ -136,4 +137,10 @@ export const signDeepLinkingContentItems = Endpoint.post(
   Body.json(
     S.struct({ contentItems: S.array(ContentItem), deploymentId: S.string })
   )
+);
+
+export const getSavedConfigurationForRegistration = Endpoint.get(
+  pipe(appRegistrationsRegistrationRoute, path("saved-configuration")),
+  {},
+  Response.json(CreatedToolConfiguration)
 );

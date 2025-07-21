@@ -36,3 +36,15 @@ export const ToolConfiguration = pipe(
 
 export interface ToolConfiguration
   extends S.Schema.To<typeof ToolConfiguration> {}
+
+export const CreatedToolConfiguration = ToolConfiguration.pipe(
+  S.extend(
+    S.struct({
+      client_id: S.string,
+      deployment_id: S.optional(S.string),
+    })
+  )
+);
+
+export interface CreatedToolConfiguration
+  extends S.Schema.To<typeof CreatedToolConfiguration> {}

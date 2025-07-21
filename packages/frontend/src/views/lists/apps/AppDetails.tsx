@@ -251,12 +251,10 @@ const RegistrationsList = (props: SubViewProps) => {
           <tr>
             <th>Issuer</th>
             <th>Last Launched</th>
-            <th className="text-center">Launches</th>
+            {/* <th className="text-center">Launches</th>
             <th className="text-center">Contexts</th>
-            <th className="text-center">Users</th>
-            <th>Platform Config</th>
-            <th>Config</th>
-            <th>Token</th>
+            <th className="text-center">Users</th> */}
+            <th>Saved Config</th>
             <th>Client Id</th>
             <th>Type</th>
             <th>Created</th>
@@ -271,36 +269,15 @@ const RegistrationsList = (props: SubViewProps) => {
                 </a>
               </td>
               <td>{format(r.created)}</td>
+              {/* <td className="text-center">{0}</td>
               <td className="text-center">{0}</td>
-              <td className="text-center">{0}</td>
-              <td className="text-center">{0}</td>
-              <td>
-                {pipe(
-                  r.registration_config_url,
-                  Option.match({
-                    onNone: () => <></>,
-                    onSome: (url) => (
-                      <a className="link" href={url}>
-                        view
-                      </a>
-                    ),
-                  })
-                )}
-              </td>
+              <td className="text-center">{0}</td> */}
               <td>
                 <a
-                  href={`/api/registrations/${r.id}/canvas_configuration`}
+                  href={`/api/apps/${r.app_id}/registrations/${r.id}/saved-configuration`}
                   className="link"
                 >
-                  config.json
-                </a>
-              </td>
-              <td>
-                <a
-                  href={`/api/apps/${props.app.id}/registrations/${r.id}/token`}
-                  className="link"
-                >
-                  token
+                  view
                 </a>
               </td>
               <td>{Option.getOrNull(r.client_id)}</td>
@@ -343,6 +320,32 @@ const RegistrationsList = (props: SubViewProps) => {
                         Delete
                       </a>
                     </li>
+                    <li>
+                      <a
+                        href={`/api/apps/${props.app.id}/registrations/${r.id}/token`}
+                      >
+                        Token
+                      </a>
+                    </li>
+                    <li>
+                      <a
+                        href={`/api/registrations/${r.id}/canvas_configuration`}
+                      >
+                        Config JSON
+                      </a>
+                    </li>
+
+                    {pipe(
+                      r.registration_config_url,
+                      Option.match({
+                        onNone: () => <></>,
+                        onSome: (url) => (
+                          <li>
+                            <a href={url}>Platform Config</a>
+                          </li>
+                        ),
+                      })
+                    )}
                   </ul>
                 </div>
               </td>

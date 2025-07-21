@@ -17,17 +17,26 @@ export interface ParseJwtError {
 
 export interface ParseQueryError {
   _tag: "parse_query_error";
+  value: unknown;
   query: unknown;
   error?: ParseError;
+  paramName: string;
+  message?: string;
 }
 
 export const parseQueryError = (
+  value: unknown,
   query: unknown,
+  paramName: string,
+  message?: string,
   error?: ParseError
 ): ParseQueryError => ({
   _tag: "parse_query_error",
+  value,
   query,
   error,
+  message,
+  paramName,
 });
 
 export const parseParamsError = (
@@ -43,16 +52,6 @@ export const parseJwtError = (rawJwt: string): ParseJwtError => ({
   _tag: "parse_jwt_error",
   rawJwt,
 });
-
-export const parseQuery = <A>(querySchema: S.Schema<A, any>) =>
-  ExpressRequestService.pipe(
-    Effect.flatMap(({ request }) =>
-      pipe(
-        S.decode(querySchema)(request.query, { onExcessProperty: "ignore" }),
-        Effect.mapError((error) => parseQueryError(request.query, error))
-      )
-    )
-  );
 
 export const parseParams = <A>(paramsSchema: S.Schema<A, any>) =>
   ExpressRequestService.pipe(

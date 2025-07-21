@@ -200,13 +200,15 @@ export const parseQuery = (queryCodecs: Record<string, QuerySchema<any>>) =>
             return parseArrayQueryParam(
               name,
               request.query[name],
-              codec.schema
+              codec.schema,
+              request.query
             );
           } else if (codec._tag === "Single") {
             return parseSingleQueryParam(
               name,
               request.query[name],
-              codec.schema
+              codec.schema,
+              request.query
             );
           } else {
             return pipe(
@@ -214,7 +216,12 @@ export const parseQuery = (queryCodecs: Record<string, QuerySchema<any>>) =>
               Option.match({
                 onNone: () => Either.right([name, Option.none()]),
                 onSome: (v) => {
-                  return parseOptionalQueryParams(name, v, codec.schema);
+                  return parseOptionalQueryParams(
+                    name,
+                    v,
+                    codec.schema,
+                    request.query
+                  );
                 },
               })
             );
@@ -239,7 +246,8 @@ export const parseBody = (codec: S.Schema<any, any, never>) =>
 export const parseArrayQueryParam = (
   name: string,
   value: string | string[] | undefined,
-  schema: S.Schema<any, string, never>
+  schema: S.Schema<any, string, never>,
+  query: unknown
 ): Either.Either<readonly [string, any[]], DecodeError | ParseQueryError> => {
   if (typeof value === undefined) {
     return Either.right([name, []]);
@@ -255,23 +263,41 @@ export const parseArrayQueryParam = (
       Either.map((v) => [name, v])
     );
   } else {
-    return Either.left(parseQueryError(value));
+    return Either.left(
+      parseQueryError(value, query, name, `Expected array but was: ${value}`)
+    );
   }
 };
 
 const parseSingleQueryParam = (
   name: string,
   value: string | string[] | undefined,
-  schema: S.Schema<any, string, never>
+  schema: S.Schema<any, string, never>,
+  query: unknown
 ): Either.Either<readonly [string, any], DecodeError | ParseQueryError> => {
   if (typeof value === undefined) {
-    return Either.left(parseQueryError(value));
+    return Either.left(
+      parseQueryError(
+        value,
+        query,
+        name,
+        `Value is required, but was not provided`
+      )
+    );
   } else if (Array.isArray(value)) {
     return pipe(
       value,
       ReadonlyArray.head,
       Option.match({
-        onNone: () => Either.left(parseQueryError(value)),
+        onNone: () =>
+          Either.left(
+            parseQueryError(
+              value,
+              query,
+              name,
+              `Value is required, but was not provided`
+            )
+          ),
         onSome: (v) => parseParam(v, schema),
       })
     );
@@ -281,14 +307,17 @@ const parseSingleQueryParam = (
       Either.map((v) => [name, v])
     );
   } else {
-    return Either.left(parseQueryError(value));
+    return Either.left(
+      parseQueryError(value, query, name, `Expected string but was: ${value}`)
+    );
   }
 };
 
 const parseOptionalQueryParams = (
   name: string,
   value: string | string[] | undefined,
-  schema: S.Schema<any, string, never>
+  schema: S.Schema<any, string, never>,
+  query: unknown
 ): Either.Either<readonly [string, any], DecodeError | ParseQueryError> => {
   if (typeof value === "string") {
     return pipe(
@@ -308,7 +337,14 @@ const parseOptionalQueryParams = (
   } else if (typeof value === "undefined") {
     return Either.right([name, Option.none()]);
   } else {
-    return Either.left(parseQueryError(value));
+    return Either.left(
+      parseQueryError(
+        value,
+        query,
+        name,
+        `Expected string or array or undefined but was: ${value}`
+      )
+    );
   }
 };
 

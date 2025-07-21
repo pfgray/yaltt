@@ -13,6 +13,7 @@ services:
       - ADMIN_USER=admin
       - ADMIN_PASSWORD=password
       - DOCS_ROOT=/app/packages/docs/build
+      - MIGRATIONS_DIR=/app/migrations
     volumes:
       - ./:/app
       - /app/node_modules

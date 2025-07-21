@@ -228,9 +228,13 @@ export const effRequestHandler: EffRequestHandler =
                 );
               },
               parse_query_error: (e) => {
-                console.error("Parse query error");
-                console.log("Raw query:", JSON.stringify(e.query, null, 2));
-                console.error(JSON.stringify(e.error, null, 2));
+                const errorMessage = [
+                  `Error parsing URL query parameter "${e.paramName}"`,
+                  `Raw value: ${e.value}`,
+                  e.message,
+                  e.error ? formatError(e.error) : "",
+                ].join("\n");
+                console.log(errorMessage);
                 handleErrorResponse(request, response)(
                   400,
                   {
@@ -238,9 +242,7 @@ export const effRequestHandler: EffRequestHandler =
                     raw: e.query,
                     err: e.error,
                   },
-                  "error" in e && e.error
-                    ? formatError(e.error)
-                    : "unknown error"
+                  errorMessage
                 );
               },
               key_error: (e) => {
