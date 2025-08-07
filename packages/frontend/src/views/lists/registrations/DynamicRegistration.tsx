@@ -461,6 +461,14 @@ const PossibleScopes = [
     type: "https://canvas.instructure.com/lti/page_content/show",
     description: "Read Page Content",
   },
+  {
+    description: "Read Registrations",
+    type: "https://purl.imsglobal.org/spec/lti-reg/scope/registration.readonly",
+  },
+  {
+    description: "Manage Registrations",
+    type: "https://purl.imsglobal.org/spec/lti-reg/scope/registration",
+  },
 ];
 
 type Placements = Record<

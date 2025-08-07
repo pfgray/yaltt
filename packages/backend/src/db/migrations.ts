@@ -86,15 +86,6 @@ const executeMigration = (filename: string, sql: string) =>
     Effect.map(() => void 0)
   );
 
-console.log("Configured migrations directory: " + process.env.MIGRATIONS_DIR);
-console.log("MIGRATIONS_DIR specifically:", process.env.MIGRATIONS_DIR);
-console.log("Current working directory:", process.cwd());
-console.log("All env vars (first 10):", Object.keys(process.env)); //.slice(0, 10));
-console.log(
-  "All env vars:",
-  Object.keys(process.env).filter((key) => key.includes("MIGRATION"))
-);
-
 export const runMigrations = (
   migrationsDir: string = process.env.MIGRATIONS_DIR || "./migrations"
 ) =>
