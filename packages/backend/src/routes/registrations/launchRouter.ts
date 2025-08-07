@@ -286,7 +286,11 @@ const handleLaunchRequest = effRequestHandler(
     ),
     Effect.map(
       ({ params, launch, query }) =>
-        `/launch/${launch.launch.id}?placement=${query.placement}`
+        `/launch/${launch.launch.id}?${pipe(
+          query.placement,
+          Option.map((p) => `placement=${p}`),
+          Option.getOrElse(() => "")
+        )}`
     ),
     Effect.map(redirectResponse)
   )

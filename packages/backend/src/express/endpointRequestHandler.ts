@@ -149,7 +149,7 @@ export const endpointHandler: EndpointHandler = (endpoint) => (eff) =>
       }
     }),
     Effect.flatMap(({ routeParams, queryParams, body }) =>
-      eff(routeParams, queryParams, body)
+      eff(routeParams, queryParams as unknown as any, body)
     ),
     (a) => a,
     Effect.flatMap((respBody): Either.Either<Response, EncodeError> => {
@@ -191,7 +191,23 @@ export const parseParams = (paramCodecs: Record<string, RouteCodec<any>>) =>
     })
   );
 
-export const parseQuery = (queryCodecs: Record<string, QuerySchema<any>>) =>
+type QuerySchemaResult<T> = T extends QuerySchema<infer A>
+  ? T extends { _tag: "Array" }
+    ? A[]
+    : T extends { _tag: "Single" }
+    ? A
+    : T extends { _tag: "Optional" }
+    ? Option.Option<A>
+    : never
+  : never;
+
+export const parseQuery = <T extends Record<string, QuerySchema<any>>>(
+  queryCodecs: T
+): Effect.Effect<
+  { [K in keyof T]: QuerySchemaResult<T[K]> },
+  ParseQueryError | DecodeError,
+  ExpressRequestService
+> =>
   ExpressRequestService.pipe(
     Effect.flatMap(({ request, response }) => {
       return pipe(
@@ -231,7 +247,11 @@ export const parseQuery = (queryCodecs: Record<string, QuerySchema<any>>) =>
         Either.map(Object.fromEntries)
       );
     })
-  );
+  ) as Effect.Effect<
+    { [K in keyof T]: QuerySchemaResult<T[K]> },
+    ParseQueryError | DecodeError,
+    ExpressRequestService
+  >;
 
 export const parseBody = (codec: S.Schema<any, any, never>) =>
   ExpressRequestService.pipe(
