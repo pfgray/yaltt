@@ -68,6 +68,10 @@ export const DeepLinkingForm = (props: DeepLinkingFormProps) => {
       url: `${window.location.protocol}//${window.location.host}/api/registrations/${props.registrationId}/launch`,
       title: "Yaltt Resource",
       text: "This is a resource from Yaltt",
+      custom: {
+        foo: "bar",
+        baz: "qux",
+      },
     } as ContentItem,
   ]);
   return (
@@ -168,6 +172,14 @@ const ContentItemForm = (props: ContentItemFormProps) => {
         ...{ lineItem: { ...lineItem, [key]: parsed } },
       });
     };
+
+  // const customFields = React.useState(
+  //   "" +
+  //     Object.entries(props.contentItem.custom || {}).reduce(
+  //       (acc, [key, value]) => acc + `${key}=${value}\n`,
+  //       ""
+  //     )
+  // )[1];
   return (
     <div className="flex flex-col gap-4 max-w-xs">
       <h4>Content Item to Return</h4>
@@ -292,6 +304,29 @@ const ContentItemForm = (props: ContentItemFormProps) => {
                 className="input input-bordered w-full max-w-xs"
                 value={item.text}
                 onChange={updateField("text")}
+              />
+              <textarea
+                placeholder="Custom Parameters"
+                className="input input-bordered w-full max-w-xs"
+                value={Object.entries(item.custom || {}).reduce(
+                  (acc, [key, value]) => acc + `${key}=${value}\n`,
+                  ""
+                )}
+                onChange={(event) => {
+                  const customParams = event.currentTarget.value
+                    .split("\n")
+                    .reduce((acc, line) => {
+                      const [key, value] = line.split("=");
+                      if (key && value) {
+                        acc[key.trim()] = value.trim();
+                      }
+                      return acc;
+                    }, {} as Record<string, string>);
+                  props.update({
+                    ...item,
+                    custom: customParams,
+                  });
+                }}
               />
               <div className="form-control">
                 <label className="label cursor-pointer">
