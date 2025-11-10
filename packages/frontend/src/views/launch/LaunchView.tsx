@@ -24,7 +24,7 @@ export const LaunchView = () => {
       launchId: S.NumberFromString,
     }),
     S.struct({
-      placement: S.string,
+      placement: S.optional(S.string),
     })
   );
 
