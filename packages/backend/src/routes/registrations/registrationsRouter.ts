@@ -13,9 +13,11 @@ import {
   getConfiguration,
   getOpenidConfig,
   getPublicJwkSet,
+  getRegistration,
   getRegistrations,
   getSavedConfigurationForRegistration,
   signDeepLinkingContentItems,
+  signUpdateRequest,
 } from "@yaltt/model";
 import { CanvasPlacement } from "canvas-lti-model";
 import {
@@ -98,6 +100,18 @@ bindRegistrationEndpoint(getRegistrations)(({ appId }) =>
   pipe(
     appIdIsForUser(appId),
     Effect.flatMap(() => getRegistrationsForAppId(appId))
+  )
+);
+
+console.log("hmmma");
+
+bindRegistrationEndpoint(getRegistration)(({ registrationId }) =>
+  pipe(
+    getRegistrationForId(registrationId),
+    Effect.filterOrFail(
+      (registration) => !!registration,
+      () => unauthorizedError(`Registration not found.`)
+    )
   )
 );
 
@@ -439,5 +453,16 @@ bindRegistrationEndpoint(getSavedConfigurationForRegistration)(
       Effect.flatMap(() =>
         getSavedConfigurationForRegistrationId(registrationId)
       )
+    )
+);
+
+bindRegistrationEndpoint(signUpdateRequest)(
+  ({ appId, registrationId }, _, body) =>
+    pipe(
+      registrationAndApp(appId, registrationId),
+      Effect.flatMap(({ registration }) =>
+        signJwtPayloadForRegistration(registration)(body.payload as any)
+      ),
+      Effect.map((signedRequest) => ({ signedRequest }))
     )
 );

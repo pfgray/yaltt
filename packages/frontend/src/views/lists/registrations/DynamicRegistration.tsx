@@ -119,7 +119,7 @@ export const DynamicRegistration = () => {
               >
                 {({ openidConfig, app }) =>
                   pipe(
-                    S.decodeEither(PlatformConfiguration)(openidConfig, {
+                    S.decodeUnknownEither(PlatformConfiguration)(openidConfig, {
                       onExcessProperty: "ignore",
                     }),
                     Either.match({

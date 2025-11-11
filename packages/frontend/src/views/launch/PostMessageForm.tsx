@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Form, Textarea } from "react-daisyui";
-import { Launch } from "./Launch";
+import { Launch } from "@yaltt/model/src/registration/Launch";
 import { LaunchCollapsible } from "./LaunchCollapsible";
 
 export type PostMessageFormProps = {

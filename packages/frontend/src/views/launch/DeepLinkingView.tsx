@@ -4,7 +4,7 @@ import {
   extractDeploymentIdClaim,
 } from "lti-model";
 import { DeepLinkingForm } from "./DeepLinkingForm";
-import { Launch } from "./Launch";
+import { Launch } from "@yaltt/model/src/registration/Launch";
 import { LaunchCollapsible } from "./LaunchCollapsible";
 
 type DeepLinkingFormProps = {

@@ -48,7 +48,7 @@ export const DynamicRegistrationCustom = () => {
               <WithRequest eff={fetchOpenIdConfig(q)}>
                 {(openidConfig) =>
                   pipe(
-                    S.decodeEither(PlatformConfiguration)(openidConfig, {
+                    S.decodeUnknownEither(PlatformConfiguration)(openidConfig, {
                       onExcessProperty: "ignore",
                     }),
                     Either.match({

@@ -6,7 +6,7 @@ import { fetchToken } from "../../lib/token/fetchToken";
 import { match } from "@yaltt/model";
 import { Checkbox, Collapse, Form } from "react-daisyui";
 import { useRemoteState } from "../../lib/remote/useRemoteState";
-import { Launch } from "./Launch";
+import { Launch } from "@yaltt/model/src/registration/Launch";
 import {
   extractAgsEndpointClaim,
   extractContentItemsClaim,

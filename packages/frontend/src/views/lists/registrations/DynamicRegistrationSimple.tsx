@@ -27,6 +27,7 @@ import {
 import { useParsedParamsQuery } from "../../../lib/react-router/useParsedParamsQuery";
 import { CanvasPlacementTypes } from "canvas-lti-model";
 import { sendCloseMessage } from "./sendCloseMessage";
+import { Pre } from "../../../lib/ui/Pre";
 
 type Request<E, A> = TagADT<{
   initial: {};
@@ -135,7 +136,7 @@ export const DynamicRegistrationSimple = () => {
               >
                 {({ openidConfig, app }) =>
                   pipe(
-                    S.decodeEither(PlatformConfiguration)(openidConfig, {
+                    S.decodeUnknownEither(PlatformConfiguration)(openidConfig, {
                       onExcessProperty: "ignore",
                     }),
                     Either.match({

@@ -180,8 +180,15 @@ const decodeRespBody = <A>(schema: S.Schema<A, any>) =>
 export const get = (url: string | URL) =>
   pipe(request_("GET", url, {}), handleErrorStatus);
 
-export const getDecode = <A>(s: S.Schema<any, A>) =>
-  flow(get, decodeRespBody(s));
+export const getDecode = <A>(
+  s: S.Schema<any, A>
+): {
+  (url: string): Effect.Effect<
+    A,
+    ClientError | ServerError | DecodeError,
+    RequestService
+  >;
+} => flow(get, decodeRespBody(s));
 
 export const post = (url: string | URL, body?: PostData) =>
   pipe(

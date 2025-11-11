@@ -8,7 +8,7 @@ import {
   extractDeploymentIdClaim,
   extractUserIdentityClaim,
 } from "lti-model";
-import { Launch } from "./Launch";
+import { Launch } from "@yaltt/model/src/registration/Launch";
 import { LaunchCollapsible } from "./LaunchCollapsible";
 import { fetchBodyFromEndpoint } from "../../lib/endpoint-ts/fetchFromEndpoint";
 import {

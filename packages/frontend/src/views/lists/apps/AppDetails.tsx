@@ -334,6 +334,13 @@ const RegistrationsList = (props: SubViewProps) => {
                         Config JSON
                       </a>
                     </li>
+                    <li>
+                      <Link
+                        to={`/app/${r.app_id}/registrations/${r.id}/configuration`}
+                      >
+                        Edit Registration
+                      </Link>
+                    </li>
 
                     {pipe(
                       r.registration_config_url,

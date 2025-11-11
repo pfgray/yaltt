@@ -1,6 +1,7 @@
 export * from "./auth/LoginMechanisms";
 export * from "./api/ags";
 export * from "./api/apps";
+export * from "./api/launch";
 export * from "./api/registrations";
 export * from "./api/users";
 export * from "./api/auth";
@@ -11,6 +12,7 @@ export * from "./lib/DateFromStringOrDate";
 export * from "./lib/decode";
 export * from "./lib/encode";
 export * from "./matchers/match";
+export * from "./registration/Launch";
 export * from "./registration/Registration";
 export * from "./registration/RegistrationType";
 export * from "./schemas/stringInteger";

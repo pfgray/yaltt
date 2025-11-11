@@ -1,8 +1,14 @@
 import * as S from "@effect/schema/Schema";
-import { App, Registration } from "@yaltt/model";
+import { App } from "../app/App";
+import type * as B from "effect/Brand";
+import { Registration } from "./Registration";
+
+export type LaunchId = number & B.Brand<"LaunchId">;
+
+export const LaunchId = S.number.pipe(S.brand("LaunchId"));
 
 export const Launch = S.struct({
-  id: S.number,
+  id: LaunchId,
   created: S.Date,
   id_token: S.unknown,
   registration_id: S.number,

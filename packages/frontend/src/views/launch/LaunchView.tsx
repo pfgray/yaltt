@@ -9,19 +9,19 @@ import {
 } from "lti-model";
 import { DeepLinkingForm } from "./DeepLinkingForm";
 import { TokenFetcher } from "./TokenFetcher";
-import { Launch } from "./Launch";
+import { getLaunch, LaunchId } from "@yaltt/model";
 import { RawLaunch } from "./RawLaunch";
 import { DeepLinkingView } from "./DeepLinkingView";
 import { AgsView } from "./AgsView";
 import { PostMessageForm } from "./PostMessageForm";
+import { fetchFromEndpoint } from "../../lib/endpoint-ts/fetchFromEndpoint";
 
-const fetchLaunch = (launchId: number) =>
-  getDecode(Launch)(`/api/launch/${launchId}`);
+const fetchLaunch = fetchFromEndpoint(getLaunch);
 
 export const LaunchView = () => {
   const parsedParamsQuery = useParsedParamsQuery(
     S.struct({
-      launchId: S.NumberFromString,
+      launchId: S.compose(S.NumberFromString, LaunchId),
     }),
     S.struct({
       placement: S.optional(S.string),
@@ -33,7 +33,7 @@ export const LaunchView = () => {
     Either.match({
       onLeft: () => <div>Invalid params</div>,
       onRight: ({ query, params }) => (
-        <WithRequest eff={fetchLaunch(params.launchId)}>
+        <WithRequest eff={fetchLaunch(params)}>
           {(launch) => (
             <div className="p-4">
               <div className="flex flex-col gap-2">

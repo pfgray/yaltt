@@ -42,7 +42,7 @@
     "typescript": "^5.1"
   },
   "scripts": {
-    "start": "nodemon",
+    "start": "nodemon -L",
     "dev": "node --loader ts-node/esm ./src/index.ts",
     "build": "tsc"
   }

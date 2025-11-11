@@ -38,6 +38,13 @@ export const getRegistrations = Endpoint.get(
   {},
   Response.json(S.array(Registration))
 );
+
+export const getRegistration = Endpoint.get(
+  registrationRoute,
+  {},
+  Response.json(Registration)
+);
+
 export const createRegistration = Endpoint.post(
   appRegistrationsRoute,
   {},
@@ -143,4 +150,16 @@ export const getSavedConfigurationForRegistration = Endpoint.get(
   pipe(appRegistrationsRegistrationRoute, path("saved-configuration")),
   {},
   Response.json(CreatedToolConfiguration)
+);
+
+export const signUpdateRequest = Endpoint.post(
+  pipe(appRegistrationsRegistrationRoute, path("sign-update-request")),
+  {},
+  Response.json(S.struct({ signedRequest: S.string })),
+  Body.json(
+    S.struct({
+      payload: S.unknown,
+      token: S.string,
+    })
+  )
 );

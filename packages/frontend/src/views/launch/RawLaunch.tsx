@@ -1,5 +1,5 @@
 import { Pre } from "../../lib/ui/Pre";
-import { Launch } from "./Launch";
+import { Launch } from "@yaltt/model/src/registration/Launch";
 import { LaunchCollapsible } from "./LaunchCollapsible";
 
 export type RawLaunchProps = {
