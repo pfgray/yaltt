@@ -40,7 +40,6 @@ export const WithRequest = <A,>(props: WithRequestProps<A>): JSX.Element => {
 
   const effect = pipe(
     provideRequestService(props.eff),
-    (a) => a,
     Effect.tap((a) =>
       Effect.sync(() => {
         setValue(Option.some(Either.right(a)));
@@ -87,7 +86,10 @@ export const WithRequest = <A,>(props: WithRequestProps<A>): JSX.Element => {
           fetch_parse_json_error: genericError,
           encode_error: (e) => parseError(e.error),
         }),
-        onRight: (a) => <>{props.children(a, effect)}</>,
+        onRight: (a) => {
+          console.log("is right?", value);
+          return <>{props.children(a, effect)}</>;
+        },
       }),
     })
   );

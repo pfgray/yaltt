@@ -14,6 +14,7 @@ import {
   getOpenidConfig,
   getPublicJwkSet,
   getRegistration,
+  getRegistrationFromPlatform,
   getRegistrations,
   getSavedConfigurationForRegistration,
   signDeepLinkingContentItems,
@@ -26,6 +27,7 @@ import {
   DeploymentIdClaimKey,
   LtiMessage,
   LtiMessageTypes,
+  LtiScope,
   LtiVersionClaimKey,
   MessageTypeClaimKey,
   ToolConfiguration,
@@ -46,7 +48,7 @@ import {
   getRegistrationForId,
   getRegistrationsForAppId,
   getSavedConfigurationForRegistrationId,
-  setRegistrationClientId,
+  setRegistrationClientIdAndClientUri,
   setRegistrationSavedConfiguration,
 } from "../../model/entities/registrations";
 import { schemaParse } from "../../schemaParse";
@@ -64,6 +66,7 @@ import {
   createAppAndRegistrationForUser,
   getAppForId,
 } from "../../model/entities/apps";
+import { dataIntegrityError } from "../../db/db";
 
 export const registrationRouter = express.Router();
 const bindRegistrationEndpoint = bindEndpoint(registrationRouter);
@@ -102,8 +105,6 @@ bindRegistrationEndpoint(getRegistrations)(({ appId }) =>
     Effect.flatMap(() => getRegistrationsForAppId(appId))
   )
 );
-
-console.log("hmmma");
 
 bindRegistrationEndpoint(getRegistration)(({ registrationId }) =>
   pipe(
@@ -250,7 +251,6 @@ bindRegistrationEndpoint(createToolInstallation)(({ appId }, _, body) =>
     Effect.bindTo("app"),
     Effect.bind("request", () => ExpressRequestService),
     Effect.bind("config", () => getConfig),
-    Effect.mapError((a) => a),
     Effect.bind("registration", ({ app }) =>
       createRegistrationForAppId(
         app.id,
@@ -260,7 +260,6 @@ bindRegistrationEndpoint(createToolInstallation)(({ appId }, _, body) =>
         body.scopes
       )
     ),
-    Effect.mapError((a) => a),
     Effect.bind("installRequest", ({ app, config, registration, request }) => {
       const url = new URL(body.registrationEndpoint);
       // todo: this shouldn't be here, remove it once Canvas supports it in the header
@@ -304,7 +303,6 @@ bindRegistrationEndpoint(createToolInstallation)(({ appId }, _, body) =>
           : {}
       );
     }),
-    Effect.mapError((a) => a),
     Effect.bind("install", ({ installRequest }) =>
       schemaParse(CreatedToolConfiguration)(installRequest)
     ),
@@ -313,13 +311,15 @@ bindRegistrationEndpoint(createToolInstallation)(({ appId }, _, body) =>
       setRegistrationSavedConfiguration(registration.id, install)
     ),
     Effect.flatMap(({ registration, install }) =>
-      setRegistrationClientId(
-        registration.id,
-        install.client_id,
-        install["https://purl.imsglobal.org/spec/lti-tool-configuration"][
-          "https://canvas.instructure.com/lti/registration_config_url"
-        ]
-      )
+      setRegistrationClientIdAndClientUri({
+        registrationId: registration.id,
+        client_id: install.client_id,
+        registration_config_url:
+          install["https://purl.imsglobal.org/spec/lti-tool-configuration"][
+            "https://canvas.instructure.com/lti/registration_config_url"
+          ],
+        registration_client_uri: install.registration_client_uri,
+      })
     )
   )
 );
@@ -369,13 +369,15 @@ bindRegistrationEndpoint(createNewAppInstallation)((_, __, body) =>
     ),
     Effect.mapError((a) => a),
     Effect.flatMap(({ registration, install }) =>
-      setRegistrationClientId(
-        registration.registration.id,
-        install.client_id,
-        install["https://purl.imsglobal.org/spec/lti-tool-configuration"][
-          "https://canvas.instructure.com/lti/registration_config_url"
-        ]
-      )
+      setRegistrationClientIdAndClientUri({
+        registrationId: registration.registration.id,
+        client_id: install.client_id,
+        registration_config_url:
+          install["https://purl.imsglobal.org/spec/lti-tool-configuration"][
+            "https://canvas.instructure.com/lti/registration_config_url"
+          ],
+        registration_client_uri: install.registration_client_uri,
+      })
     )
   )
 );
@@ -464,5 +466,36 @@ bindRegistrationEndpoint(signUpdateRequest)(
         signJwtPayloadForRegistration(registration)(body.payload as any)
       ),
       Effect.map((signedRequest) => ({ signedRequest }))
+    )
+);
+
+bindRegistrationEndpoint(getRegistrationFromPlatform)(
+  ({ appId, registrationId }, _) =>
+    pipe(
+      registrationAndApp(appId, registrationId),
+      Effect.bind("client_uri", ({ registration }) =>
+        pipe(
+          registration.registration_client_uri,
+          Option.map(Effect.succeed),
+          Option.getOrElse(() =>
+            Effect.fail(
+              dataIntegrityError("No registration_client_uri for registration")
+            )
+          )
+        )
+      ),
+      Effect.bind("token", ({ registration }) =>
+        fetchToken(registration, [LtiScope.RegistrationReadOnly])
+      ),
+      Effect.bind("rawToolConfiguration", ({ client_uri, token }) =>
+        Fetch.get(client_uri, {
+          headers: {
+            Authorization: `Bearer ${token.access_token}`,
+          },
+        })
+      ),
+      Effect.bind("toolConfiguration", ({ rawToolConfiguration }) =>
+        schemaParse(CreatedToolConfiguration)(rawToolConfiguration)
+      )
     )
 );

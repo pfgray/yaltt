@@ -42,6 +42,7 @@ export const CreatedToolConfiguration = ToolConfiguration.pipe(
     S.struct({
       client_id: S.string,
       deployment_id: S.optional(S.string),
+      registration_client_uri: S.optional(S.string),
     })
   )
 );

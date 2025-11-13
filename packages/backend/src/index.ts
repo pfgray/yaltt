@@ -9,7 +9,7 @@ import { adminRouter } from "./admin/adminRouter";
 import { authRouter } from "./auth/authRouter";
 import { QueryService } from "./db/QueryService";
 import { mkTransactionalPgService } from "./db/TransactionalPgService";
-import { pool } from "./db/db";
+import { DecodeQueryError, PgError, pool } from "./db/db";
 import { addOrUpdateUserWithLocalPassword } from "./model/users";
 import { appRouter } from "./routes/apps/appRouter";
 import { agsRouter } from "./routes/ags/agsRouter";
@@ -28,10 +28,42 @@ const app = express.default();
 
 const port = 3000;
 
+const printDecodeQueryError = (e: DecodeQueryError) =>
+  `Could not decode query result: ${formatError(e.error.error)} --- \n${
+    e.error.actual
+  }`;
+
+const printPgError = (e: PgError) =>
+  `PG error: ${e.cause.message}\n${e.cause.stack}`;
+
 const pgService = mkTransactionalPgService(pool);
 // Run migrations before starting the application
 pipe(runMigrations(), pgService.provide, Effect.runPromiseExit).then((exit) => {
   if (exit._tag === "Failure") {
+    if (exit.cause._tag === "Fail") {
+      pipe(
+        exit.cause.error,
+        match({
+          generic_error: (e) =>
+            e.cause instanceof Error
+              ? `Error migrating: ${e.message}, cause: ${e.cause.message}`
+              : `Error migrating: ${e.message}, cause: ${e.cause}`,
+          migration_error: (e) =>
+            `Error in migration ${e.filename}: ${pipe(
+              e.cause,
+              match({
+                decode_query_error: printDecodeQueryError,
+                pg_error: printPgError,
+              })
+            )}`,
+          decode_query_error: printDecodeQueryError,
+          pg_error: printPgError,
+        }),
+        (message) => {
+          console.log(message);
+        }
+      );
+    }
     console.error("Failed to run migrations:", exit.cause);
     process.exit(1);
   } else {

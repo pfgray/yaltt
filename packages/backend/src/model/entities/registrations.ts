@@ -8,7 +8,7 @@ import { Registration, RegistrationId, RegistrationType } from "@yaltt/model";
 
 export const getRegistrationForId = (registrationId: number) =>
   query1(Registration)(
-    "select id, client_id, type, app_id, created, platform_configuration, claims, scopes, custom_parameters, registration_config_url from registrations where id = $1",
+    "select id, client_id, type, app_id, created, platform_configuration, claims, scopes, custom_parameters, registration_config_url, registration_client_uri from registrations where id = $1",
     [registrationId]
   );
 
@@ -17,7 +17,7 @@ export const deleteRegistrationForId = (registrationId: number) =>
 
 export const getRegistrationsForAppId = (appId: number) =>
   query(Registration)(
-    "select id, client_id, type, app_id, created, platform_configuration, claims, scopes, custom_parameters, registration_config_url from registrations where app_id = $1",
+    "select id, client_id, type, app_id, created, platform_configuration, claims, scopes, custom_parameters, registration_config_url, registration_client_uri from registrations where app_id = $1 order by created desc",
     [appId]
   );
 
@@ -40,17 +40,24 @@ export const createRegistrationForAppId = (
     (reg) => createKeyForRegistrationId(reg.id)
   );
 
-export const setRegistrationClientId = (
-  registrationId: number,
-  client_id: string,
-  registration_config_url?: string
-) =>
+export const setRegistrationClientIdAndClientUri = (params: {
+  registrationId: number;
+  client_id: string;
+  registration_config_url?: string;
+  registration_client_uri?: string;
+}) =>
   query(S.unknown)(
     `update registrations
         set client_id = $2,
-        registration_config_url = $3
+        registration_config_url = $3,
+        registration_client_uri = $4
       where id = $1`,
-    [registrationId, client_id, registration_config_url]
+    [
+      params.registrationId,
+      params.client_id,
+      params.registration_config_url,
+      params.registration_client_uri,
+    ]
   );
 
 export const setRegistrationSavedConfiguration = (

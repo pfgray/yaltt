@@ -121,3 +121,10 @@ export const queryOp1 = <T>(schema: S.Schema<T, any>) =>
       )
     )
   );
+
+export const queryRaw = (queryStr: string, queryParams: unknown[]) =>
+  pipe(
+    Query.query(queryStr, queryParams),
+    Effect.map((result) => result.rows as unknown),
+    Effect.mapError((cause) => pgError(cause, queryStr))
+  );

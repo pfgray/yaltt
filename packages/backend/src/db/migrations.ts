@@ -1,7 +1,7 @@
 import * as fs from "fs/promises";
 import * as path from "path";
 import { Effect, pipe } from "effect";
-import { DecodeQueryError, PgError, query } from "./db";
+import { DecodeQueryError, PgError, query, queryRaw } from "./db";
 import * as S from "@effect/schema/Schema";
 
 const MigrationRecord = S.struct({
@@ -9,11 +9,23 @@ const MigrationRecord = S.struct({
   executed_at: S.string,
 });
 
+interface GenericError {
+  _tag: "generic_error";
+  message: string;
+  cause: unknown;
+}
+
 interface MigrationError {
   _tag: "migration_error";
   filename: string;
   cause: PgError | DecodeQueryError;
 }
+
+const genericError = (message: string, cause: unknown): GenericError => ({
+  _tag: "generic_error",
+  message,
+  cause,
+});
 
 const migrationError = (
   filename: string,
@@ -24,7 +36,7 @@ const migrationError = (
   cause,
 });
 
-const createMigrationsTable = query(S.unknown)(
+const createMigrationsTable = queryRaw(
   `CREATE TABLE IF NOT EXISTS migrations (
     filename VARCHAR(255) PRIMARY KEY,
     executed_at TIMESTAMP DEFAULT NOW()
@@ -55,34 +67,48 @@ const getMigrationFiles = (migrationsDir: string) =>
       }
     },
     catch: (error) =>
-      new Error(`Failed to read migrations directory: ${error}`),
+      genericError("Failed to read migrations directory", error),
   });
 
 const readMigrationFile = (filePath: string) =>
   Effect.tryPromise({
     try: () => fs.readFile(filePath, "utf-8"),
-    catch: (error) => new Error(`Failed to read migration file: ${error}`),
+    catch: (error) => genericError("Failed to read migration file", error),
   });
 
 const executeMigration = (filename: string, sql: string) =>
   pipe(
-    query(S.unknown)("BEGIN", []),
-    Effect.flatMap(() => query(S.unknown)(sql, [])),
+    queryRaw("BEGIN", []),
+    Effect.map((a) => {
+      console.log("Began migration");
+      return a;
+    }),
+    Effect.flatMap(() => queryRaw(sql, [])),
+    Effect.map((a) => {
+      console.log("Finished executing migration SQL");
+      return a;
+    }),
     Effect.flatMap(() =>
-      query(S.unknown)("INSERT INTO migrations (filename) VALUES ($1)", [
-        filename,
-      ])
+      queryRaw("INSERT INTO migrations (filename) VALUES ($1)", [filename])
     ),
-    Effect.flatMap(() => query(S.unknown)("COMMIT", [])),
+    Effect.map((a) => {
+      console.log("Finished creating migration record");
+      return a;
+    }),
+    Effect.flatMap(() => queryRaw("COMMIT", [])),
+    Effect.map((a) => {
+      console.log("Finished committing migration");
+      return a;
+    }),
     Effect.tap(() =>
       Effect.sync(() => console.log(`✓ Executed migration: ${filename}`))
     ),
-    Effect.catchAll((cause) =>
-      pipe(
-        query(S.unknown)("ROLLBACK", []),
+    Effect.catchAll((cause) => {
+      return pipe(
+        queryRaw("ROLLBACK", []),
         Effect.flatMap(() => Effect.fail(migrationError(filename, cause)))
-      )
-    ),
+      );
+    }),
     Effect.map(() => void 0)
   );
 
@@ -96,6 +122,7 @@ export const runMigrations = (
         console.log(`Using migrations directory: ${migrationsDir}`)
       )
     ),
+    Effect.mapError((a) => a),
     Effect.tap(() =>
       Effect.sync(() => console.log("Setting up migrations table..."))
     ),
@@ -130,6 +157,8 @@ export const runMigrations = (
         { concurrency: 1 }
       );
     }),
+
+    Effect.mapError((a) => a),
     Effect.tap(() =>
       Effect.sync(() => console.log("Migrations completed successfully"))
     )

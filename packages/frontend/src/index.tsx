@@ -23,7 +23,10 @@ import SignIn from "./views/login/SignIn";
 import { NewManualRegistration } from "./views/registration/NewManualRegistration";
 import { DynamicRegistrationSimple } from "./views/lists/registrations/DynamicRegistrationSimple";
 import { DynamicRegistrationCustom } from "./views/lists/registrations/DynamicRegistrationCustom";
-import { RegistrationEdit } from "./views/launch/RegistrationEdit";
+import {
+  RegistrationEdit,
+  RegistrationEditWrapper,
+} from "./views/launch/RegistrationEdit";
 
 const mkPath = (
   path: string,
@@ -59,7 +62,7 @@ const router = createBrowserRouter([
 
   {
     path: "/apps/:appId/registrations/:registrationId/configuration",
-    element: <RegistrationEdit />,
+    element: <RegistrationEditWrapper />,
   },
   {
     path: "/",

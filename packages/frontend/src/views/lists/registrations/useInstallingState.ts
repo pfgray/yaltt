@@ -24,6 +24,7 @@ type InstallingState = {
   ) => Effect.Effect<void, never, never>;
   setInstallSucceeded: () => Effect.Effect<void, never, never>;
 };
+
 export const useInstallingState = create<InstallingState>()((set) => ({
   install: { _tag: "initial" },
   installTool: (eff) =>

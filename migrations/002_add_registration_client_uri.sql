@@ -1,0 +1,1 @@
+ALTER TABLE registrations ADD COLUMN registration_client_uri varchar(255);

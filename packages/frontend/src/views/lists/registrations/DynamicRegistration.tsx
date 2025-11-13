@@ -2,14 +2,21 @@ import * as S from "@effect/schema/Schema";
 import { formatError } from "@effect/schema/TreeFormatter";
 import { ChevronDownIcon, ChevronUpIcon } from "@heroicons/react/24/outline";
 import {
+  App,
   AppId,
   AppWithRegistrations,
+  Registration,
   TagADT,
   createToolInstallation,
   match,
 } from "@yaltt/model";
-import { Effect, Either, pipe, ReadonlyRecord } from "effect";
-import { LtiMessage, LtiPlacements, PlatformConfiguration } from "lti-model";
+import { Effect, Either, pipe, ReadonlyRecord, Option } from "effect";
+import {
+  CreatedToolConfiguration,
+  LtiMessage,
+  LtiPlacements,
+  PlatformConfiguration,
+} from "lti-model";
 import * as React from "react";
 import { create } from "zustand";
 import { WithRequest } from "../../../lib/api/WithRequest";
@@ -23,6 +30,7 @@ import { CanvasPlacementTypes } from "canvas-lti-model";
 import { useInstallingState } from "./useInstallingState";
 import { sendCloseMessage } from "./sendCloseMessage";
 import { Pre } from "../../../lib/ui/Pre";
+import { parseCustomParams } from "./DynamicRegistrationForm";
 
 type SelectedScopeState = {
   scopes: ReadonlyArray<string>;
@@ -30,7 +38,7 @@ type SelectedScopeState = {
   setScopes: (scopes: ReadonlyArray<string>) => void;
 };
 
-const useScopeStore = create<SelectedScopeState>()((set) => ({
+export const useScopeStore = create<SelectedScopeState>()((set) => ({
   scopes: [],
   setScopes: (scopes) => set({ scopes }),
   toggleScope: (scope) =>
@@ -41,7 +49,7 @@ const useScopeStore = create<SelectedScopeState>()((set) => ({
     ),
 }));
 
-const useExtraScopesStore = create<{
+export const useExtraScopesStore = create<{
   extraScopes: string;
   setExtraScopes: (extraScopes: string) => void;
 }>()((set) => ({
@@ -370,15 +378,32 @@ export const DynamicRegistration = () => {
   );
 };
 
-const ServicesSupported = (props: {
+export const ServicesSupported = (props: {
   platformConfiguration: PlatformConfiguration;
+  editingToolConfiguration?: CreatedToolConfiguration;
 }) => {
+  const { editingToolConfiguration } = props;
   const { scopes, toggleScope, setScopes } = useScopeStore((state) => state);
 
   const { extraScopes, setExtraScopes } = useExtraScopesStore((state) => state);
 
   React.useEffect(() => {
-    setScopes(props.platformConfiguration.scopes_supported);
+    setScopes(
+      editingToolConfiguration
+        ? editingToolConfiguration.scope.split(" ")
+        : props.platformConfiguration.scopes_supported
+    );
+
+    setExtraScopes(
+      editingToolConfiguration
+        ? editingToolConfiguration.scope
+            .split(" ")
+            .filter(
+              (s) => !props.platformConfiguration.scopes_supported.includes(s)
+            )
+            .join("\n")
+        : ""
+    );
   }, []);
 
   return (
@@ -508,6 +533,7 @@ type PlacementsStore = {
   updateRoles: (
     placement: string
   ) => (roles: React.ChangeEvent<InputType>) => void;
+  initializePlacements: (toolConfig: CreatedToolConfiguration) => void;
 };
 
 const updatePlacement =
@@ -527,7 +553,7 @@ const updatePlacement =
       },
     }));
 
-const usePlacementsStore = create<PlacementsStore>()((set) => ({
+export const usePlacementsStore = create<PlacementsStore>()((set) => ({
   placements: {},
   togglePlacement: (placement: string) =>
     set((state) => {
@@ -547,6 +573,28 @@ const usePlacementsStore = create<PlacementsStore>()((set) => ({
   updateCustomParameters: updatePlacement("custom_parameters", set),
   updateIconUri: updatePlacement("icon_uri", set),
   updateRoles: updatePlacement("roles", set),
+  initializePlacements: (toolConfig: CreatedToolConfiguration) => {
+    const placements = toolConfig[
+      "https://purl.imsglobal.org/spec/lti-tool-configuration"
+    ].messages.reduce((acc: Placements, message) => {
+      (message.placements || []).forEach((placement) => {
+        acc[placement] = {
+          enabled: true,
+          message_type: message.type,
+          custom_parameters: Object.entries(message.custom_parameters || {})
+            .map(([k, v]) => `${k}=${v}`)
+            .join("\n"),
+          icon_uri: message.icon_uri || "",
+          roles: (message.roles || []).join(", "),
+          label: message.label || "",
+        };
+      });
+      return acc;
+    }, {} as Placements);
+    set((state) => ({
+      placements,
+    }));
+  },
 }));
 
 type ExpandedPlacementsState = {
@@ -559,10 +607,32 @@ const useExpandedPlacementsStore = create<ExpandedPlacementsState>()((set) => ({
   toggleExpanded: () => set((state) => ({ expanded: !state.expanded })),
 }));
 
-const MessageTypes = (props: {
+export const MessageTypes = (props: {
   platformConfiguration: PlatformConfiguration;
-  app: AppWithRegistrations;
+  app: App;
+  editingRegistration?: Registration;
+  editingToolConfiguration?: CreatedToolConfiguration;
 }) => {
+  const { editingRegistration } = props;
+  const editingToolConfiguration = Option.fromNullable(
+    props.editingToolConfiguration
+  );
+  const editingConfiguration = pipe(
+    editingToolConfiguration,
+    Option.flatMap((e) =>
+      Option.fromNullable(
+        e["https://purl.imsglobal.org/spec/lti-tool-configuration"]
+      )
+    )
+  );
+  const editingPlacements = pipe(
+    editingConfiguration,
+    Option.map((ec) =>
+      ec.messages.flatMap((m) => m.placements || ([] as string[]))
+    ),
+    Option.getOrElse(() => [] as string[])
+  );
+
   const ltiPlatformConfig =
     props.platformConfiguration[
       "https://purl.imsglobal.org/spec/lti-platform-configuration"
@@ -661,7 +731,7 @@ const MessageTypes = (props: {
         };
       }, {}),
     });
-  }, []);
+  }, [editingRegistration]);
 
   /**
    * Determines the number of placements to display by default
@@ -793,19 +863,6 @@ const KnownPlacements = [
   known("UserNavigation", "User Navigation"),
   known("LinkSelection", "Link Selection"),
 ] as const;
-
-const parseCustomParams = (custom_parameters: string): Record<string, string> =>
-  custom_parameters
-    .split("\n")
-    .filter((s) => s.trim() !== "")
-    .map((s) => s.split("="))
-    .reduce(
-      (acc, [key, value]) => ({
-        ...acc,
-        [key]: value,
-      }),
-      {}
-    );
 
 const PlacementConfig = (props: {
   placement: {

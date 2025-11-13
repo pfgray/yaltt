@@ -336,7 +336,7 @@ const RegistrationsList = (props: SubViewProps) => {
                     </li>
                     <li>
                       <Link
-                        to={`/app/${r.app_id}/registrations/${r.id}/configuration`}
+                        to={`/apps/${r.app_id}/registrations/${r.id}/configuration`}
                       >
                         Edit Registration
                       </Link>

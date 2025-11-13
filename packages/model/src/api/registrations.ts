@@ -14,7 +14,7 @@ import {
   CreatedToolConfiguration,
 } from "lti-model";
 import { CanvasToolConfiguration } from "canvas-lti-model";
-import { AppId } from "../app/App";
+import { App, AppId } from "../app/App";
 
 export const appRegistrationsRoute = pipe(
   appsRoute,
@@ -160,6 +160,19 @@ export const signUpdateRequest = Endpoint.post(
     S.struct({
       payload: S.unknown,
       token: S.string,
+    })
+  )
+);
+
+export const getRegistrationFromPlatform = Endpoint.get(
+  pipe(appRegistrationsRegistrationRoute, path("from-platform")),
+  {},
+  Response.json(
+    S.struct({
+      rawToolConfiguration: S.unknown,
+      toolConfiguration: CreatedToolConfiguration,
+      app: App,
+      registration: Registration,
     })
   )
 );
