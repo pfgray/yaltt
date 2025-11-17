@@ -6,17 +6,19 @@ import { Pre } from "../../../lib/ui/Pre";
 import {
   useScopeStore,
   useExtraScopesStore,
-  usePlacementsStore,
-  MessageTypes,
   ServicesSupported,
   isCanvas,
 } from "./DynamicRegistration";
+import { usePlacementsStore } from "./usePlacementsStore";
 import { useInstallingState } from "./useInstallingState";
 import {
   CreatedToolConfiguration,
   LtiMessage,
   PlatformConfiguration,
 } from "lti-model";
+import { InstallingStateError } from "./DynamicRegistrationSimple";
+import { provideRequestService } from "../../../lib/api/requestServiceImpl";
+import { MessageTypes } from "./shared/MessageTypes";
 
 export type DynamicRegistrationFormProps = {
   app: App;
@@ -24,7 +26,13 @@ export type DynamicRegistrationFormProps = {
   openidConfig?: unknown;
   openid_configuration?: string;
   confirmText?: string;
-  onConfirm?: () => Effect.Effect<unknown, never, void>;
+  onConfirm: (options: {
+    platformConfiguration: PlatformConfiguration;
+    messages: Array<LtiMessage>;
+    scopes: Array<string>;
+    customParameters: Record<string, string>;
+    toolId?: string;
+  }) => Effect.Effect<unknown, InstallingStateError, never>;
   editingRegistration?: Registration;
   editingToolConfiguration?: CreatedToolConfiguration;
 };
@@ -44,6 +52,8 @@ export const DynamicRegistrationForm = (
     openid_configuration,
     editingRegistration,
     editingToolConfiguration,
+    confirmText,
+    onConfirm,
   } = props;
 
   const [topCustomParams, setTopCustomParams] = React.useState(
@@ -67,13 +77,6 @@ export const DynamicRegistrationForm = (
   const { placements, initializePlacements } = usePlacementsStore(
     (state) => state
   );
-
-  React.useEffect(() => {
-    if (editingToolConfiguration) {
-      initializePlacements(editingToolConfiguration);
-    }
-  }, [initializePlacements]);
-
   const { install, installTool } = useInstallingState((state) => state);
 
   return (
@@ -93,7 +96,6 @@ export const DynamicRegistrationForm = (
         <MessageTypes
           platformConfiguration={platformConfiguration}
           app={app}
-          editingRegistration={editingRegistration}
           editingToolConfiguration={editingToolConfiguration}
         />
         <div className="divider"></div>
@@ -145,15 +147,53 @@ export const DynamicRegistrationForm = (
         <div className="w-full flex justify-end flex-row">
           <button
             className="btn btn-primary"
-            onClick={() => {}}
+            onClick={() => {
+              //todo: call onConfirm and track against Install state
+              const info = {
+                topCustomParams: parseCustomParams(topCustomParams),
+                toolId: includeToolId ? toolId : undefined,
+                scopes: [...scopes, ...extraScopes],
+                placements: placements,
+                platformConfiguration,
+                app,
+              };
+              pipe(
+                onConfirm({
+                  platformConfiguration: platformConfiguration,
+                  customParameters: parseCustomParams(topCustomParams),
+                  toolId: includeToolId ? toolId : undefined,
+                  scopes: [...scopes, ...extraScopes],
+                  messages: Object.entries(info.placements)
+                    .filter(([_, v]) => v.enabled)
+                    .map(([placement, v]) => ({
+                      type: v.message_type as string,
+                      placements: [placement],
+                      custom_parameters: parseCustomParams(
+                        v.custom_parameters || ""
+                      ),
+                      icon_uri: v.icon_uri || undefined,
+                      roles: v.roles
+                        ? v.roles.split(",").map((r) => r.trim())
+                        : undefined,
+                      label: v.label,
+                    })),
+                }),
+                (a) => a,
+                installTool,
+                (a) => a,
+                provideRequestService,
+                (a) => a,
+                Effect.runCallback
+              );
+            }}
             disabled={false}
           >
             {pipe(
               install,
               match({
-                initial: () => "Install",
-                loading: () => "Installing...",
-                loaded: () => "Installed",
+                initial: () => confirmText || "Install",
+                loading: () => `${confirmText || "Install"}ing...`,
+                loaded: () => `${confirmText || "Install"}ed`,
                 failed: (err) => "Failed (Try Again)",
               })
             )}

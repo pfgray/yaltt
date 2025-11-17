@@ -36,7 +36,7 @@ type Request<E, A> = TagADT<{
   failed: { error: E };
 }>;
 
-type InstallingStateError =
+export type InstallingStateError =
   | FetchException
   | FetchParseError
   | FetchParseJsonError

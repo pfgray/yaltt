@@ -17,6 +17,7 @@ import {
   getRegistrationFromPlatform,
   getRegistrations,
   getSavedConfigurationForRegistration,
+  sendRegistrationUpdate,
   signDeepLinkingContentItems,
   signUpdateRequest,
 } from "@yaltt/model";
@@ -496,6 +497,65 @@ bindRegistrationEndpoint(getRegistrationFromPlatform)(
       ),
       Effect.bind("toolConfiguration", ({ rawToolConfiguration }) =>
         schemaParse(CreatedToolConfiguration)(rawToolConfiguration)
+      )
+    )
+);
+
+bindRegistrationEndpoint(sendRegistrationUpdate)(
+  ({ appId, registrationId }, _, body) =>
+    pipe(
+      registrationAndApp(appId, registrationId),
+      Effect.bind("request", () => ExpressRequestService),
+      Effect.bind("config", () => getConfig),
+      Effect.bind("client_uri", ({ registration }) =>
+        pipe(
+          registration.registration_client_uri,
+          Option.map(Effect.succeed),
+          Option.getOrElse(() =>
+            Effect.fail(
+              dataIntegrityError("No registration_client_uri for registration")
+            )
+          )
+        )
+      ),
+
+      Effect.bind("token", ({ registration }) =>
+        fetchToken(registration, [LtiScope.Registration])
+      ),
+      Effect.bind(
+        "updateRequest",
+        ({ client_uri, token, request, config, app, registration }) => {
+          const toolConfiguration = mkYalttToolConfiguration(
+            config,
+            request.request
+          )({
+            app,
+            registration,
+            customParameters: body.customParameters,
+            messages: body.messages.map((m) => ({
+              ...m,
+              target_link_uri: mkYalttUrl(
+                config,
+                request.request
+              )(
+                `/api/registrations/${registration.id}/launch${
+                  m.placements ? `?placement=${m.placements.join(",")}` : ""
+                }`
+              ),
+            })),
+            scopes: registration.scopes,
+            claims: registration.claims,
+            toolId: body.toolId,
+          });
+          console.log("##Sending tool configuration update:");
+          console.log(JSON.stringify(toolConfiguration, null, 2));
+
+          return Fetch.put(client_uri, toolConfiguration, {
+            headers: {
+              Authorization: `Bearer ${token.access_token}`,
+            },
+          });
+        }
       )
     )
 );

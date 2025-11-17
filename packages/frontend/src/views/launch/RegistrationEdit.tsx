@@ -12,8 +12,12 @@ import {
   getRegistrationFromPlatform,
   Registration,
   RegistrationId,
+  sendRegistrationUpdate,
 } from "@yaltt/model";
-import { fetchFromEndpoint } from "../../lib/endpoint-ts/fetchFromEndpoint";
+import {
+  fetchBodyFromEndpoint,
+  fetchFromEndpoint,
+} from "../../lib/endpoint-ts/fetchFromEndpoint";
 import { Pre } from "../../lib/ui/Pre";
 import {
   InferSchemaMap,
@@ -75,6 +79,21 @@ export const RegistrationEdit = (props: RegistrationEditProps) => {
           platformConfiguration={platformConfiguration}
           editingRegistration={registration}
           editingToolConfiguration={toolConfiguration}
+          confirmText="Update"
+          onConfirm={(options) =>
+            pipe(
+              options,
+              (a) => {
+                console.log("Sending: ", options);
+                return a;
+              },
+              fetchBodyFromEndpoint(sendRegistrationUpdate)({
+                appId: app.id,
+                registrationId: registration.id,
+              }),
+              (a) => a
+            )
+          }
         />
       </div>
     </div>

@@ -176,3 +176,17 @@ export const getRegistrationFromPlatform = Endpoint.get(
     })
   )
 );
+
+export const sendRegistrationUpdate = Endpoint.post(
+  pipe(appRegistrationsRegistrationRoute, path("update")),
+  {},
+  Response.json(S.unknown),
+  Body.json(
+    S.struct({
+      messages: S.array(LtiMessage),
+      scopes: S.array(S.string),
+      customParameters: S.record(S.string, S.string),
+      toolId: S.optional(S.string),
+    })
+  )
+);

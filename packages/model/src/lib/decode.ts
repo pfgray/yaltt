@@ -5,6 +5,7 @@ import { ParseError } from "@effect/schema/ParseResult";
 export interface DecodeError {
   _tag: "decode_error";
   actual: unknown;
+  message?: string;
   error: ParseError;
 }
 
@@ -25,7 +26,7 @@ export const decodeEither =
     pipe(data, S.decodeEither(schema), Effect.mapError(decodeError(data)));
 
 export const decodeError =
-  (actual: unknown) =>
+  (actual: unknown, message?: string) =>
   (error: ParseError): DecodeError => ({
     _tag: "decode_error",
     error,

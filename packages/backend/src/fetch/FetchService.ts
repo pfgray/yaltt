@@ -52,7 +52,16 @@ export const Fetch = {
       )
     );
   },
-  post: (url: URL | string, body?: unknown, init?: fetch.RequestInit) => {
+  req: (
+    method: "POST" | "PUT" | "DELETE" | "PATCH",
+    url: URL | string,
+    body?: unknown,
+    init?: fetch.RequestInit
+  ) => {
+    console.log(
+      "Sending tool update to platform: ",
+      JSON.stringify(body, null, 2)
+    );
     return FetchService.pipe(
       Effect.flatMap((fs) =>
         fs.fetch(url, {
@@ -61,7 +70,7 @@ export const Fetch = {
             "Content-Type": "application/json",
             ...init?.headers,
           },
-          method: "POST",
+          method: method,
           ...(body ? { body: JSON.stringify(body) } : {}),
         })
       ),
@@ -109,4 +118,8 @@ export const Fetch = {
       })
     );
   },
+  post: (url: URL | string, body?: unknown, init?: fetch.RequestInit) =>
+    Fetch.req("POST", url, body, init),
+  put: (url: URL | string, body?: unknown, init?: fetch.RequestInit) =>
+    Fetch.req("PUT", url, body, init),
 };

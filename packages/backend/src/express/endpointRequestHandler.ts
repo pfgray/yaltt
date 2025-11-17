@@ -258,7 +258,7 @@ export const parseBody = (codec: S.Schema<any, any, never>) =>
     Effect.flatMap(({ request, response }) =>
       pipe(
         S.decodeEither(codec)(request.body),
-        Either.mapLeft(decodeError(request.body))
+        Either.mapLeft(decodeError(request.body, "Error decoding request body"))
       )
     )
   );
@@ -374,8 +374,5 @@ export const parseParam = (
 ) =>
   pipe(
     S.decodeEither(schema)(value),
-    Either.mapLeft((a) => ({
-      ...decodeError(value)(a),
-      message: `Failed to parse parameter from value: ${value}`,
-    }))
+    Either.mapLeft((a) => decodeError(value, `Failed to parse parameter`)(a))
   );

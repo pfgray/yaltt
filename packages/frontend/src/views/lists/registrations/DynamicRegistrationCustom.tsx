@@ -110,6 +110,7 @@ export const DynamicRegistrationCustom = () => {
                                     installTool,
                                     Effect.flatMap(() => sendCloseMessage),
                                     provideRequestService,
+                                    (a) => a,
                                     Effect.runCallback
                                   );
                                 }}

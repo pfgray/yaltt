@@ -138,7 +138,7 @@ export const effRequestHandler: EffRequestHandler =
             onEmpty: void 0,
             onFail: match({
               decode_error: (e) => {
-                console.error("Decode Error", e);
+                console.error(`Decode Error ${e.message}`, e);
                 handleErrorResponse(request, response)(500, {
                   failure: "An error ocurred.",
                 });
