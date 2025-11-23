@@ -302,7 +302,10 @@ export const effRequestHandler: EffRequestHandler =
                 onLeft: (e) => {
                   response.status(500);
                   console.log("Error parsing response: ", formatIssue(e.error));
-                  response.json({ failure: "An error ocurred.", error: e });
+                  response.json({
+                    failure: "An error ocurred.",
+                    error: formatIssue(e.error),
+                  });
                 },
                 onRight: (b) => {
                   response.status(resp.status);

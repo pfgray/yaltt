@@ -60,7 +60,8 @@ export const Fetch = {
   ) => {
     console.log(
       "Sending tool update to platform: ",
-      JSON.stringify(body, null, 2)
+      JSON.stringify(body, null, 2),
+      `to url: ${url}`
     );
     return FetchService.pipe(
       Effect.flatMap((fs) =>

@@ -543,7 +543,7 @@ bindRegistrationEndpoint(sendRegistrationUpdate)(
                 }`
               ),
             })),
-            scopes: registration.scopes,
+            scopes: body.scopes,
             claims: registration.claims,
             toolId: body.toolId,
           });
@@ -556,6 +556,7 @@ bindRegistrationEndpoint(sendRegistrationUpdate)(
             },
           });
         }
-      )
+      ),
+      Effect.map((a) => ({}))
     )
 );
