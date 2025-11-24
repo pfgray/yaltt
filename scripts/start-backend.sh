@@ -1,4 +1,4 @@
 #!/usr/bin/env bash
 
 echo "starting backend"
-pnpm run --filter "@yaltt/backend" start
+exec pnpm run --filter "@yaltt/backend" start
