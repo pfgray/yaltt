@@ -106,6 +106,7 @@ export const DynamicRegistration = () => {
     "toolid-" + Math.floor(Math.random() * 1000)
   );
   const [includeToolId, setIncludeToolId] = React.useState(false);
+  const [disableReinstall, setDisableReinstall] = React.useState(true);
   const scopes = useScopeStore((state) => state.scopes);
   const extraScopes = useExtraScopesStore((state) =>
     state.extraScopes
@@ -215,6 +216,24 @@ export const DynamicRegistration = () => {
                                       }
                                       value={toolId}
                                     />
+
+                                    <label className="label cursor-pointer justify-normal mt-3">
+                                      <input
+                                        type="checkbox"
+                                        className="checkbox"
+                                        onChange={() => {
+                                          setDisableReinstall(
+                                            !disableReinstall
+                                          );
+                                        }}
+                                        checked={disableReinstall}
+                                      />
+                                      <span className="label-text ml-2">
+                                        Disable Reinstallation (Prevents users
+                                        from reinstalling this tool
+                                        configuration in Canvas)
+                                      </span>
+                                    </label>
                                   </>
                                 )}
                               </div>
@@ -238,6 +257,7 @@ export const DynamicRegistration = () => {
                                       toolId: includeToolId
                                         ? toolId
                                         : undefined,
+                                      disableReinstall: disableReinstall,
                                       messages: Object.entries(placements)
                                         .filter(([, p]) => p.enabled)
                                         .map(

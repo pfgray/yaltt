@@ -88,6 +88,7 @@ export const createToolInstallation = Endpoint.post(
       scopes: S.array(S.string),
       customParameters: S.record(S.string, S.string),
       toolId: S.optional(S.string),
+      disableReinstall: S.optional(S.boolean),
     })
   )
 );
@@ -187,6 +188,7 @@ export const sendRegistrationUpdate = Endpoint.post(
       scopes: S.array(S.string),
       customParameters: S.record(S.string, S.string),
       toolId: S.optional(S.string),
+      disableReinstall: S.optional(S.boolean),
     })
   )
 );

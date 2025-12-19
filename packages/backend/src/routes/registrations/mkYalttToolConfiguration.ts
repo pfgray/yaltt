@@ -32,6 +32,7 @@ export const mkYalttToolConfiguration =
     messages: ReadonlyArray<LtiMessage>;
     scopes: ReadonlyArray<string>;
     toolId?: string;
+    disableReinstall?: boolean;
   }): ToolConfiguration => {
     const mkUrl = mkYalttUrl(config, contextualRequest);
     const mkRegUrl = (rest: string) =>
@@ -60,6 +61,7 @@ export const mkYalttToolConfiguration =
         ...(options.toolId
           ? { "https://canvas.instructure.com/lti/tool_id": options.toolId }
           : {}),
+        "https://canvas.instructure.com/lti/disable_reinstall": options.disableReinstall ?? true,
       },
     };
   };

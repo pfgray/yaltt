@@ -288,6 +288,7 @@ bindRegistrationEndpoint(createToolInstallation)(({ appId }, _, body) =>
         scopes: registration.scopes,
         claims: registration.claims,
         toolId: body.toolId,
+        disableReinstall: body.disableReinstall,
       });
       console.log("##Sending tool configuration:");
       console.log(JSON.stringify(toolConfiguration, null, 2));
@@ -546,6 +547,7 @@ bindRegistrationEndpoint(sendRegistrationUpdate)(
             scopes: body.scopes,
             claims: registration.claims,
             toolId: body.toolId,
+            disableReinstall: body.disableReinstall,
           });
           console.log("##Sending tool configuration update:");
           console.log(JSON.stringify(toolConfiguration, null, 2));

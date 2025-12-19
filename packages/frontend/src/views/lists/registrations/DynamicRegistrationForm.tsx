@@ -32,6 +32,7 @@ export type DynamicRegistrationFormProps = {
     scopes: Array<string>;
     customParameters: Record<string, string>;
     toolId?: string;
+    disableReinstall?: boolean;
   }) => Effect.Effect<unknown, InstallingStateError, never>;
   editingRegistration?: Registration;
   editingToolConfiguration?: CreatedToolConfiguration;
@@ -67,6 +68,7 @@ export const DynamicRegistrationForm = (
     "toolid-" + Math.floor(Math.random() * 1000)
   );
   const [includeToolId, setIncludeToolId] = React.useState(false);
+  const [disableReinstall, setDisableReinstall] = React.useState(true);
   const scopes = useScopeStore((state) => state.scopes);
   const extraScopes = useExtraScopesStore((state) =>
     state.extraScopes
@@ -128,7 +130,6 @@ export const DynamicRegistrationForm = (
                   />
                   <span className="label-text ml-2">Include Tool ID</span>
                 </label>
-
                 <label htmlFor="tool-id" className="mt-1">
                   https://canvas.instructure.com/lti/tool_id
                 </label>
@@ -140,6 +141,23 @@ export const DynamicRegistrationForm = (
                   onChange={(ev) => setToolId(ev.currentTarget.value?.trim())}
                   value={toolId}
                 />
+                hmm
+                <label className="label cursor-pointer justify-normal mt-3">
+                  <input
+                    type="checkbox"
+                    className="checkbox"
+                    onChange={() => {
+                      setDisableReinstall(!disableReinstall);
+                    }}
+                    checked={disableReinstall}
+                  />
+                  <span className="label-text ml-2">
+                    Disable Reinstallation
+                  </span>
+                </label>
+                <p className="text-sm text-gray-600 ml-6 mb-3">
+                  Prevents users from reinstalling this tool configuration
+                </p>
               </>
             )}
           </div>
@@ -163,6 +181,7 @@ export const DynamicRegistrationForm = (
                   customParameters: parseCustomParams(topCustomParams),
                   toolId: includeToolId ? toolId : undefined,
                   scopes: [...scopes, ...extraScopes],
+                  disableReinstall: disableReinstall,
                   messages: Object.entries(info.placements)
                     .filter(([_, v]) => v.enabled)
                     .map(([placement, v]) => ({
