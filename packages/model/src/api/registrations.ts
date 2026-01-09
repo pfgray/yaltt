@@ -13,7 +13,11 @@ import {
   ToolConfiguration,
   CreatedToolConfiguration,
 } from "lti-model";
-import { CanvasToolConfiguration } from "canvas-lti-model";
+import {
+  CanvasPrivacyLevel,
+  CanvasPrivacyLevels,
+  CanvasToolConfiguration,
+} from "canvas-lti-model";
 import { App, AppId } from "../app/App";
 
 export const appRegistrationsRoute = pipe(
@@ -187,6 +191,7 @@ export const sendRegistrationUpdate = Endpoint.post(
       messages: S.array(LtiMessage),
       scopes: S.array(S.string),
       customParameters: S.record(S.string, S.string),
+      privacyLevel: CanvasPrivacyLevel,
       toolId: S.optional(S.string),
       disableReinstall: S.optional(S.boolean),
     })

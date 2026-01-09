@@ -107,6 +107,7 @@ const PlacementConfig = (props: {
 };
 
 const KnownPlacements = [
+  known("AnalyticsHub", "Analytics Hub"),
   known("GlobalNavigation", "Global Navigation"),
   known("CourseNavigation", "Course Navigation"),
   known("AccountNavigation", "Account Navigation"),
@@ -279,7 +280,6 @@ export const MessageTypes = (props: {
       <h3>Placements</h3>
       {advertisedPlacements.length > 0 ? (
         <>
-          <h6>Supported by this Platform</h6>
           {advertisedPlacements.map((placement, i) =>
             !expanded && i > DefaultPlacementDisplayCount ? null : (
               <>

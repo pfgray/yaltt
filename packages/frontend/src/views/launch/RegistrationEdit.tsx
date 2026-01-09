@@ -90,8 +90,7 @@ export const RegistrationEdit = (props: RegistrationEditProps) => {
               fetchBodyFromEndpoint(sendRegistrationUpdate)({
                 appId: app.id,
                 registrationId: registration.id,
-              }),
-              (a) => a
+              })
             )
           }
         />

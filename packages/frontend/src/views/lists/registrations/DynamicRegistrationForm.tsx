@@ -19,6 +19,7 @@ import {
 import { InstallingStateError } from "./DynamicRegistrationSimple";
 import { provideRequestService } from "../../../lib/api/requestServiceImpl";
 import { MessageTypes } from "./shared/MessageTypes";
+import { CanvasPrivacyLevel, CanvasPrivacyLevels } from "canvas-lti-model";
 
 export type DynamicRegistrationFormProps = {
   app: App;
@@ -31,6 +32,7 @@ export type DynamicRegistrationFormProps = {
     messages: Array<LtiMessage>;
     scopes: Array<string>;
     customParameters: Record<string, string>;
+    privacyLevel: CanvasPrivacyLevel;
     toolId?: string;
     disableReinstall?: boolean;
   }) => Effect.Effect<unknown, InstallingStateError, never>;
@@ -68,8 +70,11 @@ export const DynamicRegistrationForm = (
     "toolid-" + Math.floor(Math.random() * 1000)
   );
   const [includeToolId, setIncludeToolId] = React.useState(false);
-  const [disableReinstall, setDisableReinstall] = React.useState(true);
+  const [disableReinstall, setDisableReinstall] = React.useState(false);
   const scopes = useScopeStore((state) => state.scopes);
+  const [privacyLevel, setPrivacyLabel] = React.useState<CanvasPrivacyLevel>(
+    CanvasPrivacyLevels.public
+  );
   const extraScopes = useExtraScopesStore((state) =>
     state.extraScopes
       .split("\n")
@@ -119,6 +124,27 @@ export const DynamicRegistrationForm = (
             ></textarea>
             {isCanvas(platformConfiguration) && (
               <>
+                <label
+                  htmlFor="privacy_level"
+                  className="label cursor-pointer justify-normal mt-3"
+                >
+                  Privacy Level
+                </label>
+                <select
+                  id="privacy_level"
+                  className="select select-bordered w-full max-w-xs"
+                  onChange={(event) =>
+                    setPrivacyLabel(
+                      event.currentTarget.value as CanvasPrivacyLevel
+                    )
+                  }
+                >
+                  {Object.values(CanvasPrivacyLevels).map((pl) => (
+                    <option selected={pl === privacyLevel} key={pl}>
+                      {pl}
+                    </option>
+                  ))}
+                </select>
                 <label className="label cursor-pointer justify-normal mt-3">
                   <input
                     type="checkbox"
@@ -130,18 +156,23 @@ export const DynamicRegistrationForm = (
                   />
                   <span className="label-text ml-2">Include Tool ID</span>
                 </label>
-                <label htmlFor="tool-id" className="mt-1">
-                  https://canvas.instructure.com/lti/tool_id
-                </label>
-                <input
-                  id="tool-id"
-                  type="text"
-                  className="input input-bordered mb-3"
-                  disabled={!includeToolId}
-                  onChange={(ev) => setToolId(ev.currentTarget.value?.trim())}
-                  value={toolId}
-                />
-                hmm
+                {includeToolId && (
+                  <>
+                    <label htmlFor="tool-id" className="mt-1">
+                      Tool Id
+                    </label>
+                    <input
+                      id="tool-id"
+                      type="text"
+                      className="input input-bordered mb-3"
+                      disabled={!includeToolId}
+                      onChange={(ev) =>
+                        setToolId(ev.currentTarget.value?.trim())
+                      }
+                      value={toolId}
+                    />
+                  </>
+                )}
                 <label className="label cursor-pointer justify-normal mt-3">
                   <input
                     type="checkbox"
@@ -155,9 +186,6 @@ export const DynamicRegistrationForm = (
                     Disable Reinstallation
                   </span>
                 </label>
-                <p className="text-sm text-gray-600 ml-6 mb-3">
-                  Prevents users from reinstalling this tool configuration
-                </p>
               </>
             )}
           </div>
@@ -166,23 +194,15 @@ export const DynamicRegistrationForm = (
           <button
             className="btn btn-primary"
             onClick={() => {
-              //todo: call onConfirm and track against Install state
-              const info = {
-                topCustomParams: parseCustomParams(topCustomParams),
-                toolId: includeToolId ? toolId : undefined,
-                scopes: [...scopes, ...extraScopes],
-                placements: placements,
-                platformConfiguration,
-                app,
-              };
               pipe(
                 onConfirm({
                   platformConfiguration: platformConfiguration,
                   customParameters: parseCustomParams(topCustomParams),
                   toolId: includeToolId ? toolId : undefined,
                   scopes: [...scopes, ...extraScopes],
+                  privacyLevel: privacyLevel,
                   disableReinstall: disableReinstall,
-                  messages: Object.entries(info.placements)
+                  messages: Object.entries(placements)
                     .filter(([_, v]) => v.enabled)
                     .map(([placement, v]) => ({
                       type: v.message_type as string,

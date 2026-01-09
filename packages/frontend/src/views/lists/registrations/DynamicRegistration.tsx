@@ -430,7 +430,7 @@ export const ServicesSupported = (props: {
 
   return (
     <div>
-      <h3>Permissions Supported by this Platform</h3>
+      <h3>Scopes</h3>
       <div className="list-none pl-0 grid grid-cols-2 gap-2">
         {props.platformConfiguration.scopes_supported
           .map((type) => ({
@@ -487,6 +487,22 @@ const PossibleScopes = [
   {
     type: "https://purl.imsglobal.org/spec/lti/scope/noticehandlers",
     description: "Register Notice Handlers",
+  },
+  {
+    type: "https://purl.imsglobal.org/spec/lti/scope/report",
+    description: "Asset Reports",
+  },
+  {
+    type: "https://purl.imsglobal.org/spec/lti/scope/eula/user",
+    description: "Report User EULA Acceptance",
+  },
+  {
+    type: "https://purl.imsglobal.org/spec/lti/scope/eula/deployment",
+    description: "Register EULA for Deployment",
+  },
+  {
+    type: "https://purl.imsglobal.org/spec/lti/scope/asset.readonly",
+    description: "Read Asset files",
   },
   {
     type: "https://purl.imsglobal.org/spec/lti-nrps/scope/contextmembership.readonly",

@@ -16,9 +16,6 @@ export const LtiToolConfiguration = pipe(
     custom_parameters: S.optional(CustomParameters),
     messages: S.array(LtiMessage),
     claims: S.array(S.string),
-    "https://canvas.instructure.com/lti/privacy_level": S.optional(
-      S.literal("public", "anonymous", "name_only", "email_only")
-    ),
     "https://canvas.instructure.com/lti/registration_config_url": S.optional(
       S.string
     ),

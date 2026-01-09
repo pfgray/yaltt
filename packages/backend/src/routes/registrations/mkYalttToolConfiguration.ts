@@ -3,6 +3,7 @@ import { LtiMessage, ToolConfiguration } from "lti-model";
 import { pipe, Effect, Option, Either } from "effect";
 import { getConfig, YalttConfig } from "../../config/ConfigService";
 import { ExpressRequest } from "../../express/RequestService";
+import { CanvasPrivacyLevel } from "canvas-lti-model";
 
 // export const pathForMessageType = () =>
 
@@ -31,6 +32,7 @@ export const mkYalttToolConfiguration =
     customParameters: Record<string, string>;
     messages: ReadonlyArray<LtiMessage>;
     scopes: ReadonlyArray<string>;
+    privacyLevel: CanvasPrivacyLevel;
     toolId?: string;
     disableReinstall?: boolean;
   }): ToolConfiguration => {
@@ -57,11 +59,13 @@ export const mkYalttToolConfiguration =
         domain: config.primaryHostname,
         messages: options.messages,
         target_link_uri: mkRegUrl("/launch"),
-        "https://canvas.instructure.com/lti/privacy_level": "public",
+        "https://canvas.instructure.com/lti/privacy_level":
+          options.privacyLevel,
         ...(options.toolId
           ? { "https://canvas.instructure.com/lti/tool_id": options.toolId }
           : {}),
-        "https://canvas.instructure.com/lti/disable_reinstall": options.disableReinstall ?? true,
+        "https://canvas.instructure.com/lti/disable_reinstall":
+          options.disableReinstall ?? true,
       },
     };
   };

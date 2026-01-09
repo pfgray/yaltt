@@ -2,6 +2,7 @@ const canvasPrefix = <K extends string>(k: K) =>
   `https://canvas.instructure.com/lti/${k}` as const;
 
 export const CanvasPlacementTypes = {
+  AnalyticsHub: canvasPrefix("analytics_hub"),
   AccountNavigation: canvasPrefix("account_navigation"),
   SimilarityDetection: canvasPrefix("similarity_detection"),
   AssignmentEdit: canvasPrefix("assignment_edit"),
