@@ -20,6 +20,7 @@ import { InstallingStateError } from "./DynamicRegistrationSimple";
 import { provideRequestService } from "../../../lib/api/requestServiceImpl";
 import { MessageTypes } from "./shared/MessageTypes";
 import { CanvasPrivacyLevel, CanvasPrivacyLevels } from "canvas-lti-model";
+import * as O from "effect/Option";
 
 export type DynamicRegistrationFormProps = {
   app: App;
@@ -100,6 +101,20 @@ export const DynamicRegistrationForm = (
           `
             : ""}
         </h1>
+        {editingToolConfiguration ? (
+          <h1>Settings for {editingToolConfiguration?.client_name}</h1>
+        ) : null}
+        {pipe(
+          editingRegistration,
+          O.fromNullable,
+          O.flatMap((r) => r.registration_config_url),
+          O.map((url) => (
+            <a href={url} target="_blank">
+              View in platform
+            </a>
+          )),
+          O.getOrNull
+        )}
         <MessageTypes
           platformConfiguration={platformConfiguration}
           app={app}

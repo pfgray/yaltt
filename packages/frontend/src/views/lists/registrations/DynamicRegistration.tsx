@@ -106,7 +106,7 @@ export const DynamicRegistration = () => {
     "toolid-" + Math.floor(Math.random() * 1000)
   );
   const [includeToolId, setIncludeToolId] = React.useState(false);
-  const [disableReinstall, setDisableReinstall] = React.useState(true);
+  const [disableReinstall, setDisableReinstall] = React.useState(false);
   const scopes = useScopeStore((state) => state.scopes);
   const extraScopes = useExtraScopesStore((state) =>
     state.extraScopes
