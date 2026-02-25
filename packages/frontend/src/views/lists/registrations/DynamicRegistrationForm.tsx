@@ -67,6 +67,7 @@ export const DynamicRegistrationForm = (
           .join("\n")
       : ""
   );
+
   const [toolId, setToolId] = React.useState(
     "toolid-" + Math.floor(Math.random() * 1000)
   );
@@ -228,7 +229,7 @@ export const DynamicRegistrationForm = (
                       icon_uri: v.icon_uri || undefined,
                       roles: v.roles
                         ? v.roles.split(",").map((r) => r.trim())
-                        : undefined,
+                        : [],
                       label: v.label,
                     })),
                 }),

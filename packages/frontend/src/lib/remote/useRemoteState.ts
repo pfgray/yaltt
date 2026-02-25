@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Effect, Either, pipe } from "effect";
 import { RequestError, RequestService } from "../../lib/api/request";
 import { provideRequestService } from "../../lib/api/requestServiceImpl";
+import { FetchError } from "../endpoint-ts/fetchFromEndpoint";
 
 export type RemoteState<E, A> =
   | {
@@ -19,24 +20,23 @@ export type RemoteState<E, A> =
       value: A;
     };
 
-type EffectData<T> = T extends Effect.Effect<
-  infer A,
-  RequestError,
-  RequestService
->
-  ? A
-  : unknown;
+type EffectData<T> =
+  T extends Effect.Effect<infer A, RequestError | FetchError, RequestService>
+    ? A
+    : unknown;
 
 export const useRemoteState = <
-  F extends (...a: any[]) => Effect.Effect<any, RequestError, RequestService>
+  F extends (
+    ...a: any[]
+  ) => Effect.Effect<any, RequestError | FetchError, RequestService>,
 >(
   eff: F
 ): {
-  data: RemoteState<RequestError, EffectData<ReturnType<F>>>;
+  data: RemoteState<RequestError | FetchError, EffectData<ReturnType<F>>>;
   fetch: (...params: Parameters<F>) => void;
 } => {
   const [data, setData] = useState<
-    RemoteState<RequestError, EffectData<ReturnType<F>>>
+    RemoteState<RequestError | FetchError, EffectData<ReturnType<F>>>
   >({
     _tag: "initial" as const,
   });

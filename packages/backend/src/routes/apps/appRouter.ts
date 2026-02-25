@@ -98,3 +98,8 @@ appRouter.get(
     )
   )
 );
+
+appRouter.get("/login/callback", (req, res) => {
+  console.log("Login callback received with query:", req.query);
+  res.send("Login callback endpoint");
+});

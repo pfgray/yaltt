@@ -1,7 +1,7 @@
 import * as S from "@effect/schema/Schema";
 import { App } from "../app/App";
 import type * as B from "effect/Brand";
-import { Registration } from "./Registration";
+import { Registration, RegistrationId } from "./Registration";
 
 export type LaunchId = number & B.Brand<"LaunchId">;
 
@@ -11,7 +11,7 @@ export const Launch = S.struct({
   id: LaunchId,
   created: S.Date,
   id_token: S.unknown,
-  registration_id: S.number,
+  registration_id: RegistrationId,
   person_id: S.optional(S.number),
   context_id: S.optional(S.number),
   app: App,

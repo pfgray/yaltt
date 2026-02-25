@@ -11,6 +11,7 @@ import {
   extractAgsEndpointClaim,
   extractContentItemsClaim,
   extractNamesRolesServiceClaim,
+  LtiScope,
 } from "lti-model";
 import { LaunchCollapsible } from "./LaunchCollapsible";
 import { Pre } from "../../lib/ui/Pre";
@@ -28,11 +29,14 @@ export const TokenFetcher = (props: TokenFetcherProps) => {
 
   const token = useRemoteState(fetchToken);
 
-  // todo: get the scopes from the registration
   const scopesSupported =
-    props.launch.registration.platform_configuration.scopes_supported;
+    props.launch.registration.platform_configuration.scopes_supported.filter(
+      (s) => s !== "openid"
+    );
 
-  const [selectedScopes, setSelectedScopes] = useState(scopesSupported);
+  const [selectedScopes, setSelectedScopes] = useState(
+    scopesSupported.filter((s) => props.launch.registration.scopes.includes(s))
+  );
 
   const toggleScope = (scope: string) => {
     if (selectedScopes.includes(scope)) {
@@ -85,14 +89,26 @@ export const TokenFetcher = (props: TokenFetcherProps) => {
               </div>
             ),
             loaded: (t) => {
+              const tokenScopes = t.value.scope.split(" ");
               return (
                 <div className="prose">
-                  <div>
-                    <h6 className="mt-2">Token</h6>
-                    <Pre>{t.value.access_token}</Pre>
-                  </div>
                   {pipe(
                     [
+                      pipe(
+                        tokenScopes.find(
+                          (s) => s === LtiScope.RegistrationReadOnly
+                        ),
+                        Option.fromNullable,
+                        Option.flatMap(
+                          () => launch.registration.registration_client_uri
+                        ),
+                        Option.map(
+                          renderServiceRequest(
+                            "Registration Readonly",
+                            t.value.access_token
+                          )
+                        )
+                      ),
                       pipe(
                         launch.id_token,
                         extractNamesRolesServiceClaim,

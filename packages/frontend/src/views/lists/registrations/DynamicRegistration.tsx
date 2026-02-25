@@ -532,6 +532,10 @@ const PossibleScopes = [
     description: "Manage Registrations",
     type: "https://purl.imsglobal.org/spec/lti-reg/scope/registration",
   },
+  {
+    description: "Use the user endpoint",
+    type: "url:GET|/api/v1/accounts/:account_id/users",
+  },
 ];
 
 export const isCanvas = (config: PlatformConfiguration) =>
