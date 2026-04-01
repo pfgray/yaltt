@@ -76,6 +76,19 @@ const redisClient = createClient({
     host: process.env.REDIS_HOST,
   },
 });
+
+redisClient.on('error', (err) => {
+  console.error('Redis Client Error:', err);
+});
+
+redisClient.on('reconnecting', () => {
+  console.log('Redis Client reconnecting...');
+});
+
+redisClient.on('ready', () => {
+  console.log('Redis Client connected and ready');
+});
+
 redisClient.connect().catch(console.error);
 
 const redisStore = new RedisStore({
