@@ -87,7 +87,6 @@ export const WithRequest = <A,>(props: WithRequestProps<A>): JSX.Element => {
           encode_error: (e) => parseError(e.error),
         }),
         onRight: (a) => {
-          console.log("is right?", value);
           return <>{props.children(a, effect)}</>;
         },
       }),

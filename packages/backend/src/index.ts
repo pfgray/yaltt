@@ -77,16 +77,16 @@ const redisClient = createClient({
   },
 });
 
-redisClient.on('error', (err) => {
-  console.error('Redis Client Error:', err);
+redisClient.on("error", (err) => {
+  console.error("Redis Client Error:", err);
 });
 
-redisClient.on('reconnecting', () => {
-  console.log('Redis Client reconnecting...');
+redisClient.on("reconnecting", () => {
+  console.log("Redis Client reconnecting...");
 });
 
-redisClient.on('ready', () => {
-  console.log('Redis Client connected and ready');
+redisClient.on("ready", () => {
+  console.log("Redis Client connected and ready");
 });
 
 redisClient.connect().catch(console.error);

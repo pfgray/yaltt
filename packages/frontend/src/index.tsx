@@ -105,8 +105,6 @@ const router = createBrowserRouter([
   },
 ]);
 
-console.log("hmm");
-
 const el = document.getElementById("main");
 if (el) {
   createRoot(el).render(
