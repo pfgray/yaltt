@@ -306,6 +306,19 @@ export const DynamicRegistrationForm = (
           })
         )}
         <div className="divider"></div>
+
+        {pipe(
+          editingRegistration,
+          O.fromNullable,
+          O.flatMap((r) => r.registration_client_uri),
+          O.map((url) => (
+            <div>
+              Settings retrieved from:<div>{url}</div>
+            </div>
+          )),
+          O.getOrNull
+        )}
+
         {openidConfig ? (
           <>
             <h3>Raw Platform Configuration</h3>
