@@ -16,8 +16,6 @@ There are two main ways to use Yaltt: using the hosted version available on the 
 You can use the hosted version of Yaltt at https://yaltt.paulgray.net, which is free to use. This is useful for testing another hosted platform.
 You can use a google account to log in.
 
-Yaltt is currently in a "testing" phase, so access must be granted manually. If interested, send an email to `paul.gray@instructure.com` with your google email, you'll be added manually to the list.
-
 ### Running Locally
 
 If using Yaltt to test a local LTI platform implementation you're working on, you can clone the repository and run it with docker:
