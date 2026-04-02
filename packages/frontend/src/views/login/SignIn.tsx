@@ -213,7 +213,7 @@ export default function SignIn() {
                 <span>An error occurred.</span>
               </div>
             ) : loginStatus === "req_client_error" ? (
-              <div role="alert" className="alert alert-warning max-w-xs">
+              <div role="alert" className="alert alert-warning max-w-xs mb-2">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   className="stroke-current shrink-0 h-6 w-6"

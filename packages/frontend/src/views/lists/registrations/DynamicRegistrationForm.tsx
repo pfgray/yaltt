@@ -28,6 +28,8 @@ export type DynamicRegistrationFormProps = {
   openidConfig?: unknown;
   openid_configuration?: string;
   confirmText?: string;
+  loadingText?: string;
+  loadedText?: string;
   onConfirm: (options: {
     platformConfiguration: PlatformConfiguration;
     messages: Array<LtiMessage>;
@@ -57,6 +59,8 @@ export const DynamicRegistrationForm = (
     editingRegistration,
     editingToolConfiguration,
     confirmText,
+    loadingText,
+    loadedText,
     onConfirm,
   } = props;
 
@@ -247,8 +251,8 @@ export const DynamicRegistrationForm = (
               install,
               match({
                 initial: () => confirmText || "Install",
-                loading: () => `${confirmText || "Install"}ing...`,
-                loaded: () => `${confirmText || "Install"}ed`,
+                loading: () => loadingText || "Installing...",
+                loaded: () => loadedText || "Installed",
                 failed: (err) => "Failed (Try Again)",
               })
             )}

@@ -80,6 +80,8 @@ export const RegistrationEdit = (props: RegistrationEditProps) => {
           editingRegistration={registration}
           editingToolConfiguration={toolConfiguration}
           confirmText="Update"
+          loadingText="Updating"
+          loadedText="Updated"
           onConfirm={(options) =>
             pipe(
               options,
