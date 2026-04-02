@@ -39,7 +39,9 @@ export const PlainYalttLayout = (props: PlainYalttLayoutProps) => {
     <div className="min-h-screen flex flex-col">
       <div className="flex-none navbar bg-base-100" data-theme={displayMode}>
         <div className="flex-none">
-          <a className="btn btn-ghost normal-case text-xl">yaltt</a>
+          <a className="btn btn-ghost normal-case text-xl" href="/docs">
+            yaltt
+          </a>
           <div className="divider divider-horizontal"></div>
         </div>
         {props.header ? (
@@ -66,6 +68,10 @@ export const PlainYalttLayout = (props: PlainYalttLayoutProps) => {
               ) : null}
               <li>
                 <Link to="/">Apps</Link>
+              </li>
+
+              <li>
+                <a href="/docs">User Guide</a>
               </li>
               <li>
                 <a

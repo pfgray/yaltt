@@ -206,6 +206,9 @@ const EmptyAppsView = (props: EmptyAppsViewProps) => {
           >
             Create App
           </button>
+          <div className="mt-3">
+            <a href="/docs">docs/user guide</a>
+          </div>
         </div>
       </div>
     </div>
