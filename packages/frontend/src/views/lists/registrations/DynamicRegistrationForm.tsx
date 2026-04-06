@@ -38,6 +38,7 @@ export type DynamicRegistrationFormProps = {
     privacyLevel: CanvasPrivacyLevel;
     toolId?: string;
     disableReinstall?: boolean;
+    updateComment?: string;
   }) => Effect.Effect<unknown, InstallingStateError, never>;
   editingRegistration?: Registration;
   editingToolConfiguration?: CreatedToolConfiguration;
@@ -71,6 +72,8 @@ export const DynamicRegistrationForm = (
           .join("\n")
       : ""
   );
+
+  const [updateComment, setUpdateComment] = React.useState("");
 
   const [toolId, setToolId] = React.useState(
     "toolid-" + Math.floor(Math.random() * 1000)
@@ -193,7 +196,7 @@ export const DynamicRegistrationForm = (
                     />
                   </>
                 )}
-                <label className="label cursor-pointer justify-normal mt-3">
+                <label className="label cursor-pointer justify-normal mt-2">
                   <input
                     type="checkbox"
                     className="checkbox"
@@ -206,6 +209,22 @@ export const DynamicRegistrationForm = (
                     Disable Reinstallation
                   </span>
                 </label>
+                {editingToolConfiguration ? (
+                  <>
+                    <label htmlFor="custom-parameters" className="mt-3">
+                      Update Comment
+                    </label>
+                    <textarea
+                      id="custom-parameters"
+                      className="textarea textarea-bordered mb-3"
+                      placeholder="New placement added!"
+                      onChange={(ev) =>
+                        setUpdateComment(ev.currentTarget.value)
+                      }
+                      value={updateComment}
+                    ></textarea>
+                  </>
+                ) : null}
               </>
             )}
           </div>
@@ -222,6 +241,7 @@ export const DynamicRegistrationForm = (
                   scopes: [...scopes, ...extraScopes],
                   privacyLevel: privacyLevel,
                   disableReinstall: disableReinstall,
+                  updateComment: updateComment,
                   messages: Object.entries(placements)
                     .filter(([_, v]) => v.enabled)
                     .map(([placement, v]) => ({

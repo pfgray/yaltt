@@ -194,6 +194,7 @@ export const sendRegistrationUpdate = Endpoint.post(
       privacyLevel: CanvasPrivacyLevel,
       toolId: S.optional(S.string),
       disableReinstall: S.optional(S.boolean),
+      updateComment: S.optional(S.string),
     })
   )
 );

@@ -27,9 +27,7 @@ export const ToolConfiguration = pipe(
     "https://purl.imsglobal.org/spec/lti-tool-configuration":
       LtiToolConfiguration,
     scope: Scopes,
-    "https://canvas.instructure.com/lti/privacy_level": S.optional(
-      S.literal("public", "anonymous", "name_only", "email_only")
-    ),
+    "https://canvas.instructure.com/lti/update_comment": S.optional(S.string),
   }),
   S.extend(LocalizedKey("client_name")),
   S.extend(LocalizedKeyOp("client_uri")),

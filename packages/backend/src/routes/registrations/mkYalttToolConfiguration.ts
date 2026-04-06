@@ -35,6 +35,7 @@ export const mkYalttToolConfiguration =
     privacyLevel: CanvasPrivacyLevel;
     toolId?: string;
     disableReinstall?: boolean;
+    updateComment?: string;
   }): ToolConfiguration => {
     const mkUrl = mkYalttUrl(config, contextualRequest);
     const mkRegUrl = (rest: string) =>
@@ -67,5 +68,7 @@ export const mkYalttToolConfiguration =
         "https://canvas.instructure.com/lti/disable_reinstall":
           options.disableReinstall ?? true,
       },
+      "https://canvas.instructure.com/lti/update_comment":
+        options.updateComment,
     };
   };

@@ -23,6 +23,9 @@ export const LtiToolConfiguration = pipe(
     "https://canvas.instructure.com/lti/disable_reinstall": S.optional(
       S.boolean
     ),
+    "https://canvas.instructure.com/lti/privacy_level": S.optional(
+      S.literal("public", "anonymous", "name_only", "email_only")
+    ),
   }),
   S.extend(LocalizedKeyOp("description"))
 );

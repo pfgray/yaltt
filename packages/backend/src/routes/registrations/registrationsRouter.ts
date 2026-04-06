@@ -551,6 +551,7 @@ bindRegistrationEndpoint(sendRegistrationUpdate)(
             toolId: body.toolId,
             privacyLevel: body.privacyLevel,
             disableReinstall: body.disableReinstall,
+            updateComment: body.updateComment,
           });
           console.log("##Sending tool configuration update:");
           console.log(JSON.stringify(toolConfiguration, null, 2));
