@@ -446,6 +446,7 @@ bindRegistrationEndpoint(signDeepLinkingContentItems)(
           [MessageTypeClaimKey]: "LtiDeepLinkingResponse",
           [LtiVersionClaimKey]: "1.3.0",
           [ContentItemsClaimKey]: body.contentItems,
+          ["https://canvas.instructure.com/lti/module_name"]: body.moduleName,
         })
       ),
       Effect.map((signedJwt) => ({ signedJwt }))

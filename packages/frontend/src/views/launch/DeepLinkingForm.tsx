@@ -14,6 +14,7 @@ import { fetchBodyFromEndpoint } from "../../lib/endpoint-ts/fetchFromEndpoint";
 import { formatError } from "@effect/schema/TreeFormatter";
 
 const sendContentItems = (
+  moduleName: string,
   contentItems: ContentItem[],
   appId: AppId,
   registrationId: RegistrationId,
@@ -25,6 +26,7 @@ const sendContentItems = (
       appId,
       registrationId,
     })({
+      moduleName,
       contentItems,
       deploymentId,
     }),
@@ -56,6 +58,7 @@ type DeepLinkingFormProps = {
 };
 
 export const DeepLinkingForm = (props: DeepLinkingFormProps) => {
+  const [moduleName, setModuleName] = React.useState("Example Module Name");
   const firstType = pipe(
     props.deepLinkingSettings.accept_types,
     ReadonlyArray.filter(isContentItemType),
@@ -75,6 +78,18 @@ export const DeepLinkingForm = (props: DeepLinkingFormProps) => {
       {contentItems.map((contentItem, i) => {
         return (
           <div>
+            <label className="form-control w-full max-w-xs">
+              <div className="label">
+                <span className="label-text">Module Name</span>
+              </div>
+              <input
+                type="text"
+                placeholder="Title"
+                className="input input-bordered w-full max-w-xs"
+                value={moduleName}
+                onChange={(e) => setModuleName(e.currentTarget.value)}
+              />
+            </label>
             <ContentItemForm
               deepLinkingSettings={props.deepLinkingSettings}
               contentItem={contentItem}
@@ -93,6 +108,7 @@ export const DeepLinkingForm = (props: DeepLinkingFormProps) => {
           onClick={() => {
             pipe(
               sendContentItems(
+                moduleName,
                 contentItems,
                 props.appId,
                 props.registrationId,

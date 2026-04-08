@@ -147,7 +147,11 @@ export const signDeepLinkingContentItems = Endpoint.post(
   {},
   Response.json(S.struct({ signedJwt: S.string })),
   Body.json(
-    S.struct({ contentItems: S.array(ContentItem), deploymentId: S.string })
+    S.struct({
+      contentItems: S.array(ContentItem),
+      deploymentId: S.string,
+      moduleName: S.string,
+    })
   )
 );
 
