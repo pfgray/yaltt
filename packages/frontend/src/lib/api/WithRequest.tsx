@@ -4,12 +4,7 @@ import { Effect, Either, Option, pipe } from "effect";
 import * as React from "react";
 import { RequestError, RequestService } from "./request";
 import { provideRequestService } from "./requestServiceImpl";
-import {
-  FetchError,
-  FetchException,
-  FetchParseError,
-  FetchParseJsonError,
-} from "endpoint-ts-fetch";
+import { FetchError } from "endpoint-ts-fetch";
 import { ParseError } from "@effect/schema/ParseResult";
 import { useNavigate } from "react-router-dom";
 import { Pre } from "../ui/Pre";

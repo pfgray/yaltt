@@ -303,6 +303,9 @@ export const fetchBodyFromEndpoint: FetchBodyFromEndpoint =
       )
     );
 
+export { toFetch, createApiClient } from "./toFetch.js";
+export type { EndpointFetcher } from "./toFetch.js";
+
 const parseResponseForEndpoint =
   <
     RSchema extends S.Schema<any, any, never>,

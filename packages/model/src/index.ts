@@ -5,6 +5,7 @@ export * from "./api/launch";
 export * from "./api/registrations";
 export * from "./api/users";
 export * from "./api/auth";
+export { YalttAPIDef } from "./api/index";
 export * from "./app/App";
 export * from "./user/User";
 export * from "./user/GoogleProfile";
