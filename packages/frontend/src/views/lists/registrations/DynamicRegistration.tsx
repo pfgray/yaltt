@@ -24,7 +24,7 @@ import { getDecode } from "../../../lib/api/request";
 import { provideRequestService } from "../../../lib/api/requestServiceImpl";
 import { fetchApp } from "../../../lib/apps/apps";
 import { WithAuth } from "../../../lib/auth/WithAuth";
-import { fetchBodyFromEndpoint } from "../../../lib/endpoint-ts/fetchFromEndpoint";
+import { fetchBodyFromEndpoint } from "endpoint-ts-fetch";
 import { useParsedParamsQuery } from "../../../lib/react-router/useParsedParamsQuery";
 import { CanvasPlacementTypes } from "canvas-lti-model";
 import { useInstallingState } from "./useInstallingState";

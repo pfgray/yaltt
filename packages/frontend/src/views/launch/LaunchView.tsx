@@ -14,7 +14,7 @@ import { RawLaunch } from "./RawLaunch";
 import { DeepLinkingView } from "./DeepLinkingView";
 import { AgsView } from "./AgsView";
 import { PostMessageForm } from "./PostMessageForm";
-import { fetchFromEndpoint } from "../../lib/endpoint-ts/fetchFromEndpoint";
+import { fetchFromEndpoint } from "endpoint-ts-fetch";
 
 const fetchLaunch = fetchFromEndpoint(getLaunch);
 

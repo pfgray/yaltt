@@ -9,8 +9,6 @@ export * from "./app/App";
 export * from "./user/User";
 export * from "./user/GoogleProfile";
 export * from "./lib/DateFromStringOrDate";
-export * from "./lib/decode";
-export * from "./lib/encode";
 export * from "./matchers/match";
 export * from "./registration/Launch";
 export * from "./registration/Registration";

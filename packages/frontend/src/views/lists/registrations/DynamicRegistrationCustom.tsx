@@ -14,7 +14,7 @@ import { fetchApps } from "../../../lib/apps/apps";
 import { fetchOpenIdConfig } from "./DynamicRegistration";
 import { PlatformConfiguration } from "lti-model";
 import { useInstallingState } from "./useInstallingState";
-import { fetchBodyFromEndpoint } from "../../../lib/endpoint-ts/fetchFromEndpoint";
+import { fetchBodyFromEndpoint } from "endpoint-ts-fetch";
 import {
   createNewAppInstallation,
   createToolInstallation,

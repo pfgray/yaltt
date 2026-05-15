@@ -1,25 +1,22 @@
+import { ParseError } from "@effect/schema/ParseResult";
+import * as S from "@effect/schema/Schema";
+import { Effect, Either, Option, pipe } from "effect";
 import {
   BodyFromEndpoint,
+  EncodeError,
   Endpoint,
+  EndpointBody,
+  EndpointResponse,
+  QueryParametersFromEndpoint,
+  QuerySchema,
   ResponseFromEndpoint,
   Route,
   RouteParametersFromEndpoint,
   buildPath,
-  EndpointResponse,
-  RootPath,
-  path,
-  param,
-  Response,
-  QueryFromEndpoint,
-  QueryParametersFromEndpoint,
-  QuerySchema,
-  EndpointBody,
+  encodeEither,
+  encodeError,
   getRouteString,
 } from "endpoint-ts";
-import { Effect, Either, Option, ReadonlyArray, pipe } from "effect";
-import * as S from "@effect/schema/Schema";
-import { ParseError } from "@effect/schema/ParseResult";
-import { EncodeError, encodeEither, encodeError } from "@yaltt/model";
 
 export type FetchError =
   | FetchException
@@ -35,7 +32,7 @@ export type FetchException = {
 };
 
 const fetchError =
-  (url?: string) =>
+  (url: string) =>
   (reason: unknown): FetchException => ({
     _tag: "fetch_exception",
     url,
@@ -81,17 +78,18 @@ export const unauthorizedError: UnauthorizedError = {
 };
 
 type EndpointFetchParametersFromEndpoint<
-  E extends Endpoint<any, any, any, any, any, any, any>
-> = E extends Endpoint<infer Route, infer Query, any, any, any, any, any>
-  ? HasKey<Query> extends false
-    ? HasKey<RouteParametersFromEndpoint<E>> extends true
-      ? [routeParams: RouteParametersFromEndpoint<E>]
-      : []
-    : [
-        routeParams: RouteParametersFromEndpoint<E>,
-        query: QueryParametersFromEndpoint<E>
-      ]
-  : never;
+  E extends Endpoint<any, any, any, any, any, any, any>,
+> =
+  E extends Endpoint<infer Route, infer Query, any, any, any, any, any>
+    ? HasKey<Query> extends false
+      ? HasKey<RouteParametersFromEndpoint<E>> extends true
+        ? [routeParams: RouteParametersFromEndpoint<E>]
+        : []
+      : [
+          routeParams: RouteParametersFromEndpoint<E>,
+          query: QueryParametersFromEndpoint<E>,
+        ]
+    : never;
 
 type HasKey<T extends {}> = keyof T extends never ? false : true;
 
@@ -108,7 +106,7 @@ export type FetchFromEndpoint = <
     Resp,
     never,
     { _tag: "empty" }
-  >
+  >,
 >(
   endpoint: E
 ) => (
@@ -123,7 +121,7 @@ const buildUrlForEndpointAndParams =
     Resp extends EndpointResponse<RSchema>,
     BSchema extends S.Schema<any, any, never>,
     Body extends EndpointBody<BSchema>,
-    E extends Endpoint<R, Q, any, RSchema, Resp, BSchema, Body>
+    E extends Endpoint<R, Q, any, RSchema, Resp, BSchema, Body>,
   >(
     endpoint: E
   ) =>
@@ -246,7 +244,7 @@ export type FetchBodyFromEndpoint = <
     Resp,
     BSchema,
     Body
-  >
+  >,
 >(
   endpoint: E
 ) => (
@@ -275,7 +273,7 @@ export const fetchBodyFromEndpoint: FetchBodyFromEndpoint =
           );
         }
       }),
-      Effect.flatMap(({ path, body }) =>
+      Effect.bind("response", ({ path, body }) =>
         pipe(
           Effect.tryPromise((signal) =>
             fetch(path, {
@@ -300,14 +298,9 @@ export const fetchBodyFromEndpoint: FetchBodyFromEndpoint =
           )
         )
       ),
-
-      // Effect.catch("_tag", {
-      //   failure: "UnknownException",
-      //   onFailure: (e) => Effect.raiseError(fetchError(e)),
-      // }),
-
-      // Effect.mapError(fetchError()),
-      Effect.flatMap(parseResponseForEndpoint(endpoint))
+      Effect.flatMap(({ path, response }) =>
+        parseResponseForEndpoint(endpoint, path)(response)
+      )
     );
 
 const parseResponseForEndpoint =
@@ -322,10 +315,10 @@ const parseResponseForEndpoint =
       Resp,
       any,
       any
-    >
+    >,
   >(
     endpoint: E,
-    url?: string
+    url: string
   ) =>
   (response: Response) =>
     pipe(

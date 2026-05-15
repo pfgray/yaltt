@@ -14,10 +14,7 @@ import {
   RegistrationId,
   sendRegistrationUpdate,
 } from "@yaltt/model";
-import {
-  fetchBodyFromEndpoint,
-  fetchFromEndpoint,
-} from "../../lib/endpoint-ts/fetchFromEndpoint";
+import { fetchBodyFromEndpoint, fetchFromEndpoint } from "endpoint-ts-fetch";
 import { Pre } from "../../lib/ui/Pre";
 import {
   InferSchemaMap,

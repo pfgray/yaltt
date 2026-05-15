@@ -10,7 +10,7 @@ import { ContentItem, DeepLinkingSettings } from "lti-model";
 import React from "react";
 import { makeMatchers } from "ts-adt/MakeADT";
 import { provideRequestService } from "../../lib/api/requestServiceImpl";
-import { fetchBodyFromEndpoint } from "../../lib/endpoint-ts/fetchFromEndpoint";
+import { fetchBodyFromEndpoint } from "endpoint-ts-fetch";
 import { formatError } from "@effect/schema/TreeFormatter";
 
 const sendContentItems = (

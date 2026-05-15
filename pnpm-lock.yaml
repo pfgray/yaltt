@@ -192,6 +192,28 @@ importers:
         specifier: ^1.3.1
         version: 1.6.1(@types/node@20.17.23)(terser@5.39.0)
 
+  packages/endpoint-ts-fetch:
+    dependencies:
+      '@effect/schema':
+        specifier: ^0.63.2
+        version: 0.63.4(effect@2.4.19)(fast-check@3.23.2)
+      effect:
+        specifier: ^2.4.1
+        version: 2.4.19
+      endpoint-ts:
+        specifier: workspace:*
+        version: link:../endpoint-ts
+      ts-adt:
+        specifier: ^2.1.2
+        version: 2.1.2
+    devDependencies:
+      typescript:
+        specifier: ^5.1
+        version: 5.8.2
+      vitest:
+        specifier: ^1.3.1
+        version: 1.6.1(@types/node@20.17.23)(terser@5.39.0)
+
   packages/frontend:
     dependencies:
       '@effect/schema':
@@ -233,6 +255,9 @@ importers:
       endpoint-ts:
         specifier: workspace:*
         version: link:../endpoint-ts
+      endpoint-ts-fetch:
+        specifier: workspace:*
+        version: link:../endpoint-ts-fetch
       esbuild:
         specifier: ^0.17.4
         version: 0.17.19

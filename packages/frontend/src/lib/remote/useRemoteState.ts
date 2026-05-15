@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Effect, Either, pipe } from "effect";
 import { RequestError, RequestService } from "../../lib/api/request";
 import { provideRequestService } from "../../lib/api/requestServiceImpl";
-import { FetchError } from "../endpoint-ts/fetchFromEndpoint";
+import { FetchError } from "endpoint-ts-fetch";
 
 export type RemoteState<E, A> =
   | {

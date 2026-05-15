@@ -10,7 +10,7 @@ import {
 } from "lti-model";
 import { Launch } from "@yaltt/model/src/registration/Launch";
 import { LaunchCollapsible } from "./LaunchCollapsible";
-import { fetchBodyFromEndpoint } from "../../lib/endpoint-ts/fetchFromEndpoint";
+import { fetchBodyFromEndpoint } from "endpoint-ts-fetch";
 import {
   AppId,
   RegistrationId,

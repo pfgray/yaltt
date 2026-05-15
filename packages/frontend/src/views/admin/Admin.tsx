@@ -16,10 +16,7 @@ import { confirmWithLoading } from "../../lib/confirmation/Confirm";
 import { provideRequestService } from "../../lib/api/requestServiceImpl";
 import { EllipsisVerticalIcon } from "@heroicons/react/24/outline";
 import { YalttLayout } from "../../YalttLayout";
-import {
-  fetchBodyFromEndpoint,
-  fetchFromEndpoint,
-} from "../../lib/endpoint-ts/fetchFromEndpoint";
+import { fetchBodyFromEndpoint, fetchFromEndpoint } from "endpoint-ts-fetch";
 import { UserAvatar } from "../../lib/auth/UserAvatar";
 import { NewEntityForm } from "../lists/NewEntityForm";
 import * as F from "../../lib/forms/form";

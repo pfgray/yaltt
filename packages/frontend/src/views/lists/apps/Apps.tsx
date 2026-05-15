@@ -22,7 +22,7 @@ import { TrashIcon } from "@heroicons/react/24/outline";
 import { confirmWithLoading } from "../../../lib/confirmation/Confirm";
 import { NewEntityForm } from "../NewEntityForm";
 import { fetchApps, fetchCreateApp } from "../../../lib/apps/apps";
-import { FetchError } from "../../../lib/endpoint-ts/fetchFromEndpoint";
+import { FetchError } from "endpoint-ts-fetch";
 
 export const newAppForm = F.mkForm({
   name: F.string("Name"),

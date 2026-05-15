@@ -2,14 +2,9 @@ import { Effect, Either, Option, ReadonlyArray, pipe } from "effect";
 
 import * as S from "@effect/schema/Schema";
 import {
+  BodyFromEndpoint,
   DecodeError,
   EncodeError,
-  decodeError,
-  encode,
-  encodeError,
-} from "@yaltt/model";
-import {
-  BodyFromEndpoint,
   Endpoint,
   EndpointBody,
   EndpointMethod,
@@ -20,6 +15,8 @@ import {
   Route,
   RouteCodec,
   RouteParametersFromEndpoint,
+  decodeError,
+  encodeError,
   getRouteString,
 } from "endpoint-ts";
 import * as express from "express";
@@ -90,7 +87,7 @@ export type EndpointHandler = {
     Resp extends EndpointResponse<RSchema>,
     BSchema extends S.Schema<any, any, never>,
     Body extends EndpointBody<BSchema>,
-    E extends Endpoint<R, Q, any, RSchema, Resp, BSchema, Body>
+    E extends Endpoint<R, Q, any, RSchema, Resp, BSchema, Body>,
   >(
     endpoint: E
   ): (
@@ -119,7 +116,7 @@ export const bindEndpoint =
     Resp extends EndpointResponse<RSchema>,
     BSchema extends S.Schema<any, any, never>,
     Body extends EndpointBody<BSchema>,
-    E extends Endpoint<R, Q, EndpointMethod, RSchema, Resp, BSchema, Body>
+    E extends Endpoint<R, Q, EndpointMethod, RSchema, Resp, BSchema, Body>,
   >(
     endpoint: E
   ) =>
@@ -191,15 +188,16 @@ export const parseParams = (paramCodecs: Record<string, RouteCodec<any>>) =>
     })
   );
 
-type QuerySchemaResult<T> = T extends QuerySchema<infer A>
-  ? T extends { _tag: "Array" }
-    ? A[]
-    : T extends { _tag: "Single" }
-    ? A
-    : T extends { _tag: "Optional" }
-    ? Option.Option<A>
-    : never
-  : never;
+type QuerySchemaResult<T> =
+  T extends QuerySchema<infer A>
+    ? T extends { _tag: "Array" }
+      ? A[]
+      : T extends { _tag: "Single" }
+        ? A
+        : T extends { _tag: "Optional" }
+          ? Option.Option<A>
+          : never
+    : never;
 
 export const parseQuery = <T extends Record<string, QuerySchema<any>>>(
   queryCodecs: T

@@ -5,7 +5,7 @@ import {
   FetchException,
   FetchParseError,
   FetchParseJsonError,
-} from "../../../lib/endpoint-ts/fetchFromEndpoint";
+} from "endpoint-ts-fetch";
 import { Request } from "./DynamicRegistration";
 
 type InstallingStateError =

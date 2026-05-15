@@ -1,14 +1,9 @@
-import { pipe, Either, Option, ReadonlyArray, Effect, Context } from "effect";
+import { pipe, Option, Effect, Context } from "effect";
 import * as PE from "@effect/schema/ParseResult";
 import * as S from "@effect/schema/Schema";
-import * as P from "@effect/schema/Parser";
-import { EncodeError, match } from "@yaltt/model";
+import { match } from "@yaltt/model";
 import { flow } from "effect/Function";
-import {
-  FetchException,
-  FetchParseError,
-  FetchParseJsonError,
-} from "../endpoint-ts/fetchFromEndpoint";
+import { EncodeError } from "endpoint-ts";
 
 export class RequestService extends Context.Tag("Request")<
   RequestService,

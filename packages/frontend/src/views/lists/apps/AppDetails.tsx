@@ -27,7 +27,7 @@ import { confirmWithLoading } from "../../../lib/confirmation/Confirm";
 import * as F from "../../../lib/forms/form";
 import { useParsedParams } from "../../../lib/react-router/useSchemaParams";
 import { NewEntityForm } from "../NewEntityForm";
-import { FetchError } from "../../../lib/endpoint-ts/fetchFromEndpoint";
+import { FetchError } from "endpoint-ts-fetch";
 import { fetchApp } from "../../../lib/apps/apps";
 import { Pre } from "../../../lib/ui/Pre";
 

@@ -1,10 +1,10 @@
 import * as pg from "pg";
 
 import * as S from "@effect/schema/Schema";
-import { DecodeError, decode } from "@yaltt/model";
 import { Effect, Option, ReadonlyArray, pipe } from "effect";
 import { flow } from "effect/Function";
 import { Query } from "./QueryService";
+import { DecodeError, decode } from "endpoint-ts";
 
 export const pool: pg.Pool = new ((pg as any).default as any).Pool();
 

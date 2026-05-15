@@ -23,7 +23,7 @@ import {
   FetchParseError,
   FetchParseJsonError,
   fetchBodyFromEndpoint,
-} from "../../../lib/endpoint-ts/fetchFromEndpoint";
+} from "endpoint-ts-fetch";
 import { useParsedParamsQuery } from "../../../lib/react-router/useParsedParamsQuery";
 import { CanvasPlacementTypes } from "canvas-lti-model";
 import { sendCloseMessage } from "./sendCloseMessage";

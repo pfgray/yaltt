@@ -13,7 +13,7 @@ import img from "../../img/bg.jpg";
 import { formBody, post, RequestService } from "../../lib/api/request";
 import { provideRequestService } from "../../lib/api/requestServiceImpl";
 import { fetchLoginMechanisms } from "../../lib/auth/authApi";
-import { FetchError } from "../../lib/endpoint-ts/fetchFromEndpoint";
+import { FetchError } from "endpoint-ts-fetch";
 import { useQuery } from "../../lib/react-router/useQuery";
 import { GoogleIcon } from "./GoogleIcon";
 

@@ -9,7 +9,7 @@ import {
   FetchException,
   FetchParseError,
   FetchParseJsonError,
-} from "../endpoint-ts/fetchFromEndpoint";
+} from "endpoint-ts-fetch";
 import { ParseError } from "@effect/schema/ParseResult";
 import { useNavigate } from "react-router-dom";
 import { Pre } from "../ui/Pre";

@@ -15,6 +15,7 @@
     "daisyui": "^4.4.6",
     "effect": "^2.4.1",
     "endpoint-ts": "workspace:*",
+    "endpoint-ts-fetch": "workspace:*",
     "esbuild": "^0.17.4",
     "lti-model": "workspace:*",
     "postcss": "^8.4.29",

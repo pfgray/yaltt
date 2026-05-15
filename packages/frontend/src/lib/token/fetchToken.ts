@@ -5,7 +5,7 @@ import {
 } from "@yaltt/model";
 import { getDecode } from "../api/request";
 import * as S from "@effect/schema/Schema";
-import { fetchFromEndpoint } from "../endpoint-ts/fetchFromEndpoint";
+import { fetchFromEndpoint } from "endpoint-ts-fetch";
 import { Effect, Either, Option, ReadonlyArray, pipe } from "effect";
 
 export const fetchToken = (

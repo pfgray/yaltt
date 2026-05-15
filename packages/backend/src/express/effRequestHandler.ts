@@ -14,7 +14,7 @@ import {
   UnauthenticatedError,
   UnauthorizedError,
 } from "../auth/authedRequestHandler";
-import { DecodeError, EncodeError, match } from "@yaltt/model";
+import { match } from "@yaltt/model";
 import { ParseBodyError } from "./parseBody";
 import {
   ParseJwtError,
@@ -39,6 +39,7 @@ import {
   mkEnvConfigService,
   provideEnvConfigService,
 } from "../config/EnvConfigService";
+import { DecodeError, EncodeError } from "endpoint-ts";
 
 type Response = {
   status: number;
