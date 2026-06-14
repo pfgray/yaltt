@@ -89,8 +89,39 @@ export const WithRequest = <A,>(props: WithRequestProps<A>): JSX.Element => {
   );
 };
 
-const genericError = (err: unknown) => (
-  <Pre>{JSON.stringify(err, null, 2)}</Pre>
-);
+const genericError = (err: unknown) => {
+  // Extract URL from nested fetch errors
+  let url: string | undefined;
+  if (
+    err &&
+    typeof err === "object" &&
+    "_tag" in err &&
+    err._tag === "req_server_error" &&
+    "body" in err &&
+    err.body &&
+    typeof err.body === "object" &&
+    "e" in err.body &&
+    err.body.e &&
+    typeof err.body.e === "object" &&
+    "_tag" in err.body.e &&
+    err.body.e._tag === "fetch_error" &&
+    "url" in err.body.e
+  ) {
+    url = err.body.e.url as string;
+  }
+
+  return (
+    <div className="flex flex-col">
+      {url && (
+        <div className="mb-4">
+          <h3 className="font-bold mb-2">Failed to fetch URL:</h3>
+          <Pre>{url}</Pre>
+        </div>
+      )}
+      <h3 className="font-bold mb-2">Error details:</h3>
+      <Pre>{JSON.stringify(err, null, 2)}</Pre>
+    </div>
+  );
+};
 
 const parseError = (err: ParseError) => <Pre>{formatError(err)}</Pre>;

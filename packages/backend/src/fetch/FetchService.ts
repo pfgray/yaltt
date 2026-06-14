@@ -5,6 +5,7 @@ import { pipe, Effect, Option, Either, Context } from "effect";
 
 export type FetchError = {
   _tag: "fetch_error";
+  url: string;
   reason: unknown;
 };
 export type FetchJsonParseError = {
@@ -85,6 +86,7 @@ export const Fetch = {
               Effect.mapError(
                 (err): FetchError => ({
                   _tag: "fetch_error",
+                  url: url.toString(),
                   reason: err,
                 })
               )
