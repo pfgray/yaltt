@@ -92,9 +92,9 @@ const fetchOpenIdConfig = (params: {
   registration_token?: string;
 }) =>
   getDecode(S.unknown)(
-    `/api/retrieve_openid_configuration?url=${params.openid_configuration}` +
+    `/api/retrieve_openid_configuration?url=${encodeURIComponent(params.openid_configuration)}` +
       (params.registration_token
-        ? `&registration_token=${params.registration_token}`
+        ? `&registration_token=${encodeURIComponent(params.registration_token)}`
         : "")
   );
 

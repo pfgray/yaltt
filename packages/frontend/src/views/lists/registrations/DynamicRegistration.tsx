@@ -1,4 +1,5 @@
 import * as S from "@effect/schema/Schema";
+import * as O from "effect/Option";
 import { formatError } from "@effect/schema/TreeFormatter";
 import { ChevronDownIcon, ChevronUpIcon } from "@heroicons/react/24/outline";
 import {
@@ -33,6 +34,7 @@ import { Pre } from "../../../lib/ui/Pre";
 import { parseCustomParams } from "./DynamicRegistrationForm";
 import { Placements, usePlacementsStore } from "./usePlacementsStore";
 import { MessageTypes } from "./shared/MessageTypes";
+import { YalttAPI } from "../../../lib/api/YalttAPI";
 
 type SelectedScopeState = {
   scopes: ReadonlyArray<string>;
@@ -66,27 +68,21 @@ export type Request<E, A> = TagADT<{
   failed: { error: E };
 }>;
 
-export const fetchOpenIdConfig = (params: {
-  openid_configuration: string;
-  registration_token?: string;
-}) =>
-  getDecode(S.unknown)(
-    `/api/retrieve_openid_configuration?url=${params.openid_configuration}` +
-      (params.registration_token
-        ? `&registration_token=${params.registration_token}`
-        : "")
-  );
-
 const fetchDynRegData = (params: {
   appId: AppId;
   openid_configuration: string;
   registration_token?: string;
-}) =>
-  pipe(
-    fetchOpenIdConfig(params),
+}) => {
+  console.log("Fetching OpenID Config with params:", params);
+  return pipe(
+    YalttAPI.registrations.getOpenidConfig({
+      url: params.openid_configuration,
+      registration_token: O.fromNullable(params.registration_token),
+    }),
     Effect.bindTo("openidConfig"),
     Effect.bind("app", () => fetchApp({ appId: params.appId }))
   );
+};
 
 const installToolReq = fetchBodyFromEndpoint(createToolInstallation);
 

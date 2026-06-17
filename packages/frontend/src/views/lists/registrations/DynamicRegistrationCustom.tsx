@@ -1,28 +1,19 @@
-import * as React from "react";
-import { useParsedQuery } from "../../../lib/react-router/useParsedQuery";
 import * as S from "@effect/schema/Schema";
-import { WithAuth } from "../../../lib/auth/WithAuth";
-import { WithRequest } from "../../../lib/api/WithRequest";
-import { Effect, Either, pipe } from "effect";
 import { formatError } from "@effect/schema/TreeFormatter";
-import { newAppForm } from "../apps/Apps";
-import { getGradientForString } from "../../../lib/ui/gradients";
-import { format } from "timeago.js";
-import { Link } from "react-router-dom";
-import { NewEntityForm } from "../NewEntityForm";
-import { fetchApps } from "../../../lib/apps/apps";
-import { fetchOpenIdConfig } from "./DynamicRegistration";
-import { PlatformConfiguration } from "lti-model";
-import { useInstallingState } from "./useInstallingState";
+import { createNewAppInstallation, match } from "@yaltt/model";
+import { Effect, Either, pipe } from "effect";
+import * as O from "effect/Option";
 import { fetchBodyFromEndpoint } from "endpoint-ts-fetch";
-import {
-  createNewAppInstallation,
-  createToolInstallation,
-  match,
-} from "@yaltt/model";
-import { sendCloseMessage } from "./sendCloseMessage";
+import { PlatformConfiguration } from "lti-model";
+import * as React from "react";
 import { provideRequestService } from "../../../lib/api/requestServiceImpl";
+import { WithRequest } from "../../../lib/api/WithRequest";
+import { YalttAPI } from "../../../lib/api/YalttAPI";
+import { WithAuth } from "../../../lib/auth/WithAuth";
+import { useParsedQuery } from "../../../lib/react-router/useParsedQuery";
 import { Pre } from "../../../lib/ui/Pre";
+import { sendCloseMessage } from "./sendCloseMessage";
+import { useInstallingState } from "./useInstallingState";
 
 const installToolReq = fetchBodyFromEndpoint(createNewAppInstallation);
 
@@ -30,7 +21,7 @@ export const DynamicRegistrationCustom = () => {
   const query = useParsedQuery(
     S.struct({
       openid_configuration: S.string,
-      registration_token: S.optional(S.string),
+      registration_token: S.option(S.string),
     })
   );
 
@@ -45,7 +36,12 @@ export const DynamicRegistrationCustom = () => {
           query,
           Either.match({
             onRight: (q) => (
-              <WithRequest eff={fetchOpenIdConfig(q)}>
+              <WithRequest
+                eff={YalttAPI.registrations.getOpenidConfig({
+                  url: q.openid_configuration,
+                  registration_token: q.registration_token,
+                })}
+              >
                 {(openidConfig) =>
                   pipe(
                     S.decodeUnknownEither(PlatformConfiguration)(openidConfig, {
@@ -101,7 +97,9 @@ export const DynamicRegistrationCustom = () => {
                                   pipe(
                                     installToolReq()({
                                       platformConfiguration,
-                                      registrationToken: q.registration_token,
+                                      registrationToken: O.getOrUndefined(
+                                        q.registration_token
+                                      ),
                                       registrationEndpoint:
                                         platformConfiguration.registration_endpoint,
                                       toolConfiguration:

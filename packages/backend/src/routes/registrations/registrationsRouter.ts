@@ -394,7 +394,6 @@ bindRegistrationEndpoint(getOpenidConfig)((_params, query) =>
 
       const reg_token = Option.getOrUndefined(query.registration_token);
 
-      // todo: remove this because it's not in the spec
       if (typeof reg_token !== "undefined") {
         url.searchParams.append("registration_token", reg_token);
       }
