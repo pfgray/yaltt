@@ -21,7 +21,7 @@ export const DynamicRegistrationCustom = () => {
   const query = useParsedQuery(
     S.struct({
       openid_configuration: S.string,
-      registration_token: S.option(S.string),
+      registration_token: S.optional(S.string),
     })
   );
 
@@ -39,7 +39,7 @@ export const DynamicRegistrationCustom = () => {
               <WithRequest
                 eff={YalttAPI.registrations.getOpenidConfig({
                   url: q.openid_configuration,
-                  registration_token: q.registration_token,
+                  registration_token: O.fromNullable(q.registration_token),
                 })}
               >
                 {(openidConfig) =>
@@ -97,9 +97,7 @@ export const DynamicRegistrationCustom = () => {
                                   pipe(
                                     installToolReq()({
                                       platformConfiguration,
-                                      registrationToken: O.getOrUndefined(
-                                        q.registration_token
-                                      ),
+                                      registrationToken: q.registration_token,
                                       registrationEndpoint:
                                         platformConfiguration.registration_endpoint,
                                       toolConfiguration:

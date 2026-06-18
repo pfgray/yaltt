@@ -65,15 +65,12 @@ export const DynamicRegistrationAppPicker = () => {
                                   navigate({
                                     pathname: `/dynamic-registration/custom`,
                                     search: createSearchParams({
-                                      openid_configuration: encodeURIComponent(
-                                        query.openid_configuration
-                                      ),
+                                      openid_configuration:
+                                        query.openid_configuration,
                                       ...(query.registration_token
                                         ? {
                                             registration_token:
-                                              encodeURIComponent(
-                                                query.registration_token
-                                              ),
+                                              query.registration_token,
                                           }
                                         : {}),
                                     }).toString(),
