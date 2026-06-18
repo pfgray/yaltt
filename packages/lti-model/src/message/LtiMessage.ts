@@ -4,6 +4,13 @@ import { Url } from "../registration/Url";
 import { pipe } from "effect";
 import { LocalizedKey } from "../registration/LocalizedKey";
 
+export const IframeOptions = S.struct({
+  width: S.number,
+  height: S.number,
+});
+
+export interface IframeOptions extends S.Schema.To<typeof IframeOptions> {}
+
 export const LtiMessage = pipe(
   S.struct({
     type: S.string,
@@ -12,6 +19,8 @@ export const LtiMessage = pipe(
     icon_uri: S.optional(S.string),
     placements: S.optional(S.array(S.string)),
     roles: S.optional(S.array(S.string)),
+    preferred_presentation: S.optional(S.string),
+    iframe: S.optional(IframeOptions),
   }),
   S.extend(LocalizedKey("label"))
 );
