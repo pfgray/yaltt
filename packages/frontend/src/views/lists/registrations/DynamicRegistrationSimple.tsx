@@ -1,33 +1,24 @@
 import * as S from "@effect/schema/Schema";
 import { formatError } from "@effect/schema/TreeFormatter";
-import { ChevronDownIcon, ChevronUpIcon } from "@heroicons/react/24/outline";
-import {
-  AppId,
-  AppWithRegistrations,
-  EncodeError,
-  TagADT,
-  createToolInstallation,
-  match,
-} from "@yaltt/model";
-import { Effect, Either, pipe, ReadonlyRecord } from "effect";
-import { LtiMessage, LtiPlacements, PlatformConfiguration } from "lti-model";
-import * as React from "react";
-import { create } from "zustand";
-import { WithRequest } from "../../../lib/api/WithRequest";
-import { getDecode } from "../../../lib/api/request";
-import { provideRequestService } from "../../../lib/api/requestServiceImpl";
-import { fetchApp } from "../../../lib/apps/apps";
-import { WithAuth } from "../../../lib/auth/WithAuth";
+import { AppId, TagADT, createToolInstallation, match } from "@yaltt/model";
+import { Effect, Either, pipe } from "effect";
+import { EncodeError } from "endpoint-ts";
 import {
   FetchException,
   FetchParseError,
   FetchParseJsonError,
   fetchBodyFromEndpoint,
 } from "endpoint-ts-fetch";
+import { PlatformConfiguration } from "lti-model";
+import { create } from "zustand";
+import { WithRequest } from "../../../lib/api/WithRequest";
+import { getDecode } from "../../../lib/api/request";
+import { provideRequestService } from "../../../lib/api/requestServiceImpl";
+import { fetchApp } from "../../../lib/apps/apps";
+import { WithAuth } from "../../../lib/auth/WithAuth";
 import { useParsedParamsQuery } from "../../../lib/react-router/useParsedParamsQuery";
-import { CanvasPlacementTypes } from "canvas-lti-model";
-import { sendCloseMessage } from "./sendCloseMessage";
 import { Pre } from "../../../lib/ui/Pre";
+import { sendCloseMessage } from "./sendCloseMessage";
 
 type Request<E, A> = TagADT<{
   initial: {};
