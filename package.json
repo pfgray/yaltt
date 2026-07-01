@@ -7,12 +7,13 @@
   "license": "MIT",
   "workspaces": [
     "packages/backend",
-    "packages/frontend",
-    "packages/model",
-    "packages/lti-model",
     "packages/canvas-lti-model",
     "packages/docs",
-    "packages/endpoint-ts"
+    "packages/endpoint-ts",
+    "packages/endpoint-ts-fetch",
+    "packages/frontend",
+    "packages/lti-model",
+    "packages/model"
   ],
   "engines": {
     "node": ">=10",
