@@ -1,16 +1,9 @@
 import * as S from "@effect/schema/Schema";
 import { formatError } from "@effect/schema/TreeFormatter";
-import { AppId, TagADT, createToolInstallation, match } from "@yaltt/model";
+import { AppId, createToolInstallation } from "@yaltt/model";
 import { Effect, Either, pipe } from "effect";
-import { EncodeError } from "endpoint-ts";
-import {
-  FetchException,
-  FetchParseError,
-  FetchParseJsonError,
-  fetchBodyFromEndpoint,
-} from "endpoint-ts-fetch";
+import { fetchBodyFromEndpoint } from "endpoint-ts-fetch";
 import { PlatformConfiguration } from "lti-model";
-import { create } from "zustand";
 import { WithRequest } from "../../../lib/api/WithRequest";
 import { getDecode } from "../../../lib/api/request";
 import { provideRequestService } from "../../../lib/api/requestServiceImpl";
@@ -19,64 +12,12 @@ import { WithAuth } from "../../../lib/auth/WithAuth";
 import { useParsedParamsQuery } from "../../../lib/react-router/useParsedParamsQuery";
 import { Pre } from "../../../lib/ui/Pre";
 import { sendCloseMessage } from "./sendCloseMessage";
-
-type Request<E, A> = TagADT<{
-  initial: {};
-  loading: {};
-  loaded: { data: A };
-  failed: { error: E };
-}>;
-
-export type InstallingStateError =
-  | FetchException
-  | FetchParseError
-  | FetchParseJsonError
-  | EncodeError;
-
-type InstallingState = {
-  install: Request<InstallingStateError, unknown>;
-  installTool: <R, A>(
-    eff: Effect.Effect<A, InstallingStateError, R>
-  ) => Effect.Effect<A, InstallingStateError, R>;
-  setInstalling: () => Effect.Effect<void, never, never>;
-  setInstallFailed: (
-    err: InstallingStateError
-  ) => Effect.Effect<void, never, never>;
-  setInstallSucceeded: () => Effect.Effect<void, never, never>;
-};
-
-const useInstallingState = create<InstallingState>()((set) => ({
-  install: { _tag: "initial" },
-  installTool: (eff) =>
-    pipe(
-      Effect.sync(() => set((state) => ({ install: { _tag: "loading" } }))),
-      Effect.flatMap(() => eff),
-      Effect.tap(() =>
-        Effect.sync(() =>
-          set((state) => ({ install: { _tag: "loaded", data: {} } }))
-        )
-      ),
-      Effect.tapError((err) =>
-        Effect.sync(() =>
-          set((state) => ({
-            install: { _tag: "failed", error: err },
-          }))
-        )
-      )
-    ),
-  setInstalling: () =>
-    Effect.sync(() => set((state) => ({ install: { _tag: "loading" } }))),
-  setInstallFailed: (err: InstallingStateError) =>
-    Effect.sync(() =>
-      set((state) => ({
-        install: { _tag: "failed", error: err },
-      }))
-    ),
-  setInstallSucceeded: () =>
-    Effect.sync(() =>
-      set((state) => ({ install: { _tag: "loaded", data: {} } }))
-    ),
-}));
+import { useInstallingState } from "./useInstallingState";
+import {
+  InstallButton,
+  InstallErrorDisplay,
+  OpenIdConfigParseError,
+} from "./shared";
 
 const fetchOpenIdConfig = (params: {
   openid_configuration: string;
@@ -132,16 +73,11 @@ export const DynamicRegistrationSimple = () => {
                     }),
                     Either.match({
                       onLeft: (errors) => (
-                        <div className="flex flex-col items-center w-full">
-                          <article className="prose">
-                            <h3>Error retrieving OpenID Configuration from:</h3>
-                            <Pre>{query.openid_configuration}</Pre>
-                            <h3>Raw Response Body</h3>
-                            <Pre>{JSON.stringify(openidConfig, null, 2)}</Pre>
-                            <h3>Parse Error:</h3>
-                            <Pre>{formatError(errors)}</Pre>
-                          </article>
-                        </div>
+                        <OpenIdConfigParseError
+                          openidConfigurationUrl={query.openid_configuration}
+                          rawResponse={openidConfig}
+                          parseError={errors}
+                        />
                       ),
                       onRight: (platformConfiguration) => (
                         <div className="flex flex-col items-center justify-center w-full h-full">
@@ -149,7 +85,8 @@ export const DynamicRegistrationSimple = () => {
                             <h1 className="text-center text-7xl">{app.name}</h1>
 
                             <div className="w-full flex justify-center flex-row">
-                              <button
+                              <InstallButton
+                                install={install}
                                 className="btn btn-primary btn-lg"
                                 onClick={() => {
                                   pipe(
@@ -186,94 +123,9 @@ export const DynamicRegistrationSimple = () => {
                                     Effect.runCallback
                                   );
                                 }}
-                                disabled={pipe(
-                                  install,
-                                  match({
-                                    initial: () => false,
-                                    loading: () => true,
-                                    loaded: () => true,
-                                    failed: () => false,
-                                  })
-                                )}
-                              >
-                                {pipe(
-                                  install,
-                                  match({
-                                    initial: () => "Install",
-                                    loading: () => "Installing...",
-                                    loaded: () => "Installed",
-                                    failed: (err) => "Failed (Try Again)",
-                                  })
-                                )}
-                              </button>
+                              />
                             </div>
-                            {pipe(
-                              install,
-                              match({
-                                initial: () => <></>,
-                                loading: () => <></>,
-                                loaded: () => <></>,
-                                failed: ({ error }) => (
-                                  <div className="w-full flex justify-end flex-col">
-                                    {pipe(
-                                      error,
-                                      match({
-                                        fetch_exception: (fe) => (
-                                          <>
-                                            <div>Error fetching {fe.url}</div>
-                                            <Pre>
-                                              {JSON.stringify(
-                                                fe.reason,
-                                                null,
-                                                2
-                                              )}
-                                            </Pre>
-                                          </>
-                                        ),
-                                        fetch_parse_json_error: (pe) => (
-                                          <>
-                                            <div>Unable to parse json:</div>
-                                            <Pre>{pe.original}</Pre>
-                                            <div>Error:</div>
-                                            <Pre>
-                                              {JSON.stringify(pe.error)}
-                                            </Pre>
-                                          </>
-                                        ),
-                                        fetch_parse_error: (pe) => (
-                                          <>
-                                            <div>Error parsing response:</div>
-                                            <Pre>{formatError(pe.reason)}</Pre>
-                                            <div>Original data response:</div>
-                                            <Pre>
-                                              {JSON.stringify(
-                                                pe.original,
-                                                null,
-                                                2
-                                              )}
-                                            </Pre>
-                                          </>
-                                        ),
-                                        encode_error: (ee) => (
-                                          <>
-                                            <div>Error Encoding data:</div>
-                                            <Pre>{formatError(ee.error)}</Pre>
-                                            <div>Original encode:</div>
-                                            <Pre>
-                                              {JSON.stringify(
-                                                ee.actual,
-                                                null,
-                                                2
-                                              )}
-                                            </Pre>
-                                          </>
-                                        ),
-                                      })
-                                    )}
-                                  </div>
-                                ),
-                              })
-                            )}
+                            <InstallErrorDisplay install={install} />
                           </article>
                         </div>
                       ),

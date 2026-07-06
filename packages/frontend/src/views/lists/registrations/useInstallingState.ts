@@ -8,7 +8,7 @@ import {
 } from "endpoint-ts-fetch";
 import { Request } from "./DynamicRegistration";
 
-type InstallingStateError =
+export type InstallingStateError =
   | FetchException
   | FetchParseError
   | FetchParseJsonError
