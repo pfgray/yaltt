@@ -6,6 +6,8 @@ result
 .pnpm-store
 dist
 .gbt.log
-docker-compose.prod.yml
 .env
+.env.production
+.env.local
+.env*.local
 .docusaurus
