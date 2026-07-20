@@ -97,6 +97,10 @@ const router = createBrowserRouter([
     element: <DynamicRegistrationSimpleAuto />,
   },
   {
+    path: "/drs",
+    element: <DynamicRegistrationSimpleAuto />,
+  },
+  {
     path: "/dynamic-registration/custom",
     element: <DynamicRegistrationCustom />,
   },
