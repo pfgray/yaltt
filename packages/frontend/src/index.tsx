@@ -22,6 +22,7 @@ import { Users } from "./views/lists/users/Users";
 import SignIn from "./views/login/SignIn";
 import { NewManualRegistration } from "./views/registration/NewManualRegistration";
 import { DynamicRegistrationSimple } from "./views/lists/registrations/DynamicRegistrationSimple";
+import { DynamicRegistrationSimpleAuto } from "./views/lists/registrations/DynamicRegistrationSimpleAuto";
 import { DynamicRegistrationCustom } from "./views/lists/registrations/DynamicRegistrationCustom";
 import {
   RegistrationEdit,
@@ -90,6 +91,10 @@ const router = createBrowserRouter([
   {
     path: "/dynamic-registration",
     element: <DynamicRegistrationAppPicker />,
+  },
+  {
+    path: "/dynamic-registration-simple",
+    element: <DynamicRegistrationSimpleAuto />,
   },
   {
     path: "/dynamic-registration/custom",
