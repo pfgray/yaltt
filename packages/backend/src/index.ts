@@ -75,7 +75,7 @@ const redisClient = createClient({
   socket: {
     host: process.env.REDIS_HOST,
   },
-  password: process.env.REDIS_PASSWORD || undefined,
+  ...(process.env.REDIS_PASSWORD && { password: process.env.REDIS_PASSWORD }),
 });
 
 redisClient.on("error", (err) => {
@@ -90,7 +90,15 @@ redisClient.on("ready", () => {
   console.log("Redis Client connected and ready");
 });
 
-redisClient.connect().catch(console.error);
+redisClient.connect().catch((err) => {
+  console.error("Redis connection error:", err);
+});
+
+// Add unhandled rejection handler to track down the NOAUTH error
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('Unhandled Rejection at:', promise);
+  console.error('Reason:', reason);
+});
 
 const redisStore = new RedisStore({
   client: redisClient,
@@ -287,3 +295,11 @@ if (process.env.STATIC_ROOT) {
     res.sendFile(process.env.STATIC_ROOT + "/index.html");
   });
 }
+
+// Error handler - must be after all other middleware
+app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
+  console.error('Express error handler caught:', err);
+  console.error('Request URL:', req.url);
+  console.error('Stack:', err.stack);
+  res.status(500).json({ error: 'Internal server error' });
+});
