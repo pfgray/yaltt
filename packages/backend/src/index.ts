@@ -75,6 +75,7 @@ const redisClient = createClient({
   socket: {
     host: process.env.REDIS_HOST,
   },
+  password: process.env.REDIS_PASSWORD || undefined,
 });
 
 redisClient.on("error", (err) => {
