@@ -4,7 +4,7 @@ sidebar_position: 5
 
 # LTI 1.1 vs LTI 1.3
 
-LTI 1.3 evolves the standard LTI 1.1 standard, improving [**security**](#improved-security-asymmetric-vs-symmetric-encryption), easing [**installation**](#easier-installation-dynamic-registration), and adds rich [**tool capabilities**](#rich-tool-capabilities).
+LTI 1.3 evolves the LTI 1.1 standard, improving [**security**](#improved-security-asymmetric-vs-symmetric-encryption), easing [**installation**](#easier-installation-dynamic-registration), and adding rich [**tool capabilities**](#rich-tool-capabilities).
 
 ## Quick Comparison
 
@@ -21,24 +21,21 @@ LTI 1.3 evolves the standard LTI 1.1 standard, improving [**security**](#improve
 
 The most significant security improvement in LTI 1.3 is the shift from **symmetric** to **asymmetric** encryption.
 
-With symmetric keys, both the platform and tool need to have the same secret key (or, "password"). These are often communicated through unsafe means like email or chat messages, and require humans to coordinate.
+In LTI 1.1, both platform and tool share the same secret key. These secrets are often shared via email or chat, requiring manual coordination and creating security risks.
 
-Asymmetric cryptography use two keys, one private that's kept confidential by the platform, and a public key that's not confidential and shared with the tool. The public key that's shared does not need to be kept secret, and can be safely shared through public channels.
+LTI 1.3 uses public/private key pairs. The platform keeps its private key secure, while the public key can be safely shared without risk.
 
 ## Easier Installation: Dynamic Registration
 
-To configure an LTI 1.1 app, the person installing the tool needs to set up a lot of complicated configuration options, and can easily make mistakes, costing time and money.
+LTI 1.1 requires manual configuration with many settings, making setup error-prone and time-consuming.
 
-LTI 1.3 added the ability for tools to automatically send their configuration details to the platform, removing the human element to enable self-service tool avoid configuration issues and reduce setup time.
-
-Dynamic registration reduces setup time, eliminates configuration errors, and enables self-service tool installation. Yaltt demonstrates this flow in its installation screen.
+LTI 1.3 supports dynamic registration, where tools automatically share their configuration with the platform. This enables self-service installation and eliminates configuration errors. Yaltt demonstrates this flow in its installation screen.
 
 ## Rich Tool Capabilities
 
-LTI 1.1 provides clunky, XML-based grade pass-back functionality. There's no way to fetch roster data, and no content selection capabilities.
+LTI 1.1 provides basic, XML-based grade passback with no roster access or content selection capabilities.
 
-LTI 1.3 adds the framework for tools to make RESTful API requests to the platform, adding APIs to retrieve roster data, post grades, and provide rich content selection.
-ication.
+LTI 1.3 adds a framework for RESTful API requests to the platform, including APIs to retrieve roster data, post grades, and provide rich content selection.
 
 New LTI 1.3 API Services:
 
