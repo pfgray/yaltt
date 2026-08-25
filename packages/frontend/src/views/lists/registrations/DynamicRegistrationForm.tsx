@@ -10,13 +10,12 @@ import {
   isCanvas,
 } from "./DynamicRegistration";
 import { usePlacementsStore } from "./usePlacementsStore";
-import { useInstallingState } from "./useInstallingState";
+import { useInstallingState, InstallingStateError } from "./useInstallingState";
 import {
   CreatedToolConfiguration,
   LtiMessage,
   PlatformConfiguration,
 } from "lti-model";
-import { InstallingStateError } from "./DynamicRegistrationSimple";
 import { provideRequestService } from "../../../lib/api/requestServiceImpl";
 import { MessageTypes } from "./shared/MessageTypes";
 import { CanvasPrivacyLevel, CanvasPrivacyLevels } from "canvas-lti-model";
@@ -115,6 +114,7 @@ export const DynamicRegistrationForm = (
         {pipe(
           editingRegistration,
           O.fromNullable,
+          O.filter((r) => r.type !== "lti11"), // Only LTI 1.3 has registration_config_url
           O.flatMap((r) => r.registration_config_url),
           O.map((url) => (
             <a href={url} target="_blank">
@@ -330,6 +330,7 @@ export const DynamicRegistrationForm = (
         {pipe(
           editingRegistration,
           O.fromNullable,
+          O.filter((r) => r.type !== "lti11"), // Only LTI 1.3 has registration_client_uri
           O.flatMap((r) => r.registration_client_uri),
           O.map((url) => (
             <div>

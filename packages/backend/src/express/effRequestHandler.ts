@@ -92,7 +92,8 @@ export type EffErrors =
   | FetchStatusError
   | KeyError
   | ParseJwtError
-  | DataIntegrityError;
+  | DataIntegrityError
+  | { readonly _tag: "Lti11LaunchError"; readonly message: string };
 
 export type EffServices =
   | ExpressRequestService
@@ -277,6 +278,13 @@ export const effRequestHandler: EffRequestHandler =
                 handleErrorResponse(request, response)(500, {
                   error: "an error ocurred",
                   e,
+                });
+              },
+              Lti11LaunchError: (e) => {
+                console.error("LTI 1.1 Launch Error", e.message);
+                handleErrorResponse(request, response)(400, {
+                  error: "LTI 1.1 launch failed",
+                  message: e.message,
                 });
               },
             }),

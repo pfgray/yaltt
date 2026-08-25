@@ -1,14 +1,29 @@
 import * as S from "@effect/schema/Schema";
 import { PlatformConfiguration, CreatedToolConfiguration } from "lti-model";
-import { query, query1 } from "../../db/db";
+import { query, query1, dataIntegrityError } from "../../db/db";
 
 import { Effect, pipe } from "effect";
 import { createKeyForRegistrationId } from "./keys";
-import { Registration, RegistrationId, RegistrationType } from "@yaltt/model";
+import { Registration, RegistrationId, RegistrationType, Lti13RegistrationType } from "@yaltt/model";
+
+/**
+ * Filters out LTI 1.1 registrations, only allowing LTI 1.3 registrations through.
+ * Returns an Effect that fails with DataIntegrityError if the registration is LTI 1.1,
+ * or succeeds with the narrowed Lti13RegistrationType if it's LTI 1.3.
+ */
+export const requireLti13Registration = (
+  registration: Registration,
+  errorMessage: string = "This operation is not supported for LTI 1.1 registrations"
+): Effect.Effect<Lti13RegistrationType, ReturnType<typeof dataIntegrityError>, never> => {
+  if (registration.type === "lti11") {
+    return Effect.fail(dataIntegrityError(errorMessage));
+  }
+  return Effect.succeed(registration);
+};
 
 export const getRegistrationForId = (registrationId: number) =>
   query1(Registration)(
-    "select id, client_id, type, app_id, created, platform_configuration, claims, scopes, custom_parameters, registration_config_url, registration_client_uri from registrations where id = $1",
+    "select id, client_id, type, app_id, created, platform_configuration, claims, scopes, custom_parameters, registration_config_url, registration_client_uri, consumer_key, shared_secret from registrations where id = $1",
     [registrationId]
   );
 
@@ -17,7 +32,7 @@ export const deleteRegistrationForId = (registrationId: number) =>
 
 export const getRegistrationsForAppId = (appId: number) =>
   query(Registration)(
-    "select id, client_id, type, app_id, created, platform_configuration, claims, scopes, custom_parameters, registration_config_url, registration_client_uri from registrations where app_id = $1 order by created desc",
+    "select id, client_id, type, app_id, created, platform_configuration, claims, scopes, custom_parameters, registration_config_url, registration_client_uri, consumer_key, shared_secret from registrations where app_id = $1 order by created desc",
     [appId]
   );
 
@@ -80,4 +95,23 @@ export const getSavedConfigurationForRegistrationId = (
       [registrationId]
     ),
     Effect.map(({ saved_configuration }) => saved_configuration)
+  );
+
+/**
+ * Creates a new LTI 1.1 registration for an app
+ */
+export const createLti11RegistrationForAppId = (
+  appId: number,
+  consumerKey: string,
+  sharedSecret: string
+) =>
+  Effect.tap(
+    query1(Registration)(
+      `insert into registrations
+      (app_id, type, consumer_key, shared_secret, platform_configuration, claims, scopes, custom_parameters)
+      values ($1, 'lti11', $2, $3, $4, $5, $6, $7)
+      returning id, client_id, type, app_id, created, platform_configuration, claims, scopes, custom_parameters, registration_config_url, registration_client_uri, consumer_key, shared_secret`,
+      [appId, consumerKey, sharedSecret, {}, [], [], {}]
+    ),
+    (reg) => createKeyForRegistrationId(reg.id)
   );

@@ -36,6 +36,19 @@ export const LaunchView = () => {
         <WithRequest eff={fetchLaunch(params)}>
           {(launch) => (
             <div className="p-4">
+              <div className="mb-4">
+                <span
+                  className={`inline-block px-3 py-1 rounded-full text-sm font-semibold ${
+                    launch.registration.type === "lti11"
+                      ? "bg-orange-100 text-orange-800 border border-orange-300"
+                      : "bg-blue-100 text-blue-800 border border-blue-300"
+                  }`}
+                >
+                  {launch.registration.type === "lti11"
+                    ? "LTI 1.1 Launch"
+                    : "LTI 1.3 Launch"}
+                </span>
+              </div>
               <div className="flex flex-col gap-2">
                 <AgsView launch={launch} />
                 <DeepLinkingView launch={launch} />

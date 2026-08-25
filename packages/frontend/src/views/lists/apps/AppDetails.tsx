@@ -29,21 +29,20 @@ import { useParsedParams } from "../../../lib/react-router/useSchemaParams";
 import { NewEntityForm } from "../NewEntityForm";
 import { FetchError } from "endpoint-ts-fetch";
 import { fetchApp } from "../../../lib/apps/apps";
+import {
+  fetchCreateLti11Registration,
+  fetchDeleteRegistration,
+} from "../../../lib/registrations/registrations";
 import { Pre } from "../../../lib/ui/Pre";
 
 const paramSchema = S.struct({ appId: S.compose(S.NumberFromString, AppId) });
-
-const deleteRegistration = (options: {
-  appId: number;
-  registrationId: number;
-}) =>
-  delete_(`/api/apps/${options.appId}/registrations/${options.registrationId}`);
 
 export const AppDetails = () => {
   const params = useParsedParams(paramSchema);
 
   const manualDialogRef = React.useRef<HTMLDialogElement>(null);
   const dynamicRegDialogRef = React.useRef<HTMLDialogElement>(null);
+  const lti11DialogRef = React.useRef<HTMLDialogElement>(null);
 
   return pipe(
     params,
@@ -79,6 +78,7 @@ export const AppDetails = () => {
                         app={app}
                         manualDialogRef={manualDialogRef}
                         dynamicRegDialogRef={dynamicRegDialogRef}
+                        lti11DialogRef={lti11DialogRef}
                         reloadApps={reloadApps}
                       />
                     </div>
@@ -88,6 +88,7 @@ export const AppDetails = () => {
                         app={app}
                         manualDialogRef={manualDialogRef}
                         dynamicRegDialogRef={dynamicRegDialogRef}
+                        lti11DialogRef={lti11DialogRef}
                         reloadApps={reloadApps}
                       />
                     </div>
@@ -134,6 +135,18 @@ export const AppDetails = () => {
               </div>
             </div>
           </dialog>
+
+          <dialog ref={lti11DialogRef} className="modal">
+            <div className="modal-box w-11/12 max-w-3xl">
+              <NewEntityForm
+                close={() => {
+                  lti11DialogRef.current?.close();
+                }}
+                form={newLti11RegistrationForm(appId)}
+                entityName={"LTI 1.1 Registration"}
+              />
+            </div>
+          </dialog>
         </>
       ),
     })
@@ -154,6 +167,14 @@ const newRegistrationForm = (appId: number) =>
     )
   );
 
+const newLti11RegistrationForm = (appId: AppId) =>
+  F.mkForm({
+    consumer_key: F.string("Consumer Key"),
+    shared_secret: F.password("Shared Secret"),
+  })((fields) =>
+    pipe(fetchCreateLti11Registration({ appId })(fields), provideRequestService)
+  );
+
 const url = (path: string) => {
   const host = window.location.hostname;
   const port = window.location.port === "" ? "" : `:${window.location.port}`;
@@ -165,6 +186,7 @@ type SubViewProps = {
   app: AppWithRegistrations;
   dynamicRegDialogRef: React.RefObject<HTMLDialogElement>;
   manualDialogRef: React.RefObject<HTMLDialogElement>;
+  lti11DialogRef: React.RefObject<HTMLDialogElement>;
   reloadApps: Effect.Effect<
     AppWithRegistrations,
     RequestError | FetchError,
@@ -188,27 +210,43 @@ const EmptyRegistrationsView = (props: SubViewProps) => {
         </div>
       </div>
 
-      <div className="flex-1 flex w-full h-36 justify-around place-items-center">
-        <div className="flex-1 flex justify-end">
-          <button
-            className="btn btn-primary w-64"
-            onClick={() => {
-              props.dynamicRegDialogRef.current?.showModal();
-            }}
+      <div className="flex-1 flex w-full h-36 justify-center place-items-center">
+        <div className="dropdown dropdown-hover">
+          <label tabIndex={0} className="btn btn-primary w-64">
+            New Registration
+          </label>
+          <ul
+            tabIndex={0}
+            className="dropdown-content z-[1] menu p-2 shadow bg-base-300 rounded-box w-64"
           >
-            Dynamic Registration
-          </button>
-        </div>
-        <div className="flex-0 divider divider-horizontal">OR</div>
-        <div className="flex-1 flex justify-start">
-          <button
-            className="btn btn-primary w-64"
-            onClick={() => {
-              props.manualDialogRef.current?.showModal();
-            }}
-          >
-            Create Manual
-          </button>
+            <li>
+              <a
+                onClick={() => {
+                  props.dynamicRegDialogRef.current?.showModal();
+                }}
+              >
+                Dynamic Registration
+              </a>
+            </li>
+            <li>
+              <a
+                onClick={() => {
+                  props.manualDialogRef.current?.showModal();
+                }}
+              >
+                Create Manual
+              </a>
+            </li>
+            <li>
+              <a
+                onClick={() => {
+                  props.lti11DialogRef.current?.showModal();
+                }}
+              >
+                LTI 1.1 Registration
+              </a>
+            </li>
+          </ul>
         </div>
       </div>
     </div>
@@ -217,149 +255,191 @@ const EmptyRegistrationsView = (props: SubViewProps) => {
 
 const RegistrationsList = (props: SubViewProps) => {
   return (
-    <div className="">
+    <div className="w-full max-w-4xl">
       <div className="flex-1 flex w-full p-1 justify-end place-items-center">
         <div className="flex-1 flex justify-start prose">
           <h1>Integrations</h1>
         </div>
-        <div className="flex justify-end">
-          <button
-            className="btn btn-primary w-64 btn-sm"
-            onClick={() => {
-              props.dynamicRegDialogRef.current?.showModal();
-            }}
+        <div className="dropdown dropdown-hover dropdown-end">
+          <label tabIndex={0} className="btn btn-primary btn-sm">
+            New Registration
+          </label>
+          <ul
+            tabIndex={0}
+            className="dropdown-content z-[1] menu p-2 shadow bg-base-300 rounded-box w-52"
           >
-            Dynamic Registration
-          </button>
-        </div>
-        <div className="divider divider-horizontal"></div>
-        <div className="flex justify-start">
-          <button
-            className="btn btn-primary w-64 btn-sm"
-            onClick={() => {
-              props.manualDialogRef.current?.showModal();
-            }}
-          >
-            Create Manual
-          </button>
+            <li>
+              <a
+                onClick={() => {
+                  props.dynamicRegDialogRef.current?.showModal();
+                }}
+              >
+                Dynamic Registration
+              </a>
+            </li>
+            <li>
+              <a
+                onClick={() => {
+                  props.manualDialogRef.current?.showModal();
+                }}
+              >
+                Create Manual
+              </a>
+            </li>
+            <li>
+              <a
+                onClick={() => {
+                  props.lti11DialogRef.current?.showModal();
+                }}
+              >
+                LTI 1.1 Registration
+              </a>
+            </li>
+          </ul>
         </div>
       </div>
       <div className="divider"></div>
-      <table className="table table-zebra">
-        {/* head */}
-        <thead>
-          <tr>
-            <th>Issuer</th>
-            <th>Last Launched</th>
-            {/* <th className="text-center">Launches</th>
-            <th className="text-center">Contexts</th>
-            <th className="text-center">Users</th> */}
-            <th>Saved Config</th>
-            <th>Client Id</th>
-            <th>Type</th>
-            <th>Created</th>
-          </tr>
-        </thead>
-        <tbody>
-          {props.app.registrations.map((r) => (
-            <tr key={r.id}>
-              <td>
-                <a className="link" href={r.platform_configuration.issuer}>
-                  {r.platform_configuration.issuer}
-                </a>
-              </td>
-              <td>{format(r.created)}</td>
-              {/* <td className="text-center">{0}</td>
-              <td className="text-center">{0}</td>
-              <td className="text-center">{0}</td> */}
-              <td>
-                <a
-                  href={`/api/apps/${r.app_id}/registrations/${r.id}/saved-configuration`}
-                  className="link"
+      <div className="space-y-3">
+        {props.app.registrations.map((r) => (
+          <div key={r.id} className="flex justify-between items-start py-2 border-b border-base-300">
+            <div className="flex-1">
+              <div className="flex items-center gap-2 mb-1">
+                <span
+                  className={`badge badge-sm ${
+                    r.type === "lti11" ? "badge-warning" : "badge-info"
+                  }`}
                 >
-                  view
-                </a>
-              </td>
-              <td>{Option.getOrNull(r.client_id)}</td>
-              <td>{r.type}</td>
-              <td>{format(r.created)}</td>
-              <td>
-                <div className="dropdown dropdown-end">
-                  <label tabIndex={0} className="">
-                    <button>
-                      <EllipsisVerticalIcon className="w-5" />
-                    </button>
-                  </label>
-                  <ul
-                    tabIndex={0}
-                    className="dropdown-content z-[1] menu p-2 shadow bg-base-300 rounded-box w-52"
-                  >
-                    <li>
-                      <a
-                        onClick={() => {
-                          pipe(
-                            confirmWithLoading({
-                              title: "Delete Registration?",
-                              description:
-                                "Are you sure you want to delete this registration?",
-                              onSubmit: () =>
-                                pipe(
-                                  deleteRegistration({
-                                    appId: props.app.id,
-                                    registrationId: r.id,
-                                  }),
-                                  Effect.flatMap(() => props.reloadApps),
-                                  provideRequestService
-                                ),
-                            }),
-                            provideRequestService,
-                            Effect.runCallback
-                          );
-                        }}
-                      >
-                        Delete
-                      </a>
-                    </li>
-                    <li>
-                      <a
-                        href={`/api/apps/${props.app.id}/registrations/${r.id}/token`}
-                      >
-                        Token
-                      </a>
-                    </li>
-                    <li>
-                      <a
-                        href={`/api/registrations/${r.id}/canvas_configuration`}
-                      >
-                        Config JSON
-                      </a>
-                    </li>
-                    <li>
-                      <Link
-                        to={`/apps/${r.app_id}/registrations/${r.id}/configuration`}
-                      >
-                        Edit Registration
-                      </Link>
-                    </li>
+                  {r.type === "lti11" ? "LTI 1.1" : r.type}
+                </span>
+                <span className="text-xs text-gray-500">
+                  {format(r.created)}
+                </span>
+              </div>
 
-                    {pipe(
-                      r.registration_config_url,
-                      Option.match({
-                        onNone: () => <></>,
-                        onSome: (url) => (
-                          <li>
-                            <a href={url}>Platform Config</a>
-                          </li>
-                        ),
-                      })
-                    )}
-                  </ul>
+              {r.type === "lti11" ? (
+                <div className="text-sm space-y-1">
+                  <div>
+                    <span className="text-gray-600">Consumer Key: </span>
+                    <span className="font-mono">{r.consumer_key}</span>
+                  </div>
+                  <div>
+                    <span className="text-gray-600">Shared Secret: </span>
+                    <span className="font-mono">{r.shared_secret}</span>
+                  </div>
                 </div>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+              ) : (
+                <div className="text-sm space-y-1">
+                  <div>
+                    <span className="text-gray-600">Issuer: </span>
+                    <a className="link" href={r.platform_configuration.issuer}>
+                      {r.platform_configuration.issuer}
+                    </a>
+                  </div>
+                  {Option.isSome(r.client_id) && (
+                    <div>
+                      <span className="text-gray-600">Client ID: </span>
+                      <span className="font-mono">{r.client_id.value}</span>
+                    </div>
+                  )}
+                  <div>
+                    <a
+                      href={`/api/apps/${r.app_id}/registrations/${r.id}/saved-configuration`}
+                      className="link text-xs"
+                    >
+                      View saved configuration
+                    </a>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div className="dropdown dropdown-end">
+              <label tabIndex={0} className="">
+                <button>
+                  <EllipsisVerticalIcon className="w-5" />
+                </button>
+              </label>
+              <ul
+                tabIndex={0}
+                className="dropdown-content z-[1] menu p-2 shadow bg-base-300 rounded-box w-52"
+              >
+                <li>
+                  <a
+                    onClick={() => {
+                      pipe(
+                        confirmWithLoading({
+                          title: "Delete Registration?",
+                          description:
+                            "Are you sure you want to delete this registration?",
+                          onSubmit: () =>
+                            pipe(
+                              fetchDeleteRegistration({
+                                appId: props.app.id,
+                                registrationId: r.id,
+                              }),
+                              Effect.flatMap(() => props.reloadApps),
+                              provideRequestService
+                            ),
+                        }),
+                        provideRequestService,
+                        Effect.runCallback
+                      );
+                    }}
+                  >
+                    Delete
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href={`/api/apps/${props.app.id}/registrations/${r.id}/token`}
+                  >
+                    Token
+                  </a>
+                </li>
+                {r.type === "lti11" ? (
+                  <li>
+                    <a
+                      href={`/api/registrations/${r.id}/lti11/configuration.xml`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      View XML Config
+                    </a>
+                  </li>
+                ) : (
+                  <li>
+                    <a
+                      href={`/api/registrations/${r.id}/canvas_configuration`}
+                    >
+                      Config JSON
+                    </a>
+                  </li>
+                )}
+                <li>
+                  <Link
+                    to={`/apps/${r.app_id}/registrations/${r.id}/configuration`}
+                  >
+                    Edit Registration
+                  </Link>
+                </li>
+
+                {r.type !== "lti11" &&
+                  pipe(
+                    r.registration_config_url,
+                    Option.match({
+                      onNone: () => <></>,
+                      onSome: (url) => (
+                        <li>
+                          <a href={url}>Platform Config</a>
+                        </li>
+                      ),
+                    })
+                  )}
+              </ul>
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   );
 };

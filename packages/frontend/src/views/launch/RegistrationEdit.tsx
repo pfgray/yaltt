@@ -33,6 +33,15 @@ export const RegistrationEditWrapper = () =>
     return (
       <WithRequest eff={fetchRegistrationFromPlatform(params)}>
         {({ registration, app, rawToolConfiguration, toolConfiguration }) => {
+          // Registration editing is only supported for LTI 1.3
+          if (registration.type === "lti11") {
+            return (
+              <div className="alert alert-warning">
+                <span>Registration editing is not supported for LTI 1.1 registrations.</span>
+              </div>
+            );
+          }
+
           return (
             <RegistrationEdit
               app={app}

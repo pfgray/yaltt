@@ -38,6 +38,9 @@ importers:
       '@types/multer':
         specifier: ^1.4.7
         version: 1.4.12
+      '@types/oauth-signature':
+        specifier: ^1.5.2
+        version: 1.5.2
       '@types/passport':
         specifier: ^1.0.11
         version: 1.0.17
@@ -98,6 +101,9 @@ importers:
       nodemon:
         specifier: ^2.0.20
         version: 2.0.22
+      oauth-signature:
+        specifier: ^1.5.0
+        version: 1.5.0
       passport:
         specifier: ^0.6.0
         version: 0.6.0
@@ -2183,6 +2189,9 @@ packages:
   '@types/node@20.17.23':
     resolution: {integrity: sha512-8PCGZ1ZJbEZuYNTMqywO+Sj4vSKjSjT6Ua+6RFOYlEvIvKQABPtrNkoVSLSKDb4obYcMhspVKmsw8Cm10NFRUg==}
 
+  '@types/oauth-signature@1.5.2':
+    resolution: {integrity: sha512-YDiDWgkEBoouGfm9O5SN9wUlCE5QRTHxrrijqqQyP0uXPljOnx3qEHw/gxmlSBgMkTc/IuFa6kbCLqG6mK318Q==}
+
   '@types/parse-json@4.0.2':
     resolution: {integrity: sha512-dISoDXWWQwUquiKsyZ4Ng+HX2KsPL7LyHKHQwgGFEA3IaKac4Obd+h2a/a6waisAoepJlBcx9paWqjA8/HVjCw==}
 
@@ -2949,6 +2958,10 @@ packages:
   cross-spawn@7.0.6:
     resolution: {integrity: sha512-uV2QOWP2nWzsy2aMp8aRibhi9dlzF5Hgh5SHaB9OiTGEyDTiJJyx0uy51QXdyWbtAHNua4XJzUKca3OzKUd3vA==}
     engines: {node: '>= 8'}
+
+  crypto-js@3.1.9-1:
+    resolution: {integrity: sha512-W93aKztssqf29OvUlqfikzGyYbD1rpkXvGP9IQ1JchLY3bxaLXZSWYbwrtib2vk8DobrDzX7PIXcDWHp0B6Ymw==}
+    deprecated: Active development of CryptoJS has been discontinued. This library is no longer maintained.
 
   crypto-random-string@4.0.0:
     resolution: {integrity: sha512-x8dy3RnvYdlUcPOjkEHqozhiwzKNSq7GcPuXFbnyMOCHxX8V3OgIg/pYuabl2sbUPfIJaeAQB7PMOK8DFIdoRA==}
@@ -4613,6 +4626,7 @@ packages:
   multer@1.4.5-lts.1:
     resolution: {integrity: sha512-ywPWvcDMeH+z9gQq5qYHCCy+ethsk4goepZ45GLD63fOu0YcNecQxi64nDs3qluZB+murG3/D4dJ7+dGctcCQQ==}
     engines: {node: '>= 6.0.0'}
+    deprecated: Multer 1.x is impacted by a number of vulnerabilities, which have been patched in 2.x. You should upgrade to the latest 2.x version.
 
   multicast-dns@7.2.5:
     resolution: {integrity: sha512-2eznPJP8z2BFLX50tf0LuODrpINqP1RVIm/CObbTcBRITQgmC/TjcREF1NeTBzIcR5XO/ukWo+YHOjBbFwIupg==}
@@ -4647,6 +4661,7 @@ packages:
   node-domexception@1.0.0:
     resolution: {integrity: sha512-/jKZoMpw0F8GRwl4/eLROPA3cfcXtLApP0QzLmUT/HuPCZWyB7IY9ZrMeKw2O/nFIqPQB3PVM9aYm0F312AXDQ==}
     engines: {node: '>=10.5.0'}
+    deprecated: Use your platform's native DOMException instead
 
   node-emoji@2.2.0:
     resolution: {integrity: sha512-Z3lTE9pLaJF47NyMhd4ww1yFTAP8YhYI8SleJiHzM46Fgpm5cnNzSl9XfzFNqbaz+VlJrIj3fXQ4DeN1Rjm6cw==}
@@ -4700,6 +4715,9 @@ packages:
 
   nth-check@2.1.1:
     resolution: {integrity: sha512-lqjrjmaOoAnWfMmBPL+XNnynZh2+swxiX3WUE0s4yEHI6m+AwrK2UZOimIRl3X/4QctVqS8AiZjFqyOGrMXb/w==}
+
+  oauth-signature@1.5.0:
+    resolution: {integrity: sha512-lF0vEK03oZoE4svZzfp8HVdDC5lPwTeC3DBotRHBbFsA13jHS4kf9CMHRORGxR0Fseo6k25PHBvIJczdYwuflw==}
 
   oauth@0.10.0:
     resolution: {integrity: sha512-1orQ9MT1vHFGQxhuy7E/0gECD3fd2fCC+PIX+/jgmU/gI3EpRocXtmtvxCO5x3WZ443FLTLFWNDjl5MPJf9u+Q==}
@@ -6256,6 +6274,9 @@ packages:
   update-notifier@6.0.2:
     resolution: {integrity: sha512-EDxhTEVPZZRLWYcJ4ZXjGFN0oP7qYvbXWzEgRm/Yql4dHX5wDbvh89YHP6PK1lzZJYrMtXUuZZz8XGK+U6U1og==}
     engines: {node: '>=14.16'}
+
+  uri-js@3.0.2:
+    resolution: {integrity: sha512-SoboS4c924cg+wR2vxl8fospPPli3ZmVPIkRpJEWcrGIPeE8Tr3m9zNIyjYKn9YlF8EgiXQDCy3XVZxSFNjh8A==}
 
   uri-js@4.4.1:
     resolution: {integrity: sha512-7rKUyy33Q1yc98pQ1DAmLtwX109F7TIfWlW1Ydo8Wl1ii1SeHieeh0HHfPeL2fMXK6z0s8ecKs9frCuLJvndBg==}
@@ -9036,6 +9057,8 @@ snapshots:
     dependencies:
       undici-types: 6.19.8
 
+  '@types/oauth-signature@1.5.2': {}
+
   '@types/parse-json@4.0.2': {}
 
   '@types/passport-google-oauth2@0.1.10':
@@ -9913,6 +9936,8 @@ snapshots:
       path-key: 3.1.1
       shebang-command: 2.0.0
       which: 2.0.2
+
+  crypto-js@3.1.9-1: {}
 
   crypto-random-string@4.0.0:
     dependencies:
@@ -12150,6 +12175,11 @@ snapshots:
     dependencies:
       boolbase: 1.0.0
 
+  oauth-signature@1.5.0:
+    dependencies:
+      crypto-js: 3.1.9-1
+      uri-js: 3.0.2
+
   oauth@0.10.0: {}
 
   object-assign@4.1.1: {}
@@ -13848,6 +13878,10 @@ snapshots:
       semver: 7.7.1
       semver-diff: 4.0.0
       xdg-basedir: 5.1.0
+
+  uri-js@3.0.2:
+    dependencies:
+      punycode: 2.3.1
 
   uri-js@4.4.1:
     dependencies:

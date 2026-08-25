@@ -27,15 +27,23 @@ type TokenFetcherState = {
 export const TokenFetcher = (props: TokenFetcherProps) => {
   const { launch } = props;
 
+  // Token fetching is only supported for LTI 1.3 registrations
+  if (launch.registration.type === "lti11") {
+    return null;
+  }
+
+  // TypeScript now knows registration is LTI 1.3
+  const registration = launch.registration;
+
   const token = useRemoteState(fetchToken);
 
   const scopesSupported =
-    props.launch.registration.platform_configuration.scopes_supported.filter(
-      (s) => s !== "openid"
+    registration.platform_configuration.scopes_supported.filter(
+      (s: string) => s !== "openid"
     );
 
   const [selectedScopes, setSelectedScopes] = useState(
-    scopesSupported.filter((s) => props.launch.registration.scopes.includes(s))
+    scopesSupported.filter((s: string) => registration.scopes.includes(s))
   );
 
   const toggleScope = (scope: string) => {
@@ -96,11 +104,11 @@ export const TokenFetcher = (props: TokenFetcherProps) => {
                     [
                       pipe(
                         tokenScopes.find(
-                          (s) => s === LtiScope.RegistrationReadOnly
+                          (s: string) => s === LtiScope.RegistrationReadOnly
                         ),
                         Option.fromNullable,
                         Option.flatMap(
-                          () => launch.registration.registration_client_uri
+                          () => registration.registration_client_uri
                         ),
                         Option.map(
                           renderServiceRequest(

@@ -14,6 +14,8 @@ import { addOrUpdateUserWithLocalPassword } from "./model/users";
 import { appRouter } from "./routes/apps/appRouter";
 import { agsRouter } from "./routes/ags/agsRouter";
 import { launchRouter } from "./routes/registrations/launchRouter";
+import { lti11LaunchRouter } from "./routes/registrations/lti11LaunchRouter";
+import { lti11ConfigRouter } from "./routes/registrations/lti11ConfigRouter";
 import { registrationRouter } from "./routes/registrations/registrationsRouter";
 import {
   effRequestHandler,
@@ -144,6 +146,8 @@ app.use(appRouter);
 app.use(registrationRouter);
 app.use(agsRouter);
 app.use("/api", launchRouter);
+app.use("/api", lti11LaunchRouter);
+app.use("/api", lti11ConfigRouter);
 app.use(adminRouter);
 
 app.get("/api/no_canvas_extension", (req, res) => {

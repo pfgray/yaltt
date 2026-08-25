@@ -53,7 +53,7 @@ services:
     working_dir: /app
 
   db:
-    build: ./docker/db
+    image: postgres:15-alpine
     environment:
       - POSTGRES_USER=yaltt
       - POSTGRES_PASSWORD=password

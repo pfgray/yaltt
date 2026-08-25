@@ -1,4 +1,3 @@
-import { EncodeError } from "@yaltt/model";
 import { Effect, pipe } from "effect";
 import { create } from "zustand";
 import {
@@ -6,6 +5,7 @@ import {
   FetchParseError,
   FetchParseJsonError,
 } from "endpoint-ts-fetch";
+import { EncodeError } from "endpoint-ts";
 import { Request } from "./DynamicRegistration";
 
 export type InstallingStateError =

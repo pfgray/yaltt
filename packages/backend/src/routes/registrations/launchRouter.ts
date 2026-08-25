@@ -74,7 +74,15 @@ const handleLoginRequest = effRequestHandler(
     Effect.bind("registration", ({ registrationId }) =>
       getRegistrationForId(registrationId)
     ),
-    Effect.map(({ params, registration }) => {
+    Effect.flatMap(({ params, registration }) => {
+      // LTI 1.3 login flow
+      if (registration.type === "lti11") {
+        return Effect.fail({
+          _tag: "Lti11LaunchError" as const,
+          message: "LTI 1.1 registrations do not use the login endpoint"
+        });
+      }
+
       // set cookie, then redirect to authorization endpoint?
       // redirect to authorization endpoint
 
@@ -93,7 +101,7 @@ const handleLoginRequest = effRequestHandler(
         toParams
       );
       const redirectUrl = `${registration.platform_configuration.authorization_endpoint}${redirectParams}`;
-      return redirectResponse(redirectUrl);
+      return Effect.succeed(redirectResponse(redirectUrl));
     }) // todo change to redirect
     //Effect.bind('hmm', ({registration}) => registration.)
   )

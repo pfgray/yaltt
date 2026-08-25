@@ -1,6 +1,6 @@
 import * as crypto from "crypto";
 import { Effect, Option, pipe } from "effect";
-import { Registration } from "@yaltt/model";
+import { Lti13RegistrationType } from "@yaltt/model";
 import { Fetch } from "../fetch/FetchService";
 import { getKeyForRegistrationId } from "../model/entities/keys";
 import { signJwt } from "../crypto/KeyService";
@@ -15,7 +15,7 @@ import { Headers } from "node-fetch";
  * @returns
  */
 export const fetchToken = (
-  registration: Registration,
+  registration: Lti13RegistrationType,
   scopes: ReadonlyArray<string>,
   deployment_id?: string
 ) =>

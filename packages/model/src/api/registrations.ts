@@ -59,6 +59,19 @@ export const createRegistration = Endpoint.post(
     })
   )
 );
+
+export const createLti11Registration = Endpoint.post(
+  pipe(appRegistrationsRoute, path("lti11")),
+  {},
+  Response.json(Registration),
+  Body.json(
+    S.struct({
+      consumer_key: S.string,
+      shared_secret: S.string,
+    })
+  )
+);
+
 export const getConfiguration = Endpoint.get(
   pipe(registrationRoute, path("configuration")),
   {},

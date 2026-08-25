@@ -7,6 +7,7 @@ import {
   RegistrationId,
   createNewAppInstallation,
   createRegistration,
+  createLti11Registration,
   createToolInstallation,
   getApiTokenForRegistration,
   getCanvasConfiguration,
@@ -45,12 +46,14 @@ import { Fetch } from "../../fetch/FetchService";
 import { getKeysWithoutPrivateKeyForRegistrationId } from "../../model/entities/keys";
 import {
   createRegistrationForAppId,
+  createLti11RegistrationForAppId,
   deleteRegistrationForId,
   getRegistrationForId,
   getRegistrationsForAppId,
   getSavedConfigurationForRegistrationId,
   setRegistrationClientIdAndClientUri,
   setRegistrationSavedConfiguration,
+  requireLti13Registration,
 } from "../../model/entities/registrations";
 import { schemaParse } from "../../schemaParse";
 import { fetchToken } from "../../tokens/tokens";
@@ -128,6 +131,16 @@ bindRegistrationEndpoint(createRegistration)(({ appId }, _, body) =>
         [],
         []
       )
+    )
+  )
+);
+
+// LTI 1.1 Registration Creation
+bindRegistrationEndpoint(createLti11Registration)(({ appId }, _, body) =>
+  pipe(
+    appIdIsForUser(appId),
+    Effect.flatMap((app) =>
+      createLti11RegistrationForAppId(app.id, body.consumer_key, body.shared_secret)
     )
   )
 );
@@ -262,32 +275,37 @@ bindRegistrationEndpoint(createToolInstallation)(({ appId }, _, body) =>
         body.scopes
       )
     ),
-    Effect.bind("installRequest", ({ app, config, registration, request }) => {
-      const url = new URL(body.registrationEndpoint);
-      // todo: this shouldn't be here, remove it once Canvas supports it in the header
-      if (body.registrationToken) {
-        url.searchParams.append("registration_token", body.registrationToken);
-      }
-      const toolConfiguration = mkYalttToolConfiguration(
-        config,
-        request.request
-      )({
-        app,
-        registration,
-        customParameters: body.customParameters,
-        messages: body.messages.map((m) => ({
-          ...m,
-          target_link_uri: mkYalttUrl(
+    Effect.flatMap(({ app, config, registration, request }) =>
+      pipe(
+        requireLti13Registration(registration, "Unexpected LTI 1.1 registration in dynamic flow"),
+        Effect.flatMap((registration) => pipe(
+          Effect.Do,
+        Effect.bind("installRequest", () => {
+          const url = new URL(body.registrationEndpoint);
+          // todo: this shouldn't be here, remove it once Canvas supports it in the header
+          if (body.registrationToken) {
+            url.searchParams.append("registration_token", body.registrationToken);
+          }
+          const toolConfiguration = mkYalttToolConfiguration(
             config,
             request.request
-          )(
-            `/api/registrations/${registration.id}/launch${
-              m.placements ? `?placement=${m.placements.join(",")}` : ""
-            }`
-          ),
-        })),
-        scopes: registration.scopes,
-        claims: registration.claims,
+          )({
+            app,
+            registration,
+            customParameters: body.customParameters,
+            messages: body.messages.map((m) => ({
+              ...m,
+              target_link_uri: mkYalttUrl(
+                config,
+                request.request
+              )(
+                `/api/registrations/${registration.id}/launch${
+                  m.placements ? `?placement=${m.placements.join(",")}` : ""
+                }`
+              ),
+            })),
+            scopes: registration.scopes,
+            claims: registration.claims,
         privacyLevel: "public",
         toolId: body.toolId,
         disableReinstall: body.disableReinstall,
@@ -295,35 +313,39 @@ bindRegistrationEndpoint(createToolInstallation)(({ appId }, _, body) =>
       console.log("##Sending tool configuration:");
       console.log(JSON.stringify(toolConfiguration, null, 2));
 
-      return Fetch.post(
-        url.toString(),
-        toolConfiguration,
-        body.registrationToken
-          ? {
-              headers: {
-                Authorization: `Bearer ${body.registrationToken}`,
-              },
-            }
-          : {}
-      );
-    }),
-    Effect.bind("install", ({ installRequest }) =>
-      schemaParse(CreatedToolConfiguration)(installRequest)
-    ),
-    Effect.mapError((a) => a),
-    Effect.tap(({ registration, install }) =>
-      setRegistrationSavedConfiguration(registration.id, install)
-    ),
-    Effect.flatMap(({ registration, install }) =>
-      setRegistrationClientIdAndClientUri({
-        registrationId: registration.id,
-        client_id: install.client_id,
-        registration_config_url:
-          install["https://purl.imsglobal.org/spec/lti-tool-configuration"][
-            "https://canvas.instructure.com/lti/registration_config_url"
-          ],
-        registration_client_uri: install.registration_client_uri,
-      })
+          return Fetch.post(
+            url.toString(),
+            toolConfiguration,
+            body.registrationToken
+              ? {
+                  headers: {
+                    Authorization: `Bearer ${body.registrationToken}`,
+                  },
+                }
+              : {}
+          );
+        }),
+        Effect.bind("install", ({ installRequest }) =>
+          schemaParse(CreatedToolConfiguration)(installRequest)
+        ),
+        Effect.mapError((a) => a),
+        Effect.tap(({ install }) =>
+          setRegistrationSavedConfiguration(registration.id, install)
+        ),
+        Effect.flatMap(({ install }) =>
+          setRegistrationClientIdAndClientUri({
+            registrationId: registration.id,
+            client_id: install.client_id,
+            registration_config_url:
+              install["https://purl.imsglobal.org/spec/lti-tool-configuration"][
+                "https://canvas.instructure.com/lti/registration_config_url"
+              ],
+            registration_client_uri: install.registration_client_uri,
+          })
+        ),
+        Effect.map(() => ({}))
+        ))
+      )
     )
   )
 );
@@ -423,7 +445,10 @@ bindRegistrationEndpoint(getApiTokenForRegistration)(
   ({ appId, registrationId }, { scope }) => {
     return pipe(
       registrationAndApp(appId, registrationId),
-      Effect.flatMap(({ registration }) => {
+      Effect.flatMap(({ registration }) =>
+        requireLti13Registration(registration, "Cannot get API token for LTI 1.1 registration")
+      ),
+      Effect.flatMap((registration) => {
         const scopes = pipe(
           scope,
           Option.map((s) => s.split(",")),
@@ -440,6 +465,9 @@ bindRegistrationEndpoint(signDeepLinkingContentItems)(
     pipe(
       registrationAndApp(appId, registrationId),
       Effect.flatMap(({ registration }) =>
+        requireLti13Registration(registration, "Cannot sign deep linking content items for LTI 1.1 registration")
+      ),
+      Effect.flatMap((registration) =>
         signJwtPayloadForRegistration(registration)({
           [DeploymentIdClaimKey]: body.deploymentId,
           [MessageTypeClaimKey]: "LtiDeepLinkingResponse",
@@ -467,6 +495,9 @@ bindRegistrationEndpoint(signUpdateRequest)(
     pipe(
       registrationAndApp(appId, registrationId),
       Effect.flatMap(({ registration }) =>
+        requireLti13Registration(registration, "Cannot sign update request for LTI 1.1 registration")
+      ),
+      Effect.flatMap((registration) =>
         signJwtPayloadForRegistration(registration)(body.payload as any)
       ),
       Effect.map((signedRequest) => ({ signedRequest }))
@@ -477,30 +508,40 @@ bindRegistrationEndpoint(getRegistrationFromPlatform)(
   ({ appId, registrationId }, _) =>
     pipe(
       registrationAndApp(appId, registrationId),
-      Effect.bind("client_uri", ({ registration }) =>
-        pipe(
-          registration.registration_client_uri,
-          Option.map(Effect.succeed),
-          Option.getOrElse(() =>
-            Effect.fail(
-              dataIntegrityError("No registration_client_uri for registration")
+      Effect.flatMap(({ registration, app }) => {
+        if (registration.type === "lti11") {
+          return Effect.fail(
+            dataIntegrityError("Cannot get registration from platform for LTI 1.1 registration")
+          );
+        }
+        return pipe(
+          Effect.succeed({ registration, app }),
+          Effect.bind("client_uri", ({ registration }) =>
+            pipe(
+              registration.registration_client_uri,
+              Option.map(Effect.succeed),
+              Option.getOrElse(() =>
+                Effect.fail(
+                  dataIntegrityError("No registration_client_uri for registration")
+                )
+              )
             )
+          ),
+          Effect.bind("token", ({ registration }) =>
+            fetchToken(registration, [LtiScope.RegistrationReadOnly])
+          ),
+          Effect.bind("rawToolConfiguration", ({ client_uri, token }) =>
+            Fetch.get(client_uri, {
+              headers: {
+                Authorization: `Bearer ${token.access_token}`,
+              },
+            })
+          ),
+          Effect.bind("toolConfiguration", ({ rawToolConfiguration }) =>
+            schemaParse(CreatedToolConfiguration)(rawToolConfiguration)
           )
-        )
-      ),
-      Effect.bind("token", ({ registration }) =>
-        fetchToken(registration, [LtiScope.RegistrationReadOnly])
-      ),
-      Effect.bind("rawToolConfiguration", ({ client_uri, token }) =>
-        Fetch.get(client_uri, {
-          headers: {
-            Authorization: `Bearer ${token.access_token}`,
-          },
-        })
-      ),
-      Effect.bind("toolConfiguration", ({ rawToolConfiguration }) =>
-        schemaParse(CreatedToolConfiguration)(rawToolConfiguration)
-      )
+        );
+      })
     )
 );
 
@@ -508,23 +549,31 @@ bindRegistrationEndpoint(sendRegistrationUpdate)(
   ({ appId, registrationId }, _, body) =>
     pipe(
       registrationAndApp(appId, registrationId),
-      Effect.bind("request", () => ExpressRequestService),
-      Effect.bind("config", () => getConfig),
-      Effect.bind("client_uri", ({ registration }) =>
-        pipe(
-          registration.registration_client_uri,
-          Option.map(Effect.succeed),
-          Option.getOrElse(() =>
-            Effect.fail(
-              dataIntegrityError("No registration_client_uri for registration")
+      Effect.flatMap(({ registration, app }) => {
+        if (registration.type === "lti11") {
+          return Effect.fail(
+            dataIntegrityError("Cannot send registration update for LTI 1.1 registration")
+          );
+        }
+        return pipe(
+          Effect.succeed({ registration, app }),
+          Effect.bind("request", () => ExpressRequestService),
+          Effect.bind("config", () => getConfig),
+          Effect.bind("client_uri", ({ registration }) =>
+            pipe(
+              registration.registration_client_uri,
+              Option.map(Effect.succeed),
+              Option.getOrElse(() =>
+                Effect.fail(
+                  dataIntegrityError("No registration_client_uri for registration")
+                )
+              )
             )
-          )
-        )
-      ),
+          ),
 
-      Effect.bind("token", ({ registration }) =>
-        fetchToken(registration, [LtiScope.Registration])
-      ),
+          Effect.bind("token", ({ registration }) =>
+            fetchToken(registration, [LtiScope.Registration])
+          ),
       Effect.bind(
         "updateRequest",
         ({ client_uri, token, request, config, app, registration }) => {
@@ -563,6 +612,8 @@ bindRegistrationEndpoint(sendRegistrationUpdate)(
           });
         }
       ),
-      Effect.map((a) => ({}))
+          Effect.map((a) => ({}))
+        );
+      })
     )
 );
