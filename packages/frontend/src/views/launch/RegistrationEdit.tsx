@@ -1,28 +1,17 @@
-import { useState } from "react";
-import { Effect, Either, Option, pipe } from "effect";
-import { useParsedParamsQuery } from "../../lib/react-router/useParsedParamsQuery";
 import * as S from "@effect/schema/Schema";
-import { WithRequest } from "../../lib/api/WithRequest";
-import { getDecode } from "../../lib/api/request";
-import { Button, Form, Textarea } from "react-daisyui";
 import {
   App,
   AppId,
-  getRegistration,
   getRegistrationFromPlatform,
   Registration,
   RegistrationId,
   sendRegistrationUpdate,
 } from "@yaltt/model";
+import { pipe } from "effect";
 import { fetchBodyFromEndpoint, fetchFromEndpoint } from "endpoint-ts-fetch";
-import { Pre } from "../../lib/ui/Pre";
-import {
-  InferSchemaMap,
-  mkWithParsedParams,
-  withParsedParams,
-  WithParsedParams,
-} from "../../lib/api/WithParsedParams";
 import { CreatedToolConfiguration, PlatformConfiguration } from "lti-model";
+import { withParsedParams } from "../../lib/api/WithParsedParams";
+import { WithRequest } from "../../lib/api/WithRequest";
 import { DynamicRegistrationForm } from "../lists/registrations/DynamicRegistrationForm";
 
 export const RegistrationEditWrapper = () =>
@@ -37,7 +26,10 @@ export const RegistrationEditWrapper = () =>
           if (registration.type === "lti11") {
             return (
               <div className="alert alert-warning">
-                <span>Registration editing is not supported for LTI 1.1 registrations.</span>
+                <span>
+                  Registration editing is not supported for LTI 1.1
+                  registrations.
+                </span>
               </div>
             );
           }

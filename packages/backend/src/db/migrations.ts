@@ -1,7 +1,7 @@
 import * as fs from "fs/promises";
 import * as path from "path";
 import { Effect, pipe } from "effect";
-import { DecodeQueryError, PgError, query, queryRaw } from "./db";
+import { DecodeQueryError, PgError, query, queryRaw, pool } from "./db";
 import * as S from "@effect/schema/Schema";
 
 const MigrationRecord = S.struct({
@@ -36,21 +36,34 @@ const migrationError = (
   cause,
 });
 
-const createMigrationsTable = queryRaw(
-  `CREATE TABLE IF NOT EXISTS migrations (
-    filename VARCHAR(255) PRIMARY KEY,
-    executed_at TIMESTAMP DEFAULT NOW()
-  )`,
-  []
-);
+const createMigrationsTable = Effect.tryPromise({
+  try: () =>
+    pool.query(
+      `CREATE TABLE IF NOT EXISTS migrations (
+        filename VARCHAR(255) PRIMARY KEY,
+        executed_at TIMESTAMP DEFAULT NOW()
+      )`
+    ),
+  catch: (error) => ({
+    _tag: "pg_error" as const,
+    cause: error as Error,
+    query: "CREATE TABLE migrations",
+  }),
+});
 
-const getExecutedMigrations = pipe(
-  query(S.struct({ filename: S.string }))(
-    "SELECT filename FROM migrations ORDER BY filename",
-    []
-  ),
-  Effect.map((rows) => rows.map((row) => row.filename))
-);
+const getExecutedMigrations = Effect.tryPromise({
+  try: async () => {
+    const result = await pool.query(
+      "SELECT filename FROM migrations ORDER BY filename"
+    );
+    return result.rows.map((row: any) => row.filename as string);
+  },
+  catch: (error) => ({
+    _tag: "pg_error" as const,
+    cause: error as Error,
+    query: "SELECT filename FROM migrations",
+  }),
+});
 
 const getMigrationFiles = (migrationsDir: string) =>
   Effect.tryPromise({
@@ -77,40 +90,32 @@ const readMigrationFile = (filePath: string) =>
   });
 
 const executeMigration = (filename: string, sql: string) =>
-  pipe(
-    queryRaw("BEGIN", []),
-    Effect.map((a) => {
-      console.log("Began migration");
-      return a;
-    }),
-    Effect.flatMap(() => queryRaw(sql, [])),
-    Effect.map((a) => {
-      console.log("Finished executing migration SQL");
-      return a;
-    }),
-    Effect.flatMap(() =>
-      queryRaw("INSERT INTO migrations (filename) VALUES ($1)", [filename])
-    ),
-    Effect.map((a) => {
-      console.log("Finished creating migration record");
-      return a;
-    }),
-    Effect.flatMap(() => queryRaw("COMMIT", [])),
-    Effect.map((a) => {
-      console.log("Finished committing migration");
-      return a;
-    }),
-    Effect.tap(() =>
-      Effect.sync(() => console.log(`✓ Executed migration: ${filename}`))
-    ),
-    Effect.catchAll((cause) => {
-      return pipe(
-        queryRaw("ROLLBACK", []),
-        Effect.flatMap(() => Effect.fail(migrationError(filename, cause)))
-      );
-    }),
-    Effect.map(() => void 0)
-  );
+  Effect.tryPromise({
+    try: async () => {
+      try {
+        await pool.query("BEGIN");
+        console.log("Began migration");
+        await pool.query(sql);
+        console.log("Finished executing migration SQL");
+        await pool.query("INSERT INTO migrations (filename) VALUES ($1)", [
+          filename,
+        ]);
+        console.log("Finished creating migration record");
+        await pool.query("COMMIT");
+        console.log("Finished committing migration");
+        console.log(`✓ Executed migration: ${filename}`);
+      } catch (error) {
+        await pool.query("ROLLBACK");
+        throw error;
+      }
+    },
+    catch: (error) =>
+      migrationError(filename, {
+        _tag: "pg_error" as const,
+        cause: error as Error,
+        query: filename,
+      }),
+  });
 
 export const runMigrations = (
   migrationsDir: string = process.env.MIGRATIONS_DIR || "./migrations"

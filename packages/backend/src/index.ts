@@ -38,9 +38,8 @@ const printDecodeQueryError = (e: DecodeQueryError) =>
 const printPgError = (e: PgError) =>
   `PG error: ${e.cause.message}\n${e.cause.stack}`;
 
-const pgService = mkTransactionalPgService(pool);
-// Run migrations before starting the application
-pipe(runMigrations(), pgService.provide, Effect.runPromiseExit).then((exit) => {
+// Run migrations before starting the application (without transactional wrapper since migrations manage their own transactions)
+Effect.runPromiseExit(runMigrations()).then((exit) => {
   if (exit._tag === "Failure") {
     if (exit.cause._tag === "Fail") {
       pipe(

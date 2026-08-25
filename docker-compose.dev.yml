@@ -30,6 +30,7 @@ services:
     working_dir: /app
     depends_on:
       - db
+      - redis
 
   frontend:
     build:
@@ -45,6 +46,7 @@ services:
       - frontend_node_modules:/app/packages/frontend/node_modules
       - lti_model_node_modules:/app/packages/lti-model/node_modules
       - endpoint_ts_node_modules:/app/packages/endpoint-ts/node_modules
+      - endpoint_ts_fetch_node_modules:/app/packages/endpoint-ts-fetch/node_modules
       - model_node_modules:/app/packages/model/node_modules
       - result:/app/result
     command:
@@ -69,5 +71,6 @@ volumes:
   frontend_node_modules: {}
   lti_model_node_modules: {}
   endpoint_ts_node_modules: {}
+  endpoint_ts_fetch_node_modules: {}
   model_node_modules: {}
   result: {}
