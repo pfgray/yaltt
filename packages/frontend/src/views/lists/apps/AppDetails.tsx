@@ -54,9 +54,9 @@ export const AppDetails = () => {
         </div>
       ),
       onRight: ({ appId }) => (
-        <>
-          <WithRequest eff={fetchApp({ appId })}>
-            {(app, reloadApps) => (
+        <WithRequest eff={fetchApp({ appId })}>
+          {(app, reloadApps) => (
+            <>
               <YalttLayout
                 header={
                   <div className="text-sm breadcrumbs">
@@ -95,59 +95,61 @@ export const AppDetails = () => {
                   )}
                 </div>
               </YalttLayout>
-            )}
-          </WithRequest>
 
-          <dialog ref={manualDialogRef} className="modal">
-            <div className="modal-box w-11/12 max-w-3xl">
-              <NewEntityForm
-                close={() => {
-                  manualDialogRef.current?.close();
-                }}
-                form={newRegistrationForm(appId)}
-                entityName={"Registration"}
-              />
-            </div>
-          </dialog>
-
-          <dialog ref={dynamicRegDialogRef} className="modal">
-            <div className="modal-box text-center w-11/12 max-w-3xl">
-              <article className="prose">
-                <h2 className="flex-none mb-2">Dynamic registration url</h2>
-                <p className="flex-none mb-2">
-                  Copy this url to paste into an LTI Platform
-                </p>
-              </article>
-              <div className="w-auto overflow-x-auto">
-                <div className="mockup-code before:content-none">
-                  <Pre>{url(`/apps/${appId}/dynamic-registration`)}</Pre>
+              <dialog ref={manualDialogRef} className="modal">
+                <div className="modal-box w-11/12 max-w-3xl">
+                  <NewEntityForm
+                    close={() => {
+                      manualDialogRef.current?.close();
+                    }}
+                    form={newRegistrationForm(appId)}
+                    entityName={"Registration"}
+                    afterSubmit={reloadApps}
+                  />
                 </div>
-              </div>
-              <div className="modal-action">
-                <button
-                  className="btn"
-                  onClick={() => {
-                    dynamicRegDialogRef.current?.close();
-                  }}
-                >
-                  Close
-                </button>
-              </div>
-            </div>
-          </dialog>
+              </dialog>
 
-          <dialog ref={lti11DialogRef} className="modal">
-            <div className="modal-box w-11/12 max-w-3xl">
-              <NewEntityForm
-                close={() => {
-                  lti11DialogRef.current?.close();
-                }}
-                form={newLti11RegistrationForm(appId)}
-                entityName={"LTI 1.1 Registration"}
-              />
-            </div>
-          </dialog>
-        </>
+              <dialog ref={dynamicRegDialogRef} className="modal">
+                <div className="modal-box text-center w-11/12 max-w-3xl">
+                  <article className="prose">
+                    <h2 className="flex-none mb-2">Dynamic registration url</h2>
+                    <p className="flex-none mb-2">
+                      Copy this url to paste into an LTI Platform
+                    </p>
+                  </article>
+                  <div className="w-auto overflow-x-auto">
+                    <div className="mockup-code before:content-none">
+                      <Pre>{url(`/apps/${appId}/dynamic-registration`)}</Pre>
+                    </div>
+                  </div>
+                  <div className="modal-action">
+                    <button
+                      className="btn"
+                      onClick={() => {
+                        dynamicRegDialogRef.current?.close();
+                      }}
+                    >
+                      Close
+                    </button>
+                  </div>
+                </div>
+              </dialog>
+
+              <dialog ref={lti11DialogRef} className="modal">
+                <div className="modal-box w-11/12 max-w-3xl">
+                  <NewEntityForm
+                    close={() => {
+                      lti11DialogRef.current?.close();
+                    }}
+                    form={newLti11RegistrationForm(appId)}
+                    entityName={"LTI 1.1 Registration"}
+                    afterSubmit={reloadApps}
+                  />
+                </div>
+              </dialog>
+            </>
+          )}
+        </WithRequest>
       ),
     })
   );

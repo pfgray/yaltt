@@ -16,6 +16,8 @@ import { agsRouter } from "./routes/ags/agsRouter";
 import { launchRouter } from "./routes/registrations/launchRouter";
 import { lti11LaunchRouter } from "./routes/registrations/lti11LaunchRouter";
 import { lti11ConfigRouter } from "./routes/registrations/lti11ConfigRouter";
+import { lti11ContentItemRouter } from "./routes/registrations/lti11ContentItemRouter";
+import { lti11ContentItemSigningRouter } from "./routes/registrations/lti11ContentItemSigningRouter";
 import { registrationRouter } from "./routes/registrations/registrationsRouter";
 import {
   effRequestHandler,
@@ -147,6 +149,8 @@ app.use(agsRouter);
 app.use("/api", launchRouter);
 app.use("/api", lti11LaunchRouter);
 app.use("/api", lti11ConfigRouter);
+app.use("/api", lti11ContentItemRouter);
+app.use(lti11ContentItemSigningRouter);
 app.use(adminRouter);
 
 app.get("/api/no_canvas_extension", (req, res) => {

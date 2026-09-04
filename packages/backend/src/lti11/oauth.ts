@@ -1,5 +1,6 @@
 import { Effect } from "effect";
 import oauthSignature from "oauth-signature";
+import crypto from "crypto";
 
 /**
  * Error type for OAuth validation failures
@@ -136,3 +137,78 @@ export const constructOAuthUrl = (
   // Construct the full URL
   return `${cleanProtocol}://${host}${path}`;
 };
+
+/**
+ * Generates a unique nonce for OAuth requests
+ * Uses crypto.randomBytes for cryptographic randomness
+ *
+ * @returns A random hex string suitable for use as an OAuth nonce
+ */
+export const generateNonce = (): string => {
+  return crypto.randomBytes(16).toString("hex");
+};
+
+/**
+ * Generates OAuth 1.0a signature and returns signed parameters
+ *
+ * @param httpMethod - HTTP method (usually "POST")
+ * @param url - Full URL being accessed
+ * @param parameters - Request parameters (without OAuth parameters)
+ * @param consumerKey - The OAuth consumer key
+ * @param consumerSecret - The shared secret for the consumer
+ * @returns Effect containing all parameters including OAuth signature
+ */
+export const generateOAuthSignature = (
+  httpMethod: string,
+  url: string,
+  parameters: Record<string, any>,
+  consumerKey: string,
+  consumerSecret: string
+): Effect.Effect<Record<string, any>, OAuthValidationError> =>
+  Effect.gen(function* (_) {
+    try {
+      // Generate OAuth parameters
+      const oauthParams = {
+        oauth_consumer_key: consumerKey,
+        oauth_signature_method: "HMAC-SHA1",
+        oauth_timestamp: Math.floor(Date.now() / 1000).toString(),
+        oauth_nonce: generateNonce(),
+        oauth_version: "1.0",
+      };
+
+      // Combine with existing parameters
+      const allParams = {
+        ...parameters,
+        ...oauthParams,
+      };
+
+      // OAuth signature uses consumer secret and token secret (empty for LTI 1.1)
+      const tokenSecret = "";
+
+      // Generate the signature
+      const signature = oauthSignature.generate(
+        httpMethod,
+        url,
+        allParams,
+        consumerSecret,
+        tokenSecret,
+        { encodeSignature: false } // LTI typically doesn't double-encode
+      );
+
+      // Return all parameters including the signature
+      return yield* _(
+        Effect.succeed({
+          ...allParams,
+          oauth_signature: signature,
+        })
+      );
+    } catch (error) {
+      return yield* _(
+        Effect.fail(
+          new OAuthValidationError(
+            `Error generating OAuth signature: ${error instanceof Error ? error.message : String(error)}`
+          )
+        )
+      );
+    }
+  });

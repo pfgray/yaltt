@@ -44,3 +44,5 @@ export * from "./registration/ToolConfiguration";
 export * from "./registration/Url";
 export * from "./user/UserId";
 export * from "./lti11/Lti11LaunchParameters";
+export * from "./lti11/Lti11ContentItemSelectionRequest";
+export * from "./lti11/Lti11ContentItem";

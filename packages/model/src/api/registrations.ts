@@ -12,6 +12,7 @@ import {
   PublicJwkSet,
   ToolConfiguration,
   CreatedToolConfiguration,
+  Lti11ContentItemType,
 } from "lti-model";
 import {
   CanvasPrivacyLevel,
@@ -164,6 +165,19 @@ export const signDeepLinkingContentItems = Endpoint.post(
       contentItems: S.array(ContentItem),
       deploymentId: S.string,
       moduleName: S.string,
+    })
+  )
+);
+
+export const signLti11ContentItems = Endpoint.post(
+  pipe(appRegistrationsRegistrationRoute, path("signLti11ContentItems")),
+  {},
+  Response.json(S.struct({ html: S.string })),
+  Body.json(
+    S.struct({
+      contentItems: S.array(Lti11ContentItemType),
+      content_item_return_url: S.string,
+      data: S.optional(S.string),
     })
   )
 );

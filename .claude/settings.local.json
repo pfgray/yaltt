@@ -1,0 +1,21 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(pnpm:*)",
+      "Bash(docker compose:*)",
+      "Bash(env)",
+      "Bash(npm run build:*)",
+      "Bash(grep:*)",
+      "Bash(find:*)",
+      "Bash(npx tsc:*)",
+      "WebSearch",
+      "WebFetch(domain:developerdocs.instructure.com)",
+      "Bash(psql:*)",
+      "Bash(npm run migrate:*)",
+      "Bash(npm run:*)",
+      "Bash(git ls-tree:*)",
+      "Bash(node -e:*)",
+      "Bash(node --input-type=module -e:*)"
+    ]
+  }
+}

@@ -12,6 +12,7 @@ import { TokenFetcher } from "./TokenFetcher";
 import { getLaunch, LaunchId } from "@yaltt/model";
 import { RawLaunch } from "./RawLaunch";
 import { DeepLinkingView } from "./DeepLinkingView";
+import { Lti11ContentItemView } from "./Lti11ContentItemView";
 import { AgsView } from "./AgsView";
 import { PostMessageForm } from "./PostMessageForm";
 import { fetchFromEndpoint } from "endpoint-ts-fetch";
@@ -52,6 +53,7 @@ export const LaunchView = () => {
               <div className="flex flex-col gap-2">
                 <AgsView launch={launch} />
                 <DeepLinkingView launch={launch} />
+                <Lti11ContentItemView launch={launch} />
                 <RawLaunch launch={launch} />
                 <TokenFetcher launch={launch} />
                 <PostMessageForm launch={launch} />

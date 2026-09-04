@@ -23,6 +23,7 @@ const configUrlParams = parseParams(
 const generateLti11Xml = (
   appName: string,
   launchUrl: string,
+  contentItemUrl: string,
   description?: string
 ): string => {
   const escapedAppName = escapeXml(appName);
@@ -43,9 +44,32 @@ const generateLti11Xml = (
     <blti:launch_url>${escapeXml(launchUrl)}</blti:launch_url>
     <blti:extensions platform="canvas.instructure.com">
         <lticm:property name="privacy_level">public</lticm:property>
+        <lticm:property name="selection_width">800</lticm:property>
+        <lticm:property name="selection_height">600</lticm:property>
         <lticm:options name="course_navigation">
             <lticm:property name="enabled">true</lticm:property>
             <lticm:property name="text">${escapedAppName}</lticm:property>
+        </lticm:options>
+        <lticm:options name="editor_button">
+            <lticm:property name="enabled">true</lticm:property>
+            <lticm:property name="text">${escapedAppName}</lticm:property>
+            <lticm:property name="url">${escapeXml(contentItemUrl)}</lticm:property>
+            <lticm:property name="selection_width">800</lticm:property>
+            <lticm:property name="selection_height">600</lticm:property>
+        </lticm:options>
+        <lticm:options name="assignment_selection">
+            <lticm:property name="enabled">true</lticm:property>
+            <lticm:property name="text">${escapedAppName}</lticm:property>
+            <lticm:property name="url">${escapeXml(contentItemUrl)}</lticm:property>
+            <lticm:property name="selection_width">800</lticm:property>
+            <lticm:property name="selection_height">600</lticm:property>
+        </lticm:options>
+        <lticm:options name="link_selection">
+            <lticm:property name="enabled">true</lticm:property>
+            <lticm:property name="text">${escapedAppName}</lticm:property>
+            <lticm:property name="url">${escapeXml(contentItemUrl)}</lticm:property>
+            <lticm:property name="selection_width">800</lticm:property>
+            <lticm:property name="selection_height">600</lticm:property>
         </lticm:options>
     </blti:extensions>
 </cartridge_basiclti_link>`;
@@ -76,6 +100,18 @@ const constructLaunchUrl = (
 };
 
 /**
+ * Constructs the content-item selection URL from the request
+ */
+const constructContentItemUrl = (
+  req: express.Request,
+  registrationId: number
+): string => {
+  const protocol = req.protocol;
+  const host = req.get("host");
+  return `${protocol}://${host}/api/registrations/${registrationId}/lti11/content_item`;
+};
+
+/**
  * Handler for GET /api/registrations/:registrationId/lti11/configuration.xml
  * Returns the LTI 1.1 XML cartridge configuration
  */
@@ -90,14 +126,18 @@ const handleConfigurationXml = effRequestHandler(
     Effect.bind("requestService", () => ExpressRequestService),
     Effect.flatMap(({ params, app, registration, requestService }) =>
       Effect.sync(() => {
-        // Get the request object to construct the launch URL
+        // Get the request object to construct URLs
         const launchUrl = constructLaunchUrl(
+          requestService.request,
+          params.registrationId
+        );
+        const contentItemUrl = constructContentItemUrl(
           requestService.request,
           params.registrationId
         );
 
         // Generate XML
-        const xml = generateLti11Xml(app.name, launchUrl);
+        const xml = generateLti11Xml(app.name, launchUrl, contentItemUrl);
 
         return {
           status: 200,

@@ -4,7 +4,7 @@ import { query, query1, dataIntegrityError } from "../../db/db";
 
 import { Effect, pipe } from "effect";
 import { createKeyForRegistrationId } from "./keys";
-import { Registration, RegistrationId, RegistrationType, Lti13RegistrationType } from "@yaltt/model";
+import { Registration, RegistrationId, RegistrationType, Lti13RegistrationType, Lti11RegistrationType } from "@yaltt/model";
 
 /**
  * Filters out LTI 1.1 registrations, only allowing LTI 1.3 registrations through.
@@ -16,6 +16,21 @@ export const requireLti13Registration = (
   errorMessage: string = "This operation is not supported for LTI 1.1 registrations"
 ): Effect.Effect<Lti13RegistrationType, ReturnType<typeof dataIntegrityError>, never> => {
   if (registration.type === "lti11") {
+    return Effect.fail(dataIntegrityError(errorMessage));
+  }
+  return Effect.succeed(registration);
+};
+
+/**
+ * Filters out LTI 1.3 registrations, only allowing LTI 1.1 registrations through.
+ * Returns an Effect that fails with DataIntegrityError if the registration is LTI 1.3,
+ * or succeeds with the narrowed Lti11RegistrationType if it's LTI 1.1.
+ */
+export const requireLti11Registration = (
+  registration: Registration,
+  errorMessage: string = "This operation is not supported for LTI 1.3 registrations"
+): Effect.Effect<Lti11RegistrationType, ReturnType<typeof dataIntegrityError>, never> => {
+  if (registration.type !== "lti11") {
     return Effect.fail(dataIntegrityError(errorMessage));
   }
   return Effect.succeed(registration);
