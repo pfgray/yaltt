@@ -2,6 +2,7 @@ import { formatError } from "@effect/schema/TreeFormatter";
 import { App, match, Registration } from "@yaltt/model";
 import { Effect, pipe } from "effect";
 import * as React from "react";
+import { Link } from "react-router-dom";
 import { Pre } from "../../../lib/ui/Pre";
 import {
   useScopeStore,
@@ -123,6 +124,15 @@ export const DynamicRegistrationForm = (
           )),
           O.getOrNull
         )}
+        {editingRegistration && editingRegistration.type !== "lti11" ? (
+          <div>
+            <Link
+              to={`/apps/${editingRegistration.app_id}/registrations/${editingRegistration.id}/configuration-json`}
+            >
+              Edit by pasting JSON
+            </Link>
+          </div>
+        ) : null}
         <MessageTypes
           platformConfiguration={platformConfiguration}
           app={app}

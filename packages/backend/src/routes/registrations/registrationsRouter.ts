@@ -19,6 +19,7 @@ import {
   getRegistrations,
   getSavedConfigurationForRegistration,
   sendRegistrationUpdate,
+  sendRegistrationJsonUpdate,
   signDeepLinkingContentItems,
   signUpdateRequest,
 } from "@yaltt/model";
@@ -612,6 +613,49 @@ bindRegistrationEndpoint(sendRegistrationUpdate)(
           });
         }
       ),
+          Effect.map((a) => ({}))
+        );
+      })
+    )
+);
+
+bindRegistrationEndpoint(sendRegistrationJsonUpdate)(
+  ({ appId, registrationId }, _, body) =>
+    pipe(
+      registrationAndApp(appId, registrationId),
+      Effect.flatMap(({ registration }) => {
+        if (registration.type === "lti11") {
+          return Effect.fail(
+            dataIntegrityError(
+              "Cannot send registration update for LTI 1.1 registration"
+            )
+          );
+        }
+        return pipe(
+          Effect.succeed({ registration }),
+          Effect.bind("client_uri", ({ registration }) =>
+            pipe(
+              registration.registration_client_uri,
+              Option.map(Effect.succeed),
+              Option.getOrElse(() =>
+                Effect.fail(
+                  dataIntegrityError(
+                    "No registration_client_uri for registration"
+                  )
+                )
+              )
+            )
+          ),
+          Effect.bind("token", ({ registration }) =>
+            fetchToken(registration, [LtiScope.Registration])
+          ),
+          Effect.flatMap(({ client_uri, token }) =>
+            Fetch.put(client_uri, body.toolConfiguration, {
+              headers: {
+                Authorization: `Bearer ${token.access_token}`,
+              },
+            })
+          ),
           Effect.map((a) => ({}))
         );
       })

@@ -58,6 +58,7 @@ export const YalttAPIDef = {
     signUpdateRequest: registrations.signUpdateRequest,
     getRegistrationFromPlatform: registrations.getRegistrationFromPlatform,
     sendRegistrationUpdate: registrations.sendRegistrationUpdate,
+    sendRegistrationJsonUpdate: registrations.sendRegistrationJsonUpdate,
   },
   ags: {
     createScoreForUser: ags.createScoreForUser,

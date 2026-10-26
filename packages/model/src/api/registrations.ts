@@ -229,3 +229,14 @@ export const sendRegistrationUpdate = Endpoint.post(
     })
   )
 );
+
+export const sendRegistrationJsonUpdate = Endpoint.post(
+  pipe(appRegistrationsRegistrationRoute, path("update-json")),
+  {},
+  Response.json(S.unknown),
+  Body.json(
+    S.struct({
+      toolConfiguration: S.unknown,
+    })
+  )
+);

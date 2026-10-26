@@ -16,6 +16,7 @@ import { Lti11ContentItemView } from "./Lti11ContentItemView";
 import { AgsView } from "./AgsView";
 import { PostMessageForm } from "./PostMessageForm";
 import { fetchFromEndpoint } from "endpoint-ts-fetch";
+import { Link } from "react-router-dom";
 
 const fetchLaunch = fetchFromEndpoint(getLaunch);
 
@@ -57,6 +58,14 @@ export const LaunchView = () => {
                 <RawLaunch launch={launch} />
                 <TokenFetcher launch={launch} />
                 <PostMessageForm launch={launch} />
+                <div className="mt-4 text-center">
+                  <Link
+                    to={`/apps/${launch.app.id}/registrations/${launch.registration.id}/configuration`}
+                    className="text-blue-600 hover:text-blue-800 underline"
+                  >
+                    {launch.app.name} settings
+                  </Link>
+                </div>
               </div>
             </div>
           )}

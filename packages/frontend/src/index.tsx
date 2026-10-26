@@ -27,6 +27,7 @@ import { DynamicRegistrationCustom } from "./views/lists/registrations/DynamicRe
 import {
   RegistrationEdit,
   RegistrationEditWrapper,
+  RegistrationEditJsonWrapper,
 } from "./views/launch/RegistrationEdit";
 
 const mkPath = (
@@ -64,6 +65,10 @@ const router = createBrowserRouter([
   {
     path: "/apps/:appId/registrations/:registrationId/configuration",
     element: <RegistrationEditWrapper />,
+  },
+  {
+    path: "/apps/:appId/registrations/:registrationId/configuration-json",
+    element: <RegistrationEditJsonWrapper />,
   },
   {
     path: "/",
