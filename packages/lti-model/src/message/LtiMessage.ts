@@ -2,7 +2,7 @@ import * as S from "@effect/schema/Schema";
 import { CustomParameters } from "./CustomParameters";
 import { Url } from "../registration/Url";
 import { pipe } from "effect";
-import { LocalizedKey } from "../registration/LocalizedKey";
+import { LocalizedKeyOp } from "../registration/LocalizedKey";
 
 export const IframeOptions = S.struct({
   width: S.number,
@@ -22,7 +22,7 @@ export const LtiMessage = pipe(
     preferred_presentation: S.optional(S.string),
     iframe: S.optional(IframeOptions),
   }),
-  S.extend(LocalizedKey("label"))
+  S.extend(LocalizedKeyOp("label"))
 );
 
 export interface LtiMessage extends S.Schema.To<typeof LtiMessage> {}

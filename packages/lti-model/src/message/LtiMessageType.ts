@@ -12,6 +12,7 @@ export const LtiMessageTypes = {
   LtiStartProctoring: "LtiStartProctoring",
   LtiStartAssessment: "LtiStartAssessment",
   LtiEndAssessment: "LtiEndAssessment",
+  LtiEulaRequest: "LtiEulaRequest",
   "basic-lti-launch-request": "basic-lti-launch-request",
 } as const;
 

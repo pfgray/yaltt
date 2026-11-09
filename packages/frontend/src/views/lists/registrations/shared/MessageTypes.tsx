@@ -8,6 +8,7 @@ import {
 } from "lti-model";
 import React from "react";
 import { usePlacementsStore, Placements } from "../usePlacementsStore";
+import { useMessagesStore, Messages } from "../useMessagesStore";
 import { create } from "zustand";
 import { CanvasPlacementTypes } from "canvas-lti-model";
 import { Pre } from "../../../../lib/ui/Pre";
@@ -106,6 +107,50 @@ const PlacementConfig = (props: {
   );
 };
 
+const MessageConfig = (props: { messageType: string }) => {
+  const { messageType } = props;
+
+  const {
+    messages,
+    toggleMessage,
+    updateCustomParameters,
+    updateIconUri,
+  } = useMessagesStore((state) => state);
+
+  const message = messages[messageType];
+
+  return (
+    <div className="form-control" key={messageType}>
+      <label className="label cursor-pointer justify-normal">
+        <input
+          type="checkbox"
+          className="checkbox"
+          onChange={() => toggleMessage(messageType)}
+          checked={typeof message !== "undefined" && message.enabled === true}
+        />
+        <span className="label-text ml-2">{messageType}</span>
+      </label>
+      {typeof message !== "undefined" && message.enabled === true && (
+        <div className="ml-10 grid grid-cols-2 gap-2">
+          <input
+            type="text"
+            placeholder="Icon Url"
+            className="input input-bordered w-full max-w-xs"
+            onChange={updateIconUri(messageType)}
+            value={message.icon_uri}
+          />
+          <textarea
+            className="textarea textarea-bordered"
+            placeholder="Custom Parameters (key=value format)"
+            onChange={updateCustomParameters(messageType)}
+            value={message.custom_parameters}
+          ></textarea>
+        </div>
+      )}
+    </div>
+  );
+};
+
 const KnownPlacements = [
   known("AnalyticsHub", "Analytics Hub"),
   known("GlobalNavigation", "Global Navigation"),
@@ -197,6 +242,16 @@ export const MessageTypes = (props: {
     (state) => state
   );
 
+  // Advertised messages that aren't tied to any placement
+  const advertisedMessageTypes = ltiPlatformConfig.messages_supported
+    .filter((m) => (m.placements || []).length === 0)
+    .map((m) => m.type)
+    .filter((item, i, ar) => ar.indexOf(item) === i);
+
+  const { setMessages, initializeMessages } = useMessagesStore(
+    (state) => state
+  );
+
   const unAdvertisedPlacements = pipe(
     LtiPlacements,
     ReadonlyRecord.filter(
@@ -257,10 +312,30 @@ export const MessageTypes = (props: {
         };
       }, {}),
     });
+    setMessages(
+      advertisedMessageTypes.reduce(
+        (acc: Messages, messageType) => ({
+          ...acc,
+          [messageType]: {
+            enabled: false,
+            custom_parameters: "foo=bar\ncontext_id=$Context.id",
+            icon_uri: `${window.location.origin}/api/apps/${props.app.id}/icon.svg`,
+          },
+        }),
+        {}
+      )
+    );
     if (editingToolConfiguration) {
       initializePlacements(editingToolConfiguration);
+      initializeMessages(editingToolConfiguration);
     }
-  }, [editingToolConfiguration, setPlacements, initializePlacements]);
+  }, [
+    editingToolConfiguration,
+    setPlacements,
+    initializePlacements,
+    setMessages,
+    initializeMessages,
+  ]);
 
   /**
    * Determines the number of placements to display by default
@@ -325,6 +400,14 @@ export const MessageTypes = (props: {
           </>
         )}
       </div>
+      {advertisedMessageTypes.length > 0 ? (
+        <>
+          <h3>Messages</h3>
+          {advertisedMessageTypes.map((messageType) => (
+            <MessageConfig key={messageType} messageType={messageType} />
+          ))}
+        </>
+      ) : null}
     </div>
   );
 };

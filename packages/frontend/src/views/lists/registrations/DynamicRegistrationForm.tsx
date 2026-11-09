@@ -11,6 +11,7 @@ import {
   isCanvas,
 } from "./DynamicRegistration";
 import { usePlacementsStore } from "./usePlacementsStore";
+import { useMessagesStore } from "./useMessagesStore";
 import { useInstallingState, InstallingStateError } from "./useInstallingState";
 import {
   CreatedToolConfiguration,
@@ -93,6 +94,7 @@ export const DynamicRegistrationForm = (
   const { placements, initializePlacements } = usePlacementsStore(
     (state) => state
   );
+  const messagesWithoutPlacements = useMessagesStore((state) => state.messages);
   const { install, installTool } = useInstallingState((state) => state);
 
   return (
@@ -254,7 +256,7 @@ export const DynamicRegistrationForm = (
                   updateComment: updateComment,
                   messages: Object.entries(placements)
                     .filter(([_, v]) => v.enabled)
-                    .map(([placement, v]) => ({
+                    .map(([placement, v]): LtiMessage => ({
                       type: v.message_type as string,
                       placements: [placement],
                       custom_parameters: parseCustomParams(
@@ -265,7 +267,18 @@ export const DynamicRegistrationForm = (
                         ? v.roles.split(",").map((r) => r.trim())
                         : [],
                       label: v.label,
-                    })),
+                    }))
+                    .concat(
+                      Object.entries(messagesWithoutPlacements)
+                        .filter(([_, v]) => v.enabled)
+                        .map(([messageType, v]): LtiMessage => ({
+                          type: messageType,
+                          custom_parameters: parseCustomParams(
+                            v.custom_parameters || ""
+                          ),
+                          icon_uri: v.icon_uri || undefined,
+                        }))
+                    ),
                 }),
                 (a) => a,
                 installTool,

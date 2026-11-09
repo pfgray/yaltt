@@ -26,6 +26,7 @@ import { sendCloseMessage } from "./sendCloseMessage";
 import { Pre } from "../../../lib/ui/Pre";
 import { parseCustomParams } from "./DynamicRegistrationForm";
 import { usePlacementsStore } from "./usePlacementsStore";
+import { useMessagesStore } from "./useMessagesStore";
 import { MessageTypes } from "./shared/MessageTypes";
 import { YalttAPI } from "../../../lib/api/YalttAPI";
 import {
@@ -110,6 +111,7 @@ export const DynamicRegistration = () => {
       .filter((s) => s !== "")
   );
   const placements = usePlacementsStore((state) => state.placements);
+  const messagesWithoutPlacements = useMessagesStore((state) => state.messages);
 
   const { install, installTool } = useInstallingState((state) => state);
 
@@ -265,6 +267,22 @@ export const DynamicRegistration = () => {
                                               .filter((s) => s !== ""),
                                             placements: [key],
                                           })
+                                        )
+                                        .concat(
+                                          Object.entries(
+                                            messagesWithoutPlacements
+                                          )
+                                            .filter(([, m]) => m.enabled)
+                                            .map(
+                                              ([messageType, m]): LtiMessage => ({
+                                                type: messageType,
+                                                custom_parameters:
+                                                  parseCustomParams(
+                                                    m.custom_parameters
+                                                  ),
+                                                icon_uri: m.icon_uri,
+                                              })
+                                            )
                                         ),
                                     }),
                                     installTool,
